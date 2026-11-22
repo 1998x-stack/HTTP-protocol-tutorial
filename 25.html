@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -160,18 +161,21 @@
 <li><a href="22.html">第22章 HTTP性能优化</a></li>
 <li><a href="23.html">第23章 HTTP调试工具</a></li>
 <li><a href="24.html">第24章 Web服务器配置</a></li>
-<li><a href="25.html" class="active">第25章 HTTP抓包实战</a></li>
+<li><a href="25.html" class="active" aria-current="page">第25章 HTTP抓包实战</a></li>
 <li><a href="26.html">第26章 HTTP/2</a></li>
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第25章：HTTP抓包实战</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第25章：HTTP抓包实战</h1>
+            <p class="dek">抓包环境与 SSLKEYLOGFILE 解密、一次完整请求的报文字段分析、时序图解读与生产环境抓包注意事项。</p>
+        </header>
 
         <p>大家好。这一章是前面所有章节的实践汇总。我们从协议原理到调试工具再到服务器配置，理论知识已经够多了。今天我们要做一件非常酷的事情——把一次完整的HTTP请求从网络线路上"捉"出来，然后逐层分析。相信我，当你亲眼看到TCP三次握手、TLS密钥协商、HTTP请求响应的完整报文时，对HTTP协议的理解会提升一个层次。</p>
 
-        <h3>25.1 抓包环境搭建</h3>
+        <h2>25.1 抓包环境搭建</h2>
 
         <p>抓包工具的选择取决于你使用的操作系统：</p>
 
@@ -211,7 +215,27 @@ sudo tcpdump -i eth0 port 80 -A | grep "GET\|POST\|Host:"</code></pre>
           <p><strong>推荐工作流</strong>：服务器上用 tcpdump 抓包保存为 .pcap 文件，下载到本地用 Wireshark 分析。这样兼顾了服务器资源消耗和分析体验。tcpdump 本身资源开销很小，在线上服务器短暂抓包（30秒到1分钟）通常不会影响服务。</p>
         </div>
 
-        <h3>25.2 一次完整HTTP请求的抓包分析</h3>
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch25-flow-title fig-ch25-flow-desc" viewBox="0 0 880 220" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch25-flow-title">抓包与 TLS 解密工作流</title>
+            <desc id="fig-ch25-flow-desc">在与目标通信的机器上用 tcpdump 抓包保存为 pcap，下载到本地用 Wireshark 分析；同时导出 SSLKEYLOGFILE，让 Wireshark 用会话密钥解密 HTTPS 的应用数据。</desc>
+            <rect x="0" y="0" width="880" height="220" fill="#ffffff"/>
+            <defs><marker id="ch25-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+            <g font-size="13">
+              <rect x="40" y="60" width="170" height="70" rx="10" fill="#6366f1"/><text x="125" y="90" fill="#ffffff" text-anchor="middle" font-weight="700">服务器 / 客户端</text><text x="125" y="112" fill="#e0e7ff" text-anchor="middle" font-size="12" font-family="monospace">tcpdump</text>
+              <line x1="212" y1="95" x2="292" y2="95" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch25-a)"/>
+              <rect x="298" y="60" width="170" height="70" rx="10" fill="#0ea5e9"/><text x="383" y="90" fill="#ffffff" text-anchor="middle" font-weight="700">.pcap 文件</text><text x="383" y="112" fill="#e0f2fe" text-anchor="middle" font-size="12">每文件大小 / 数量可限</text>
+              <line x1="470" y1="95" x2="550" y2="95" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch25-a)"/>
+              <rect x="556" y="60" width="284" height="70" rx="10" fill="#10b981"/><text x="698" y="90" fill="#ffffff" text-anchor="middle" font-weight="700">Wireshark 分析</text><text x="698" y="112" fill="#d1fae5" text-anchor="middle" font-size="12">读取 SSLKEYLOGFILE 解密 HTTPS</text>
+              <rect x="298" y="158" width="170" height="40" rx="9" fill="#fef3c7" stroke="#b45309"/><text x="383" y="183" fill="#92400e" text-anchor="middle" font-size="12">SSLKEYLOGFILE</text>
+              <path d="M383,156 C383,140 698,150 698,132" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ch25-a)"/>
+            </g>
+            <text x="440" y="38" font-size="12.5" fill="#64748b" text-anchor="middle">导出会话密钥后，Wireshark 才能把 Application Data 还原为可读的 HTTP 明文。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 25.1</span>　生产抓包工作流：用 tcpdump 存 pcap → 下载到本地 → Wireshark 分析；配合 SSLKEYLOGFILE 才能解密 HTTPS 的应用数据（仅限调试环境）。</figcaption>
+        </figure>
+
+        <h2>25.2 一次完整HTTP请求的抓包分析</h2>
 
         <p>假设我们要访问 <code>https://www.example.com</code>，在Wireshark里会看到以下报文序列。我们按照时间顺序逐段分析。</p>
 
@@ -260,7 +284,28 @@ sudo tcpdump -i eth0 port 80 -A | grep "GET\|POST\|Host:"</code></pre>
           <p><strong>累计耗时</strong>：把这个完整流程的时间加起来——DNS 45ms + TCP握手 27ms + TLS握手 28ms + 请求响应 35ms = 总共约135ms。从用户点击到页面开始加载，135ms已经过去了。这就是为什么性能优化如此重要——每一个环节省下来的毫秒都会累积。</p>
         </div>
 
-        <h3>25.3 时序图解读</h3>
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch25-tl-title fig-ch25-tl-desc" viewBox="0 0 880 240" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch25-tl-title">一次 HTTPS 请求的报文时间线</title>
+            <desc id="fig-ch25-tl-desc">时间线依次为 DNS 查询约 45ms、TCP 三次握手约 27ms、TLS 握手约 28ms、HTTP 请求与响应约 35ms，累计约 135ms；后续为连接关闭。</desc>
+            <rect x="0" y="0" width="880" height="240" fill="#ffffff"/>
+            <g font-size="12">
+              <rect x="40" y="70" width="120" height="50" rx="5" fill="#fef3c7" stroke="#b45309"/><text x="100" y="100" fill="#92400e" text-anchor="middle">DNS 45ms</text>
+              <rect x="162" y="70" width="100" height="50" rx="5" fill="#e0e7ff" stroke="#6366f1"/><text x="212" y="100" fill="#4338ca" text-anchor="middle">TCP 27ms</text>
+              <rect x="264" y="70" width="100" height="50" rx="5" fill="#ede9fe" stroke="#7c3aed"/><text x="314" y="100" fill="#6d28d9" text-anchor="middle">TLS 28ms</text>
+              <rect x="366" y="70" width="170" height="50" rx="5" fill="#d1fae5" stroke="#10b981"/><text x="451" y="100" fill="#047857" text-anchor="middle">HTTP 收发 35ms</text>
+              <rect x="538" y="70" width="180" height="50" rx="5" fill="#f1f5f9" stroke="#94a3b8"/><text x="628" y="100" fill="#475569" text-anchor="middle">连接关闭 FIN/ACK</text>
+              <line x1="40" y1="150" x2="810" y2="150" stroke="#cbd5e1"/>
+              <g font-size="11.5" fill="#64748b" text-anchor="middle">
+                <text x="40" y="170">0ms</text><text x="162" y="170">45</text><text x="264" y="170">72</text><text x="366" y="170">100</text><text x="536" y="170">135ms</text>
+              </g>
+            </g>
+            <text x="440" y="206" font-size="12.5" fill="#94a3b8" text-anchor="middle">135ms 全部花在“首字节到达前”；每一段都能成为优化点（DNS 缓存 / CDN / TLS 1.3 / 后端优化）。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 25.2</span>　一次 HTTPS 请求的时间线：DNS、TCP、TLS、HTTP 收发、连接关闭。前端每个阶段的耗时都会累积到用户感知的加载时间中。</figcaption>
+        </figure>
+
+        <h2>25.3 时序图解读</h2>
 
         <p>Wireshark的"Statistics → Flow Graph"功能可以生成一个非常直观的时序图，把每个报文之间的时间间隔可视化。结合我们在DevTools中看到的Waterfall图，你可以从网络层面诊断以下常见瓶颈：</p>
 
@@ -280,7 +325,7 @@ sudo tcpdump -i eth0 port 80 -A | grep "GET\|POST\|Host:"</code></pre>
           <p><strong>常见误解</strong>：很多人觉得"服务器响应很快就是网络没问题"——大错特错。服务器处理快只是说明应用层没问题，TCP层的重传、窗口太小这些"静默问题"只有抓包才能看到。抓包是验证网络问题的唯一可靠手段。</p>
         </div>
 
-        <h3>25.4 生产环境抓包注意事项</h3>
+        <h2>25.4 生产环境抓包注意事项</h2>
 
         <p>线上抓包是一门平衡艺术——信息要全，但不能影响业务。下面这几个要点非常重要：</p>
 
@@ -327,13 +372,34 @@ sudo tcpdump -i eth0 'host 93.184.216.34 and port 443' -w precise.pcap</code></p
 
         <p>好了，到这里为止，HTTP协议的核心知识就全部讲完了。从下一章开始，我们进入协议的新时代——HTTP/2 和 HTTP/3。准备好了吗？</p>
 
+        <aside class="self-check">
+          <p class="q">自测：抓包文件（pcap）为什么不能随手上传到公共网盘或 Git 仓库？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch25-a1">显示答案</button>
+          <div class="answer" id="ch25-a1" hidden>
+            <p>pcap 里保存的是网络层原始字节，可能包含密码、Token、信用卡号等敏感数据；若同时导出了 SSLKEYLOGFILE，HTTPS 内容也能被解密为明文。因此抓包文件必须按敏感数据处理：不上传公共位置、分析完及时删除、必要共享时先脱敏。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="24.html">← 第24章 Web服务器配置</a>
             <a href="index.html">返回目录</a>
             <a href="26.html">第26章 HTTP/2 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

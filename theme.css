@@ -225,3 +225,8 @@ figcaption .fig-no { font-weight: 700; color: #4338ca; }
     .double-border { border: none; box-shadow: none; }
     body { background: #fff; }
 }
+
+.nav-disabled {
+    padding: 8px 24px; color: #94a3b8; font-weight: 500;
+    border-radius: 40px; background: #f8fafc; cursor: default;
+}

@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -162,18 +163,21 @@
 <li><a href="24.html">第24章 Web服务器配置</a></li>
 <li><a href="25.html">第25章 HTTP抓包实战</a></li>
 <li><a href="26.html">第26章 HTTP/2</a></li>
-<li><a href="27.html" class="active">第27章 HTTP/3 (QUIC)</a></li>
+<li><a href="27.html" class="active" aria-current="page">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第二十七章：HTTP/3（QUIC）</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第二十七章：HTTP/3（QUIC）</h1>
+            <p class="dek">TCP 队头阻塞与丢包代价、QUIC 基础（UDP、内置 TLS 1.3、连接 ID）、0-RTT 与重放风险、连接迁移、QPACK 与部署现状。</p>
+        </header>
 
         <p>同学们好。上一章我们学习了HTTP/2如何通过二进制帧和多路复用解决了HTTP层的队头阻塞。但你有没有想过：TCP本身也有队头阻塞？HTTP/2的多路复用是在单个TCP连接上实现的，如果这个TCP连接发生了丢包，<strong>所有</strong>的流都会被阻塞。这正是HTTP/3要解决的核心问题。</p>
 
         <p>HTTP/3（RFC 9114）是HTTP协议的最新大版本，它的底层传输协议不再是TCP，而是Google开发的<strong>QUIC</strong>（Quick UDP Internet Connections，RFC 9000）。QUIC基于UDP，但实现了TCP级别的可靠性，同时解决了TCP的先天缺陷。我们一步步来看。</p>
 
-        <h3>27.1 为什么需要HTTP/3</h3>
+        <h2>27.1 为什么需要HTTP/3</h2>
 
         <p>上一章结束时我提到过一个比喻：HTTP/2让车辆从多个入口同时上高速，但如果高速路上发生车祸（TCP丢包），所有车道的车辆都得停下来。这不是HTTP/2的问题，而是TCP的固有问题。</p>
 
@@ -191,11 +195,45 @@
 
         <p>这张表基于我对实际项目的观察总结。数据上看，HTTP/2在理想网络下表现最好，但一旦有丢包，性能曲线断崖式下跌。HTTP/3虽然也不是不受丢包影响（UDP也会丢包），但由于每个流独立处理丢包，影响范围仅限于单个流，不会拖累其他流。</p>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch27-hol-title fig-ch27-hol-desc" viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch27-hol-title">TCP 队头阻塞与 QUIC 独立流</title>
+            <desc id="fig-ch27-hol-desc">在 HTTP/2 over TCP 中，所有流的帧构成同一个有序字节流，一个丢失的 TCP 段会阻塞后续所有流的交付；在 HTTP/3 over QUIC 中，各流独立重组，丢包只影响单个流。</desc>
+            <rect x="0" y="0" width="880" height="300" fill="#ffffff"/>
+            <g font-size="13">
+              <text x="40" y="30" font-weight="700" fill="#b91c1c" font-size="14">HTTP/2 over TCP：一个丢包阻塞全部流</text>
+              <g font-size="11.5" font-family="monospace">
+                <rect x="40" y="44" width="80" height="34" rx="4" fill="#6366f1"/><text x="80" y="66" fill="#fff" text-anchor="middle">A</text>
+                <rect x="122" y="44" width="80" height="34" rx="4" fill="#0ea5e9"/><text x="162" y="66" fill="#fff" text-anchor="middle">B</text>
+                <rect x="204" y="44" width="80" height="34" rx="4" fill="#dc2626"/><text x="244" y="66" fill="#fff" text-anchor="middle">✗ 丢包</text>
+                <rect x="286" y="44" width="80" height="34" rx="4" fill="#e2e8f0" stroke="#94a3b8"/><text x="326" y="66" fill="#64748b" text-anchor="middle">C 等</text>
+                <rect x="368" y="44" width="80" height="34" rx="4" fill="#e2e8f0" stroke="#94a3b8"/><text x="408" y="66" fill="#64748b" text-anchor="middle">A 等</text>
+                <rect x="450" y="44" width="80" height="34" rx="4" fill="#e2e8f0" stroke="#94a3b8"/><text x="490" y="66" fill="#64748b" text-anchor="middle">B 等</text>
+              </g>
+              <text x="560" y="66" fill="#b91c1c" font-size="12.5">整条 TCP 字节流阻塞 → 所有流停摆</text>
+
+              <line x1="40" y1="112" x2="840" y2="112" stroke="#e2e8f0"/>
+
+              <text x="40" y="146" font-weight="700" fill="#047857" font-size="14">HTTP/3 over QUIC：丢包只影响单个流</text>
+              <g font-size="11.5" font-family="monospace" text-anchor="middle">
+                <rect x="40" y="160" width="120" height="30" rx="4" fill="#6366f1"/><text x="100" y="180" fill="#fff">流 A ✓</text>
+                <rect x="168" y="160" width="120" height="30" rx="4" fill="#6366f1"/><text x="228" y="180" fill="#fff">流 A ✓</text>
+                <rect x="40" y="196" width="120" height="30" rx="4" fill="#dc2626"/><text x="100" y="216" fill="#fff">流 B ✗</text>
+                <rect x="168" y="196" width="120" height="30" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="228" y="216" fill="#64748b">流 B 等</text>
+                <rect x="40" y="232" width="120" height="30" rx="4" fill="#0ea5e9"/><text x="100" y="252" fill="#fff">流 C ✓</text>
+                <rect x="168" y="232" width="120" height="30" rx="4" fill="#0ea5e9"/><text x="228" y="252" fill="#fff">流 C ✓</text>
+              </g>
+              <text x="320" y="212" fill="#047857" font-size="12.5">各流独立重组：A、C 不受 B 丢包影响</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 27.1</span>　TCP 队头阻塞：HTTP/2 over TCP 中一个丢包阻塞整条有序字节流；HTTP/3 over QUIC 中各流独立重组，丢包仅影响所在流。</figcaption>
+        </figure>
+
         <div class="highlight">
           <p><strong>关键理解</strong>：HTTP/2解决了HTTP层的队头阻塞，但TCP层的队头阻塞依然存在。HTTP/3把传输层从TCP换成了QUIC（基于UDP），从根源上消除了TCP队头阻塞。这不是小修小补，而是传输层的革命。</p>
         </div>
 
-        <h3>27.2 QUIC协议基础</h3>
+        <h2>27.2 QUIC协议基础</h2>
 
         <p>QUIC是Google在2012年开始研发的传输层协议，2013年公开，2021年正式成为RFC 9000。它基于UDP，但实现了TCP的可靠性、拥塞控制、流量控制，并且额外提供了很多TCP没有的特性。</p>
 
@@ -218,7 +256,7 @@ QUIC连接: (Connection ID) → 独立于网络层
           <p><strong>实际影响</strong>：连接ID的设计决定了HTTP/3对于移动端应用有天然优势。我测试过一个电商App：在HTTP/2环境下，从WiFi切换到4G时，当前连接的所有请求都会失败，需要重新建立TCP连接和TLS握手，通常丢包1-2个。而使用HTTP/3时，同样的切换操作几乎无感知——请求继续在连接ID标识的同一条QUIC连接上传输，不会有任何请求失败。对于一个正在下单的用户来说，这种体验差异是决定性的。</p>
         </div>
 
-        <h3>27.3 0-RTT连接建立</h3>
+        <h2>27.3 0-RTT连接建立</h2>
 
         <p>0-RTT（Zero Round Trip Time）是QUIC最令人兴奋的特性之一。在TCP+TLS 1.3的场景下，即使做了优化，也需要至少1-RTT才能开始发送数据（TLS 1.3的1-RTT模式）。而QUIC可以在某些情况下实现0-RTT——客户端在第一个数据包中就携带应用数据。</p>
 
@@ -256,7 +294,7 @@ Client                                    Server
           <p>我参与过的一个支付项目就遇到过这个问题。用户使用手机应用下单，因为网络环境差，客户端自动重试发送了0-RTT请求。QUIC层的重试和客户端的重试叠加，导致同一笔订单被提交了三次。排查了大半天才发现是0-RTT重放造成的。解决方法是：在应用层实现幂等性（Idempotency Key），或者在非幂等的请求中强制走1-RTT。对支付、订单等关键操作，建议<strong>永远不要使用0-RTT</strong>。0-RTT只适合幂等的GET请求、或者对延迟极度敏感且可以容忍重放的场景。</p>
         </div>
 
-        <h3>27.4 连接迁移</h3>
+        <h2>27.4 连接迁移</h2>
 
         <p>连接迁移（Connection Migration）是QUIC另一个杀手级特性。在TCP中，连接由（源IP，源端口，目标IP，目标端口）四元组唯一标识。一旦任何一个元素变了——比如手机在WiFi和蜂窝网络之间切换——TCP连接就断了，应用层需要重新建立连接。</p>
 
@@ -282,11 +320,32 @@ Client  → PATH_RESPONSE (通过新IP响应)
 Server: 新路径验证通过, 更新连接地址
 Server → 继续传输数据</code></pre>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch27-mig-title fig-ch27-mig-desc" viewBox="0 0 880 240" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch27-mig-title">QUIC 连接迁移</title>
+            <desc id="fig-ch27-mig-desc">客户端从 WiFi 切换到蜂窝网络后 IP 变化，但因 QUIC 用连接 ID 标识连接，服务器识别为同一连接并继续传输；而 TCP 四元组变化会导致连接中断。</desc>
+            <rect x="0" y="0" width="880" height="240" fill="#ffffff"/>
+            <defs><marker id="ch27-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+            <g font-size="13">
+              <rect x="40" y="40" width="220" height="52" rx="9" fill="#6366f1"/><text x="150" y="64" fill="#ffffff" text-anchor="middle" font-weight="700">WiFi 环境</text><text x="150" y="82" fill="#e0e7ff" text-anchor="middle" font-size="12" font-family="monospace">IP 192.168.1.10</text>
+              <rect x="40" y="148" width="220" height="52" rx="9" fill="#0ea5e9"/><text x="150" y="172" fill="#ffffff" text-anchor="middle" font-weight="700">切换到 4G</text><text x="150" y="190" fill="#e0f2fe" text-anchor="middle" font-size="12" font-family="monospace">IP 10.0.0.55</text>
+              <text x="150" y="128" font-size="20" fill="#64748b" text-anchor="middle">↓</text>
+              <rect x="370" y="94" width="180" height="52" rx="9" fill="#f0fdf4" stroke="#10b981"/><text x="460" y="118" fill="#047857" text-anchor="middle" font-weight="700">服务器</text><text x="460" y="137" fill="#065f46" text-anchor="middle" font-size="12" font-family="monospace">连接 ID: abc123</text>
+              <line x1="262" y1="66" x2="368" y2="108" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch27-a)"/>
+              <line x1="262" y1="174" x2="368" y2="132" stroke="#10b981" stroke-width="2.5" marker-end="url(#ch27-a)"/>
+              <text x="316" y="150" font-size="12" fill="#047857">同连接 ID</text>
+              <rect x="600" y="94" width="250" height="52" rx="9" fill="#eef2ff" stroke="#818cf8"/><text x="725" y="118" fill="#4338ca" text-anchor="middle" font-size="12.5">TCP：四元组变化 → 连接中断</text><text x="725" y="137" fill="#047857" text-anchor="middle" font-size="12.5">QUIC：CID 不变 → 无缝继续</text>
+            </g>
+            <text x="440" y="222" font-size="12.5" fill="#94a3b8" text-anchor="middle">新路径需通过 PATH_CHALLENGE / PATH_RESPONSE 验证可达后才会启用。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 27.2</span>　连接迁移：QUIC 用连接 ID 而非 IP 四元组标识连接，网络切换后服务器仍识别为同一连接并继续传输；新路径需先验证可达性。</figcaption>
+        </figure>
+
         <div class="highlight">
           <p><strong>实用场景</strong>：连接迁移对以下场景尤为重要：地铁通勤用户（WiFi到4G反复切换）、视频会议（保持连接不中断）、文件上传（大文件上传过程中切换网络不中断）。我测试过一个CDN服务，部署QUIC后，移动端用户在网络切换时连接中断率从15%降到了接近0%。</p>
         </div>
 
-        <h3>27.5 QPACK</h3>
+        <h2>27.5 QPACK</h2>
 
         <p>上一章我们学了HPACK头部压缩。那为什么HTTP/3不继续用HPACK呢？因为HPACK的设计依赖TCP的<strong>有序传输</strong>——动态表的修改是有序的，发送方和接收方通过TCP的字节序保证动态表状态一致。</p>
 
@@ -310,7 +369,7 @@ Server → 继续传输数据</code></pre>
           <p><strong>简化理解</strong>：HPACK像是一个办公室里的公告板——只有一个人能写，大家按顺序看。QPACK像是一个带通知系统的公告板——有人写了新内容，会单独通知每个人，不需要大家在公告板前排队等待。虽然QPACK比HPACK更复杂，但在QUIC的无序环境中是必需的。在实际测试中，QPACK的压缩效率略低于HPACK（大约低5-10%），但换来了更高的并发度和更低的队头阻塞风险。</p>
         </div>
 
-        <h3>27.6 HTTP/3部署现状</h3>
+        <h2>27.6 HTTP/3部署现状</h2>
 
         <p>截至2026年，HTTP/3的部署情况如何？总的来说，<strong>主流已支持，全面普及还有距离</strong>。</p>
 
@@ -351,13 +410,34 @@ Server → 继续传输数据</code></pre>
 
         <p>好了，第二十七章的内容就到这里。我们聊了为什么需要HTTP/3、QUIC协议的基础（UDP、TLS 1.3内置、连接ID）、0-RTT连接的建立、连接迁移、QPACK头部压缩和当前部署现状。下一章是<strong>本教程的最后一章</strong>——HTTP项目实战，我们会把整个教程中学到的知识应用到实际项目中，搭建一个完整的HTTP服务。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：0-RTT 能降低延迟，为什么支付类请求不应该用 0-RTT？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch27-a1">显示答案</button>
+          <div class="answer" id="ch27-a1" hidden>
+            <p>0-RTT 数据不经过完整握手，服务器无法保证其“新鲜性”，因此存在重放风险：攻击者可截获并重发 0-RTT 数据包，导致重复下单/重复扣款。因此 0-RTT 仅适合幂等请求（如 GET），支付等非幂等操作应强制走 1-RTT 或在应用层实现幂等与重放防护。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="26.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="28.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

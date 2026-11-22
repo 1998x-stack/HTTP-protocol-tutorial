@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -163,17 +164,20 @@
 <li><a href="25.html">第25章 HTTP抓包实战</a></li>
 <li><a href="26.html">第26章 HTTP/2</a></li>
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
-<li><a href="28.html" class="active">第28章 HTTP项目实战</a></li>
+<li><a href="28.html" class="active" aria-current="page">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第二十八章：HTTP项目实战</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第二十八章：HTTP项目实战</h1>
+            <p class="dek">用 Nginx + Flask + Let's Encrypt 搭建完整 HTTP 服务：HTTPS 与协议配置、安全头部、压缩缓存，以及验证与性能基准测试。</p>
+        </header>
 
         <p>同学们好，欢迎来到本教程的<strong>最后一章</strong>。从前26章的理论学习，到第27章的协议演进，现在我们把所有知识串联起来：用一堂实战课，搭建一个完整的HTTP服务。</p>
 
         <p>实战项目的设计思路是：用<strong>Nginx</strong>做反向代理和HTTPS终止，用<strong>Python Flask</strong>（或其他你熟悉的语言）作为后端应用，加上<strong>Let's Encrypt</strong>免费证书，配置安全头部、缓存、gzip压缩，然后做压测和验证。这里面会用到我们在前面学过的几乎每章的知识——从连接管理、缓存控制、安全头部，到HTTPS、HTTP/2和HTTP/3。</p>
 
-        <h3>28.1 项目目标</h3>
+        <h2>28.1 项目目标</h2>
 
         <p>我们要构建的架构如下：</p>
 
@@ -197,6 +201,32 @@
 
         <p>这个架构包含了生产中常见的前后端分离模式。Nginx负责边缘计算（HTTPS、缓存、压缩、安全），后端专注于业务逻辑。更复杂的场景（多后端、数据库、消息队列等）是架构的横向扩展，不在本章讨论范围内。</p>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch28-arch-title fig-ch28-arch-desc" viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch28-arch-title">实战项目架构</title>
+            <desc id="fig-ch28-arch-desc">用户经 Internet 访问：Let's Encrypt 提供自动续期证书，Nginx 作为边缘层完成 HTTPS 终止、HTTP/2 与 HTTP/3、gzip、静态缓存与安全头部，再将请求转发给 Flask 后端处理业务逻辑。</desc>
+            <rect x="0" y="0" width="880" height="360" fill="#ffffff"/>
+            <defs><marker id="ch28-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+            <g font-size="13">
+              <rect x="330" y="24" width="220" height="42" rx="9" fill="#1e293b"/><text x="440" y="51" fill="#ffffff" text-anchor="middle" font-weight="700">Internet · 用户</text>
+              <line x1="440" y1="66" x2="440" y2="96" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch28-a)"/>
+              <rect x="30" y="100" width="220" height="42" rx="9" fill="#fef3c7" stroke="#b45309"/><text x="140" y="127" fill="#92400e" text-anchor="middle">Let's Encrypt（自动续期）</text>
+              <line x1="252" y1="121" x2="328" y2="129" stroke="#b45309" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ch28-a)"/>
+              <rect x="330" y="100" width="520" height="110" rx="12" fill="#eef2ff" stroke="#6366f1"/>
+              <text x="350" y="128" fill="#4338ca" font-weight="700" font-size="14">Nginx 边缘层</text>
+              <text x="350" y="152" fill="#3730a3" font-size="12.5">HTTPS 终止 · HTTP/2 + HTTP/3（Alt-Svc）· gzip 压缩</text>
+              <text x="350" y="174" fill="#3730a3" font-size="12.5">静态资源缓存（Cache-Control）· 安全头部（HSTS/CSP…）</text>
+              <text x="350" y="196" fill="#3730a3" font-size="12.5">反向代理 → X-Real-IP / X-Forwarded-For / X-Forwarded-Proto</text>
+              <line x1="440" y1="212" x2="440" y2="242" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch28-a)"/>
+              <rect x="330" y="248" width="520" height="86" rx="12" fill="#f0fdf4" stroke="#10b981"/>
+              <text x="350" y="276" fill="#047857" font-weight="700" font-size="14">Flask 后端（业务层）</text>
+              <text x="350" y="300" fill="#065f46" font-size="12.5">RESTful API · Session 管理 · 日志记录</text>
+              <text x="350" y="322" fill="#065f46" font-size="12.5">gunicorn 多 worker · 仅监听 127.0.0.1:5000（不直接对外）</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 28.1</span>　实战项目架构：Nginx 作为边缘层统一处理 HTTPS、协议、压缩、缓存与安全头部，Flask 后端只负责业务逻辑并仅监听本地端口。</figcaption>
+        </figure>
+
         <p><strong>具体目标</strong>：</p>
         <ul>
           <li>通过HTTPS提供服务（A+评级）</li>
@@ -207,7 +237,7 @@
           <li>支持自动化的证书续期</li>
         </ul>
 
-        <h3>28.2 环境准备</h3>
+        <h2>28.2 环境准备</h2>
 
         <p>假设你已经有一台Linux服务器（Ubuntu 22.04+或Debian 12+），并且域名 <code>example.com</code> 的A记录已经指向了服务器的IP。</p>
 
@@ -290,7 +320,7 @@ PYEOF
 # 启动后端（使用gunicorn）
 gunicorn -w 4 -b 127.0.0.1:5000 app:app</code></pre>
 
-        <h3>28.3 Nginx配置实战</h3>
+        <h2>28.3 Nginx配置实战</h2>
 
         <p>这是本章的<strong>核心内容</strong>。下面是一份生产级别的Nginx配置，整合了我们前面学过的所有知识。</p>
 
@@ -390,7 +420,7 @@ systemctl reload nginx  # 重载配置</code></pre>
           <p><strong>配置要点解释</strong>：<code>listen 443 quic reuseport</code> 是HTTP/3的关键配置，<code>reuseport</code> 允许多个worker进程共享同一个UDP端口。安全头部是我们在第18章学过的内容，HSTS <code>max-age=63072000</code>（2年）是行业推荐值。gzip的 <code>min_length 256</code> 确保非常小的资源不会被压缩（压缩小文件反而得不偿失）。静态资源的 <code>expires 30d</code> 配合 <code>Cache-Control: public, immutable</code> 是缓存的最佳实践——告诉浏览器"这个文件30天内绝对不会变"。</p>
         </div>
 
-        <h3>28.4 验证与测试</h3>
+        <h2>28.4 验证与测试</h2>
 
         <p>配置完成后，我们来验证所有功能是否正常。</p>
 
@@ -441,6 +471,24 @@ curl -sI https://example.com | grep -E "^(strict|X-|content-security|referrer|pe
 
         <p>如果发现缺少安全头部，返回Nginx配置中添加对应的 <code>add_header</code> 指令并重载。</p>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch28-check-title fig-ch28-check-desc" viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch28-check-title">上线验证清单</title>
+            <desc id="fig-ch28-check-desc">验证项包括：HTTPS 评级达 A/A+、HTTP/2 可用、HTTP/3/QUIC 可用、安全头齐全、gzip 生效、静态资源缓存生效、证书自动续期可用。</desc>
+            <rect x="0" y="0" width="880" height="320" fill="#ffffff"/>
+            <g font-size="13.5">
+              <rect x="30" y="30" width="820" height="36" rx="8" fill="#eef2ff" stroke="#6366f1"/><text x="60" y="54" fill="#047857">✓</text><text x="96" y="54" fill="#3730a3">HTTPS 评级 A / A+</text><text x="830" y="54" fill="#64748b" text-anchor="end" font-size="12.5">SSL Labs / Mozilla Observatory</text>
+              <rect x="30" y="72" width="820" height="36" rx="8" fill="#f8faff" stroke="#c7d2fe"/><text x="60" y="96" fill="#047857">✓</text><text x="96" y="96" fill="#334155">HTTP/2 可用</text><text x="830" y="96" fill="#64748b" text-anchor="end" font-size="12.5">curl --http2 -I</text>
+              <rect x="30" y="114" width="820" height="36" rx="8" fill="#f8faff" stroke="#c7d2fe"/><text x="60" y="138" fill="#047857">✓</text><text x="96" y="138" fill="#334155">HTTP/3 / QUIC 可用</text><text x="830" y="138" fill="#64748b" text-anchor="end" font-size="12.5">Alt-Svc 头 / curl --http3</text>
+              <rect x="30" y="156" width="820" height="36" rx="8" fill="#f8faff" stroke="#c7d2fe"/><text x="60" y="180" fill="#047857">✓</text><text x="96" y="180" fill="#334155">安全头部齐全</text><text x="830" y="180" fill="#64748b" text-anchor="end" font-size="12.5">HSTS / X-Frame-Options / nosniff…</text>
+              <rect x="30" y="198" width="820" height="36" rx="8" fill="#f8faff" stroke="#c7d2fe"/><text x="60" y="222" fill="#047857">✓</text><text x="96" y="222" fill="#334155">gzip / brotli 生效</text><text x="830" y="222" fill="#64748b" text-anchor="end" font-size="12.5">Content-Encoding 响应头</text>
+              <rect x="30" y="240" width="820" height="36" rx="8" fill="#f8faff" stroke="#c7d2fe"/><text x="60" y="264" fill="#047857">✓</text><text x="96" y="264" fill="#334155">静态资源缓存生效</text><text x="830" y="264" fill="#64748b" text-anchor="end" font-size="12.5">Cache-Control / immutable</text>
+              <rect x="30" y="282" width="820" height="36" rx="8" fill="#f8faff" stroke="#c7d2fe"/><text x="60" y="306" fill="#047857">✓</text><text x="96" y="306" fill="#334155">证书自动续期可用</text><text x="830" y="306" fill="#64748b" text-anchor="end" font-size="12.5">certbot renew --dry-run</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 28.2</span>　上线验证清单：每项都应用命令或在线工具确认。建议将安全头部与证书检查脚本化，纳入 CI/CD，避免配置被无意修改。</figcaption>
+        </figure>
+
         <div class="tip">
           <p><strong>测试建议</strong>：不要只测试一次。把安全检查脚本化，放在CI/CD流程中。我维护的一个项目组，在每次代码部署后自动运行安全头部检查和安全评分。如果有配置偏离，立即告警。这在多人协作中特别重要——有人可能在不经意间修改了Nginx配置并移除了关键安全头部。</p>
         </div>
@@ -449,7 +497,7 @@ curl -sI https://example.com | grep -E "^(strict|X-|content-security|referrer|pe
           <p><strong>踩坑故事</strong>：有次我帮一个客户做安全审计，发现他们的网站虽然HTTPS配置正确，但完全没有安全头部。询问后得知，这个Nginx配置由一位新来的运维同事重新配置过，他参考了一份网上的"最小配置"，只写了proxy_pass，所有安全头部都没有复制过来。更麻烦的是，因为HSTS之前已经配置了，用户的浏览器还强制走HTTPS，但新配置的SSL套件比旧配置弱很多，导致部分用户访问失败。修复过程很简单——加上安全头部就好了。但教训是两方面的：一是Nginx配置必须有版本控制（用git管理/etc/nginx/）；二是配置变更必须走代码审查流程，不能只是"自己觉得没问题就重载"。建议你们也把Nginx配置纳入版本管理，在配置变更后自动运行安全测试。</p>
         </div>
 
-        <h3>28.5 性能基准测试</h3>
+        <h2>28.5 性能基准测试</h2>
 
         <p>我们需要通过压测来验证性能配置的有效性。推荐的工具是 <strong>wrk</strong>（更现代）或 <strong>Apache Bench (ab)</strong>（经典）。</p>
 
@@ -503,7 +551,7 @@ ab -n 10000 -c 100 https://example.com/
           <p><strong>压测原则</strong>：压测不是一次性的，而是持续的、可对比的。每次优化只改一个参数，记录压测结果，确认提升后再改下一个。不要同时改多个参数——你不知道哪个改的起了作用。另外，压测最好在独立的环境中进行，不要在线上服务器上跑大量压测，以免影响用户体验。</p>
         </div>
 
-        <h3>28.6 回顾与展望</h3>
+        <h2>28.6 回顾与展望</h2>
 
         <p>到这里，我们已经完成了一个完整的HTTP服务的搭建。但更重要的是，让我们回想一下，这个项目用到了前面哪几章的知识：</p>
 
@@ -543,10 +591,31 @@ ab -n 10000 -c 100 https://example.com/
         <div class="footer-nav">
             <a href="27.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
-            <a href="javascript:void(0)">下一章 →</a>
+            <span class="nav-disabled" aria-disabled="true">下一章 →</span>
         </div>
-    </div>
+
+        <aside class="self-check">
+          <p class="q">自测：为什么后端 Flask 只监听 <code>127.0.0.1:5000</code>，而不直接对外？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch28-a1">显示答案</button>
+          <div class="answer" id="ch28-a1" hidden>
+            <p>Nginx 作为边缘层统一处理 HTTPS、协议协商、压缩、缓存与安全头部，后端只专注业务逻辑。若后端直接对外，就需自己处理 TLS、安全头部与限流，既重复又容易遗漏；只监听本地端口能确保所有对外流量都经过边缘层。</p>
+          </div>
+        </aside>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>
