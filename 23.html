@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -158,22 +159,25 @@
 <li><a href="20.html">第20章 负载均衡与限流</a></li>
 <li><a href="21.html">第21章 RESTful API设计</a></li>
 <li><a href="22.html">第22章 HTTP性能优化</a></li>
-<li><a href="23.html" class="active">第23章 HTTP调试工具</a></li>
+<li><a href="23.html" class="active" aria-current="page">第23章 HTTP调试工具</a></li>
 <li><a href="24.html">第24章 Web服务器配置</a></li>
 <li><a href="25.html">第25章 HTTP抓包实战</a></li>
 <li><a href="26.html">第26章 HTTP/2</a></li>
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第23章：HTTP调试工具</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第23章：HTTP调试工具</h1>
+            <p class="dek">curl 常用选项、DevTools Network 面板的 Waterfall 与时序、Postman/Insomnia 的集合与断言，以及 Wireshark 的 HTTP/TLS 过滤。</p>
+        </header>
 
         <p>大家好。前几章我们系统地学习了HTTP协议的理论知识，从报文结构到缓存，从HTTPS到性能优化。今天这个章节比较特别——咱们不讲理论，讲实战工具。俗话说"工欲善其事，必先利其器"，HTTP调试工具就是你在日常开发和排障中最重要的武器。</p>
 
         <p>我会介绍四类工具：命令行神器curl、浏览器DevTools、API客户端、以及网络分析工具Wireshark。这些工具我每天都在用，下面讲的内容都是实打实的生产经验。</p>
 
-        <h3>23.1 curl命令实战</h3>
+        <h2>23.1 curl命令实战</h2>
 
         <p>curl可以说是HTTP调试的瑞士军刀。它支持几乎所有的协议，光命令行选项就有两百多个。不过别被吓到，日常高频使用的就那么十几个。我先把最常用的几个串一遍。</p>
 
@@ -208,7 +212,7 @@
         <pre><code>curl -X POST https://api.example.com/login \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer token123" \
-  -d '{"username":"admin","password":"secret"}'</pre></code>
+  -d '{"username":"admin","password":"secret"}'</code></pre>
 
         <p>这里有个坑——当你在命令行直接写JSON时，建议用单引号包裹。Windows用户要注意双引号转义的问题，我见过不少人因为引号没处理好被虐了半天。</p>
 
@@ -239,7 +243,29 @@ fi</code></pre>
           <p><strong>实战技巧</strong>：用 <code>curl -w "\n%{time_total}s"</code> 可以查看请求的总耗时。配合 <code>time_namelookup</code>、<code>time_connect</code>、<code>time_starttransfer</code> 这些变量，能快速定位性能瓶颈是在DNS解析、TCP连接还是服务器处理。</p>
         </div>
 
-        <h3>23.2 浏览器DevTools Network面板</h3>
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch23-curl-title fig-ch23-curl-desc" viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch23-curl-title">curl 常用选项速查</title>
+            <desc id="fig-ch23-curl-desc">列出 curl 的高频选项：-v 查看完整通信、-I 只看响应头、-X 指定方法、-H 添加头部、-d 发送请求体、-L 跟随重定向、-k 跳过证书验证、-o 写出文件、-w 输出耗时、-s 静默。</desc>
+            <rect x="0" y="0" width="860" height="300" fill="#ffffff"/>
+            <g font-family="'JetBrains Mono',monospace" font-size="13">
+              <rect x="30" y="30" width="390" height="36" rx="7" fill="#eef2ff" stroke="#818cf8"/><text x="46" y="53" fill="#4338ca" font-weight="700">-v</text><text x="90" y="53" fill="#475569" font-family="'Segoe UI',sans-serif">查看完整通信过程（含头部）</text>
+              <rect x="440" y="30" width="390" height="36" rx="7" fill="#eef2ff" stroke="#818cf8"/><text x="456" y="53" fill="#4338ca" font-weight="700">-I</text><text x="500" y="53" fill="#475569" font-family="'Segoe UI',sans-serif">只看响应头（HEAD 请求）</text>
+              <rect x="30" y="78" width="390" height="36" rx="7" fill="#eef2ff" stroke="#818cf8"/><text x="46" y="101" fill="#4338ca" font-weight="700">-X</text><text x="90" y="101" fill="#475569" font-family="'Segoe UI',sans-serif">指定请求方法（POST/PUT…）</text>
+              <rect x="440" y="78" width="390" height="36" rx="7" fill="#eef2ff" stroke="#818cf8"/><text x="456" y="101" fill="#4338ca" font-weight="700">-H</text><text x="500" y="101" fill="#475569" font-family="'Segoe UI',sans-serif">添加自定义请求头</text>
+              <rect x="30" y="126" width="390" height="36" rx="7" fill="#eef2ff" stroke="#818cf8"/><text x="46" y="149" fill="#4338ca" font-weight="700">-d</text><text x="90" y="149" fill="#475569" font-family="'Segoe UI',sans-serif">发送请求体（默认表单编码）</text>
+              <rect x="440" y="126" width="390" height="36" rx="7" fill="#eef2ff" stroke="#818cf8"/><text x="456" y="149" fill="#4338ca" font-weight="700">-L</text><text x="500" y="149" fill="#475569" font-family="'Segoe UI',sans-serif">跟随重定向</text>
+              <rect x="30" y="174" width="390" height="36" rx="7" fill="#eef2ff" stroke="#818cf8"/><text x="46" y="197" fill="#4338ca" font-weight="700">-k</text><text x="90" y="197" fill="#475569" font-family="'Segoe UI',sans-serif">跳过证书验证（仅调试）</text>
+              <rect x="440" y="174" width="390" height="36" rx="7" fill="#eef2ff" stroke="#818cf8"/><text x="456" y="197" fill="#4338ca" font-weight="700">-o</text><text x="500" y="197" fill="#475569" font-family="'Segoe UI',sans-serif">将响应写入文件</text>
+              <rect x="30" y="222" width="390" height="36" rx="7" fill="#eef2ff" stroke="#818cf8"/><text x="46" y="245" fill="#4338ca" font-weight="700">-w</text><text x="90" y="245" fill="#475569" font-family="'Segoe UI',sans-serif">输出耗时等统计信息</text>
+              <rect x="440" y="222" width="390" height="36" rx="7" fill="#eef2ff" stroke="#818cf8"/><text x="456" y="245" fill="#4338ca" font-weight="700">-s</text><text x="500" y="245" fill="#475569" font-family="'Segoe UI',sans-serif">静默模式（不输出进度）</text>
+            </g>
+            <text x="430" y="284" font-size="12.5" fill="#94a3b8" text-anchor="middle">管道接 jq 可格式化 JSON；配合 -w 可定位 DNS / TCP / 服务器处理哪个阶段慢。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 23.1</span>　curl 高频选项速查：-v 看完整报文、-I 只看头部、-X/-H/-d 构造请求、-L 跟随跳转、-k 仅用于调试、-w 输出耗时。</figcaption>
+        </figure>
+
+        <h2>23.2 浏览器DevTools Network面板</h2>
 
         <p>浏览器DevTools是前端开发者的最爱。按下F12进入Network面板，你可以看到页面上每一个HTTP请求的完整信息。很多后端工程师低估了这个工具的价值，其实它在排障后端API问题时同样强大。</p>
 
@@ -258,6 +284,28 @@ fi</code></pre>
           <tr><td>Content Download</td><td>接收响应体</td><td>响应体过大，下载带宽不足</td></tr>
         </table>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch23-wf-title fig-ch23-wf-desc" viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch23-wf-title">DevTools 请求的 Waterfall 阶段</title>
+            <desc id="fig-ch23-wf-desc">单个请求的时间线依次为：排队、DNS 解析、建立 TCP 连接、TLS 握手、发送请求、等待首字节 TTFB、接收响应体。TTFB 之前主要是网络与握手，之后是服务器处理与下载。</desc>
+            <rect x="0" y="0" width="880" height="260" fill="#ffffff"/>
+            <g font-size="12">
+              <rect x="40" y="70" width="70" height="46" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="75" y="98" fill="#475569" text-anchor="middle">排队</text>
+              <rect x="112" y="70" width="70" height="46" rx="5" fill="#fef3c7" stroke="#b45309"/><text x="147" y="98" fill="#92400e" text-anchor="middle">DNS</text>
+              <rect x="184" y="70" width="80" height="46" rx="5" fill="#fef3c7" stroke="#b45309"/><text x="224" y="98" fill="#92400e" text-anchor="middle">TCP</text>
+              <rect x="266" y="70" width="70" height="46" rx="5" fill="#fef3c7" stroke="#b45309"/><text x="301" y="98" fill="#92400e" text-anchor="middle">TLS</text>
+              <rect x="338" y="70" width="90" height="46" rx="5" fill="#e0e7ff" stroke="#6366f1"/><text x="383" y="98" fill="#4338ca" text-anchor="middle">发送</text>
+              <rect x="430" y="70" width="240" height="46" rx="5" fill="#fee2e2" stroke="#dc2626"/><text x="550" y="98" fill="#b91c1c" text-anchor="middle">等待首字节 TTFB（服务器处理）</text>
+              <rect x="672" y="70" width="170" height="46" rx="5" fill="#d1fae5" stroke="#10b981"/><text x="757" y="98" fill="#047857" text-anchor="middle">接收响应体 Download</text>
+              <line x1="338" y1="150" x2="338" y2="176" stroke="#94a3b8" stroke-dasharray="4 4"/><line x1="670" y1="150" x2="670" y2="176" stroke="#94a3b8" stroke-dasharray="4 4"/>
+              <text x="338" y="192" fill="#64748b" text-anchor="middle">请求发出</text>
+              <text x="670" y="192" fill="#64748b" text-anchor="middle">首字节到达</text>
+            </g>
+            <text x="440" y="228" font-size="12.5" fill="#94a3b8" text-anchor="middle">TTFB 高 → 服务器 / 数据库慢；TTFB 正常但下载长 → 响应体大或带宽不足。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 23.2</span>　Waterfall 阶段：排队、DNS、TCP、TLS、发送、等待首字节（TTFB）、接收响应体。TTFB 是区分“服务端慢”与“传输慢”的关键分界。</figcaption>
+        </figure>
+
         <p><strong>Copy as cURL</strong>——这是一个被低估的神级功能。在任何一个请求上右键 → Copy → Copy as cURL，DevTools会生成完整的curl命令，包含所有Cookie、请求头。你可以直接拿到终端里跑，或者发给同事复现问题。我在排查线上问题时经常用这招——浏览器里复现，copy as curl，然后在服务器上重放请求。</p>
 
         <p><strong>Timing 分析</strong>——当你发现某个API请求慢，先看TTFB（Time To First Byte）。如果TTFB很高，说明服务器端处理慢；如果TTFB正常但总下载时间长，说明响应体大或网络慢。这个区分非常关键，能让你少走弯路。</p>
@@ -266,7 +314,7 @@ fi</code></pre>
           <p><strong>注意</strong>：DevTools Network面板禁用了缓存时，刷新会重新加载所有资源，这对调试很有帮助。但注意这个设置只对当前打开的DevTools有效，不影响浏览器本身和用户。另外，Disable Cache选项不影响Service Worker的缓存，那个需要在Application面板里单独清理。</p>
         </div>
 
-        <h3>23.3 Postman / Insomnia</h3>
+        <h2>23.3 Postman / Insomnia</h2>
 
         <p>Postman和Insomnia是API开发者的标配工具。它们提供了比curl更友好的图形化界面，特别适合调试复杂API。</p>
 
@@ -302,7 +350,7 @@ pm.test("Response has user id", function () {
           <p><strong>开发者故事</strong>：有一年我接手一个老项目，API文档早就过时了，连后端自己都说不清接口到底返回什么字段。我用Postman把所有接口抓了一遍、每个字段加了断言和类型检查，总共写了300多条测试。结果一跑，发现了7个接口有兼容性问题——要么返回了文档里没写的字段，要么某个字段在不同环境下类型不一致。这个教训就是：API一定要有可执行的契约，光写在文档里不够。</p>
         </div>
 
-        <h3>23.4 Wireshark HTTP过滤</h3>
+        <h2>23.4 Wireshark HTTP过滤</h2>
 
         <p>Wireshark是网络协议分析的终极武器。当问题发生在更底层（TCP重传、TLS版本协商失败、奇怪的连接断开），curl和DevTools就无能为力了，这时候需要Wireshark上场。</p>
 
@@ -338,13 +386,34 @@ google-chrome
 
         <p>好了，这一章我们介绍了从命令行到图形界面再到抓包工具的HTTP调试技术栈。curl适合快速验证和脚本化、DevTools适合前端排障和时序分析、Postman适合API调试和自动化测试、Wireshark适合网络层深度分析。下一章我们进入服务器配置的领域，看看真实世界的Nginx是如何处理HTTP请求的。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：看到某个 API 请求很慢，如何用 DevTools 快速判断是服务端处理慢还是传输慢？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch23-a1">显示答案</button>
+          <div class="answer" id="ch23-a1" hidden>
+            <p>看 Timing 中的 TTFB（等待首字节）。TTFB 高说明请求到达服务器后处理慢（业务逻辑 / 数据库 / 下游依赖）；TTFB 正常但 Content Download 阶段长，则说明响应体过大或下载带宽不足。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="22.html">← 第22章 HTTP性能优化</a>
             <a href="index.html">返回目录</a>
             <a href="24.html">第24章 Web服务器配置 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -156,7 +157,7 @@
 <li><a href="18.html">第18章 HTTP安全头部</a></li>
 <li><a href="19.html">第19章 代理与网关</a></li>
 <li><a href="20.html">第20章 负载均衡与限流</a></li>
-<li><a href="21.html" class="active">第21章 RESTful API设计</a></li>
+<li><a href="21.html" class="active" aria-current="page">第21章 RESTful API设计</a></li>
 <li><a href="22.html">第22章 HTTP性能优化</a></li>
 <li><a href="23.html">第23章 HTTP调试工具</a></li>
 <li><a href="24.html">第24章 Web服务器配置</a></li>
@@ -165,9 +166,12 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第二十一章：RESTful API设计</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第二十一章：RESTful API设计</h1>
+            <p class="dek">REST 六大约束、资源建模、HTTP 方法到 CRUD 的映射、状态码用法、版本控制与 HATEOAS。</p>
+        </header>
 
         <p>前面二十章我们把HTTP协议从底层到架构层都聊了一遍。从这一章开始，我们进入<strong>应用层设计</strong>——如何基于HTTP协议设计出优雅、健壮、易用的API。</p>
 
@@ -177,9 +181,39 @@
           <p><strong>重要提醒</strong>：业界说的"RESTful API"和Fielding论文里定义的REST差距很大。绝大多数自称RESTful的API只做到了"使用HTTP方法+JSON"，连REST的基本约束都没有满足。这不一定是坏事——<strong>实用主义胜过教条主义</strong>。但理解完整的REST约束能帮你做出更好的设计决策。</p>
         </div>
 
-        <h3>21.1 REST约束</h3>
+        <h2>21.1 REST约束</h2>
 
         <p>REST定义了六个架构约束，少了任何一个就不是真正的REST。我们逐一来看：</p>
+
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch21-cons-title fig-ch21-cons-desc" viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch21-cons-title">REST 的六个架构约束</title>
+            <desc id="fig-ch21-cons-desc">围绕 REST 的六个约束：客户端-服务器、无状态、可缓存、统一接口、分层系统、按需代码（可选）。它们共同定义了 REST 架构风格。</desc>
+            <rect x="0" y="0" width="880" height="360" fill="#ffffff"/>
+            <circle cx="440" cy="180" r="56" fill="#6366f1"/><text x="440" y="188" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="20">REST</text>
+            <g font-size="13" text-anchor="middle">
+              <circle cx="440" cy="50" r="0"/>
+              <line x1="440" y1="124" x2="440" y2="74" stroke="#c7d2fe" stroke-width="2"/>
+              <rect x="350" y="34" width="180" height="38" rx="9" fill="#eef2ff" stroke="#818cf8"/><text x="440" y="59" fill="#4338ca">客户端-服务器</text>
+
+              <line x1="492" y1="146" x2="600" y2="104" stroke="#c7d2fe" stroke-width="2"/>
+              <rect x="602" y="84" width="150" height="38" rx="9" fill="#eef2ff" stroke="#818cf8"/><text x="677" y="109" fill="#4338ca">无状态</text>
+
+              <line x1="496" y1="190" x2="610" y2="190" stroke="#c7d2fe" stroke-width="2"/>
+              <rect x="612" y="171" width="150" height="38" rx="9" fill="#eef2ff" stroke="#818cf8"/><text x="687" y="196" fill="#4338ca">可缓存</text>
+
+              <line x1="492" y1="216" x2="600" y2="258" stroke="#c7d2fe" stroke-width="2"/>
+              <rect x="602" y="238" width="150" height="38" rx="9" fill="#eef2ff" stroke="#818cf8"/><text x="677" y="263" fill="#4338ca">分层系统</text>
+
+              <line x1="440" y1="236" x2="440" y2="286" stroke="#c7d2fe" stroke-width="2"/>
+              <rect x="350" y="288" width="180" height="38" rx="9" fill="#eef2ff" stroke="#818cf8"/><text x="440" y="313" fill="#4338ca">按需代码（可选）</text>
+
+              <line x1="388" y1="216" x2="280" y2="258" stroke="#c7d2fe" stroke-width="2"/>
+              <rect x="128" y="238" width="150" height="38" rx="9" fill="#eef2ff" stroke="#818cf8"/><text x="203" y="263" fill="#4338ca">统一接口</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 21.1</span>　REST 的六个约束：其中五个是必需的，只有“按需代码”是可选的。统一接口是核心，包含资源标识、通过表示操作、自描述消息与 HATEOAS 四个子约束。</figcaption>
+        </figure>
 
         <p><strong>1. 客户端-服务器（Client-Server）</strong></p>
         <p>分离用户界面和数据存储。客户端不关心数据怎么存的，服务器不关心界面怎么渲染的。这种分离让两端可以独立演进。</p>
@@ -206,7 +240,7 @@
         <p><strong>6. 按需代码（Code on Demand，可选）</strong></p>
         <p>服务器可以传输可执行代码到客户端执行（比如JavaScript、Java Applet）。这是REST中唯一可选的约束。在现代Web中，JavaScript文件本质上就是一种"按需代码"。</p>
 
-        <h3>21.2 资源建模</h3>
+        <h2>21.2 资源建模</h2>
 
         <p>REST的核心概念是<strong>资源（Resource）</strong>。资源建模就是决定"什么东西应该是一个URL"以及"URL应该长什么样"。</p>
 
@@ -254,7 +288,7 @@ GET /tasks?sprint_id=3</code></pre>
           <p><strong>命名惯例</strong>：推荐用<strong>复数名词</strong>（/users，/orders），全<strong>小写</strong>，单词之间用<strong>连字符</strong>分隔（/blog-posts），避免下划线和驼峰（/blog_posts 或 /blogPosts）。这没有严格的REST规定，但符合URL的通用设计习惯。</p>
         </div>
 
-        <h3>21.3 HTTP方法映射</h3>
+        <h2>21.3 HTTP方法映射</h2>
 
         <p>REST利用HTTP方法来表示对资源的操作。这是REST设计中最直观但也最容易被滥用的部分。</p>
 
@@ -269,6 +303,39 @@ GET /tasks?sprint_id=3</code></pre>
           <tr><td>OPTIONS</td><td>查询支持的方法</td><td>是</td><td>是</td><td>无</td><td>Allow头</td></tr>
         </table>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch21-map-title fig-ch21-map-desc" viewBox="0 0 860 320" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch21-map-title">方法与集合 / 单例资源的映射</title>
+            <desc id="fig-ch21-map-desc">GET 作用于集合返回列表、作用于单例返回单个；POST 只在集合上创建；PUT 与 PATCH 作用于单例做替换或部分更新；DELETE 作用于单例删除资源。</desc>
+            <rect x="0" y="0" width="860" height="320" fill="#ffffff"/>
+            <g font-size="13.5">
+              <rect x="300" y="30" width="250" height="46" rx="9" fill="#eef2ff" stroke="#6366f1"/><text x="425" y="59" fill="#4338ca" text-anchor="middle" font-weight="700" font-family="monospace">/users（集合）</text>
+              <rect x="560" y="30" width="270" height="46" rx="9" fill="#eef2ff" stroke="#6366f1"/><text x="695" y="59" fill="#4338ca" text-anchor="middle" font-weight="700" font-family="monospace">/users/42（单例）</text>
+              <g font-family="'JetBrains Mono',monospace" font-size="13">
+                <rect x="40" y="88" width="250" height="38" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/><text x="165" y="113" fill="#334155" text-anchor="middle">GET</text>
+                <rect x="40" y="132" width="250" height="38" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/><text x="165" y="157" fill="#334155" text-anchor="middle">POST</text>
+                <rect x="40" y="176" width="250" height="38" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/><text x="165" y="201" fill="#334155" text-anchor="middle">PUT</text>
+                <rect x="40" y="220" width="250" height="38" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/><text x="165" y="245" fill="#334155" text-anchor="middle">PATCH</text>
+                <rect x="40" y="264" width="250" height="38" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/><text x="165" y="289" fill="#334155" text-anchor="middle">DELETE</text>
+              </g>
+              <g font-size="13" text-anchor="middle">
+                <rect x="300" y="88" width="250" height="38" rx="8" fill="#d1fae5" stroke="#10b981"/><text x="425" y="113" fill="#047857">返回用户列表</text>
+                <rect x="300" y="132" width="250" height="38" rx="8" fill="#d1fae5" stroke="#10b981"/><text x="425" y="157" fill="#047857">创建新用户</text>
+                <rect x="300" y="176" width="250" height="38" rx="8" fill="#f8fafc" stroke="#e2e8f0"/><text x="425" y="201" fill="#94a3b8">—（不推荐）</text>
+                <rect x="300" y="220" width="250" height="38" rx="8" fill="#f8fafc" stroke="#e2e8f0"/><text x="425" y="245" fill="#94a3b8">—</text>
+                <rect x="300" y="264" width="250" height="38" rx="8" fill="#f8fafc" stroke="#e2e8f0"/><text x="425" y="289" fill="#94a3b8">—（慎用）</text>
+
+                <rect x="560" y="88" width="270" height="38" rx="8" fill="#d1fae5" stroke="#10b981"/><text x="695" y="113" fill="#047857">返回单个用户</text>
+                <rect x="560" y="132" width="270" height="38" rx="8" fill="#f8fafc" stroke="#e2e8f0"/><text x="695" y="157" fill="#94a3b8">—</text>
+                <rect x="560" y="176" width="270" height="38" rx="8" fill="#d1fae5" stroke="#10b981"/><text x="695" y="201" fill="#047857">完整替换</text>
+                <rect x="560" y="220" width="270" height="38" rx="8" fill="#d1fae5" stroke="#10b981"/><text x="695" y="245" fill="#047857">部分更新</text>
+                <rect x="560" y="264" width="270" height="38" rx="8" fill="#d1fae5" stroke="#10b981"/><text x="695" y="289" fill="#047857">删除资源</text>
+              </g>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 21.2</span>　方法与资源的映射：集合上常用 GET/POST，单例上常用 GET/PUT/PATCH/DELETE。“动词”交给 HTTP 方法，“名词”留给 URL。</figcaption>
+        </figure>
+
         <p><strong>幂等（Idempotent）</strong>意味着无论执行多少次，结果都一样。多次PUT同一个资源结果不变（都是替换成同样的数据），所以PUT是幂等的。POST创建资源——多次POST会创建多个资源——不是幂等的。PATCH理论上可以是幂等的，但取决于实现，所以通常视为非幂等。</p>
 
         <p>一个常见的选择困难：<strong>PUT vs PATCH</strong>。简单规则：如果客户端传了<strong>完整资源</strong>，用PUT；如果只传<strong>需要变更的字段</strong>，用PATCH。</p>
@@ -277,7 +344,7 @@ GET /tasks?sprint_id=3</code></pre>
           <p><strong>踩坑故事</strong>：早期的项目里，我们设计了一个API用PUT来做部分更新。结果有一天产品说"用户信息被清空了"。排查发现：前端在更新用户昵称时，用PUT只发了 <code>{"nickname": "新名字"}</code>，没有发 <code>email</code>、<code>phone</code>等字段。后端收到PUT请求后直接替换了整条记录——其他字段变成了NULL。从那以后，我们严格规定：<strong>PUT必须传完整资源，PATCH才传部分字段</strong>。这个坑太经典了，在业界被称为"partial PUT anti-pattern"。</p>
         </div>
 
-        <h3>21.4 状态码的正确使用</h3>
+        <h2>21.4 状态码的正确使用</h2>
 
         <p>我在第五章详细讲过HTTP状态码的含义。在REST API设计中，正确使用状态码能让API的语义更加清晰。这里我挑几个最常见的<strong>好例子</strong>和<strong>坏例子</strong>：</p>
 
@@ -337,7 +404,7 @@ GET /old-promotions/5
           <p><strong>实用原则</strong>：HTTP状态码是为<strong>HTTP协议层</strong>设计的语义，不应该用业务错误码替代。正确的方式是：HTTP状态码表示"请求本身的结果"（成功、客户端错误、服务器错误），响应体里的业务错误码表示"业务逻辑的结果"。两者是互补的，不是二选一的。</p>
         </div>
 
-        <h3>21.5 API版本控制</h3>
+        <h2>21.5 API版本控制</h2>
 
         <p>API发布后，难免要升级——新增字段、修改参数、彻底重构。怎么让旧客户端不受影响？答案是版本控制。</p>
 
@@ -361,7 +428,7 @@ GET /api/v2/users/42</code></pre>
           <p><strong>版本管理建议</strong>：不要对每个小改动都升级版本号。向后兼容的改动（新增字段、新增可选参数）不需要新版本。只在<strong>破坏性变更</strong>时才升级版本号。同时给每个版本设置<strong>废弃时间线</strong>——比如v1上线后，v1.1发布时v1进入"维护期"，v2发布后v1进入"倒计时"，3个月后正式关闭。不要让旧版本永远存在。</p>
         </div>
 
-        <h3>21.6 HATEOAS</h3>
+        <h2>21.6 HATEOAS</h2>
 
         <p>HATEOAS（Hypermedia As The Engine Of Application State）是REST约束中最被忽视的一个。它的核心思想是：<strong>服务器在响应中提供链接，客户端通过这些链接导航，而不是通过硬编码的URL</strong>。</p>
 
@@ -414,13 +481,34 @@ GET /orders/123
 
         <p>好了，第二十一章的内容就到这里。我们从REST的六个约束开始，到资源建模、方法映射、状态码使用、版本控制、最后聊了HATEOAS。下一章我们进入<strong>HTTP性能优化</strong>——看看怎么让基于HTTP的应用跑得更快。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：为什么“用 PUT 做部分更新”容易出事？应如何避免？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch21-a1">显示答案</button>
+          <div class="answer" id="ch21-a1" hidden>
+            <p>PUT 语义是“完整替换资源”，若客户端只提交部分字段，其余字段会被当成缺失而清空（即 partial PUT 反模式）。正确做法：需要整份覆盖时用 PUT 并提交完整资源；只改少数字段时用 PATCH。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="20.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="22.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

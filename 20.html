@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -155,7 +156,7 @@
 <li><a href="17.html">第17章 证书管理</a></li>
 <li><a href="18.html">第18章 HTTP安全头部</a></li>
 <li><a href="19.html">第19章 代理与网关</a></li>
-<li><a href="20.html" class="active">第20章 负载均衡与限流</a></li>
+<li><a href="20.html" class="active" aria-current="page">第20章 负载均衡与限流</a></li>
 <li><a href="21.html">第21章 RESTful API设计</a></li>
 <li><a href="22.html">第22章 HTTP性能优化</a></li>
 <li><a href="23.html">第23章 HTTP调试工具</a></li>
@@ -165,15 +166,18 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第二十章：负载均衡与限流</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第二十章：负载均衡与限流</h1>
+            <p class="dek">轮询/加权/最少连接等负载均衡算法、Nginx upstream 与健康检查、会话保持，以及令牌桶/漏桶限流。</p>
+        </header>
 
         <p>这一章我们继续深入架构层的HTTP话题。上一章讲了代理和CDN，这一章聚焦在<strong>流量分配</strong>和<strong>流量控制</strong>两个核心问题上。</p>
 
         <p>简单来说：<strong>负载均衡</strong>解决的是"来了100万个请求，怎么分给10台服务器"的问题；<strong>限流</strong>解决的是"来了1000万个请求，超过了系统的承受能力，怎么办"的问题。这两个机制配合使用，是构建高可用系统的基础。</p>
 
-        <h3>20.1 负载均衡算法</h3>
+        <h2>20.1 负载均衡算法</h2>
 
         <p>负载均衡器（无论是Nginx、HAProxy还是云服务商的LB）的核心任务就是决定"下一个请求发给谁"。不同的算法有不同的适用场景。</p>
 
@@ -185,6 +189,36 @@
           <tr><td>IP Hash</td><td>对客户端IP做哈希，同一IP始终分配到同一台服务器</td><td>需要会话保持的场景</td><td>IP变化或很少客户端时分布不均匀</td></tr>
           <tr><td>随机（Random）</td><td>随机选择一台服务器</td><td>请求量极大、分布需求简单</td><td>短期可能不均匀</td></tr>
         </table>
+
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch20-lb-title fig-ch20-lb-desc" viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch20-lb-title">轮询与加权轮询的请求分配</title>
+            <desc id="fig-ch20-lb-desc">轮询把请求按顺序平均分给三台配置相同的服务器；加权轮询按权重比例分配，配置高或需预热的服务器分到更多请求。</desc>
+            <rect x="0" y="0" width="880" height="280" fill="#ffffff"/>
+            <defs><marker id="ch20-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+            <g font-size="13">
+              <text x="40" y="30" font-weight="700" fill="#4338ca" font-size="14">轮询 Round-Robin（均分）</text>
+              <rect x="40" y="44" width="150" height="44" rx="9" fill="#6366f1"/><text x="115" y="71" fill="#ffffff" text-anchor="middle">请求 1·4</text>
+              <rect x="40" y="98" width="150" height="44" rx="9" fill="#6366f1"/><text x="115" y="125" fill="#ffffff" text-anchor="middle">请求 2·5</text>
+              <rect x="40" y="152" width="150" height="44" rx="9" fill="#6366f1"/><text x="115" y="179" fill="#ffffff" text-anchor="middle">请求 3·6</text>
+              <rect x="300" y="44" width="80" height="152" rx="9" fill="#f8faff" stroke="#6366f1"/><text x="340" y="126" fill="#4338ca" text-anchor="middle" font-size="14" font-weight="700">LB</text>
+              <line x1="382" y1="120" x2="470" y2="66" stroke="#94a3b8" stroke-width="2" marker-end="url(#ch20-a)"/>
+              <line x1="382" y1="120" x2="470" y2="120" stroke="#94a3b8" stroke-width="2" marker-end="url(#ch20-a)"/>
+              <line x1="382" y1="120" x2="470" y2="174" stroke="#94a3b8" stroke-width="2" marker-end="url(#ch20-a)"/>
+              <rect x="474" y="44" width="120" height="44" rx="9" fill="#d1fae5" stroke="#10b981"/><text x="534" y="71" fill="#065f46" text-anchor="middle">服务器 A</text>
+              <rect x="474" y="98" width="120" height="44" rx="9" fill="#d1fae5" stroke="#10b981"/><text x="534" y="125" fill="#065f46" text-anchor="middle">服务器 B</text>
+              <rect x="474" y="152" width="120" height="44" rx="9" fill="#d1fae5" stroke="#10b981"/><text x="534" y="179" fill="#065f46" text-anchor="middle">服务器 C</text>
+              <rect x="620" y="44" width="220" height="152" rx="12" fill="#f8faff" stroke="#c7d2fe"/>
+              <text x="640" y="76" fill="#475569" font-size="12.5">加权轮询可按比例分配：</text>
+              <text x="640" y="100" fill="#4338ca" font-family="'JetBrains Mono',monospace" font-size="12">weight A=3, B=1, C=1</text>
+              <text x="640" y="130" fill="#475569" font-size="12.5">适合配置不同、需慢启动的</text>
+              <text x="640" y="148" fill="#475569" font-size="12.5">服务器集群，避免新节点被</text>
+              <text x="640" y="166" fill="#475569" font-size="12.5">瞬时流量打垮（slow_start）。</text>
+              <text x="40" y="242" font-size="12.5" fill="#94a3b8">无状态服务优先用最少连接 / 加权轮询；IP Hash 仅用于需要会话保持的场景。</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 20.1</span>　轮询按顺序均分请求；加权轮询按权重比例分配，适合配置不同或需慢启动的集群。无状态服务建议优先用最少连接或加权轮询。</figcaption>
+        </figure>
 
         <p>在Nginx里配置这些算法：</p>
 
@@ -218,7 +252,7 @@ upstream backend {
           <p><strong>选择建议</strong>：如果你的后端是无状态服务（推荐架构），优先使用<strong>最少连接</strong>或<strong>加权轮询</strong>。IP Hash只在需要会话保持时才使用，而且会带来负载不均的风险——比如一个公司所有员工都通过同一个出口IP访问，那这个IP的哈希值会一直打到同一台服务器上。</p>
         </div>
 
-        <h3>20.2 Nginx upstream配置</h3>
+        <h2>20.2 Nginx upstream配置</h2>
 
         <p><code>upstream</code> 块是Nginx负载均衡的配置核心。这里整理一些进阶用法：</p>
 
@@ -269,7 +303,7 @@ server {
           <p><strong>踩坑故事</strong>：有次我们做服务扩容，凌晨加了5台新服务器到Nginx upstream里。上线后发现新服务器的CPU飙到100%，大量请求超时。原因就是<strong>没有用slow_start</strong>。新服务器上的应用进程在初始化时需要加载大量数据到内存（冷缓存状态），瞬间涌入的流量导致所有请求都在等数据加载，死锁了。从那以后，我们对所有新上线的服务器都配置了 <code>slow_start=60s</code>，让流量缓慢爬升，给服务预热的时间。</p>
         </div>
 
-        <h3>20.3 会话保持（Sticky Sessions）</h3>
+        <h2>20.3 会话保持（Sticky Sessions）</h2>
 
         <p>HTTP是无状态的，但很多应用是有状态的——一个用户登录后的会话数据存在某台服务器的内存中。如果下一个请求被负载均衡器分到了另一台服务器，用户就"掉登录"了。</p>
 
@@ -297,7 +331,7 @@ server {
           <p><strong>架构建议</strong>：如果你的应用正在考虑sticky session，不如花时间把Session迁移到Redis或数据库中。在微服务时代，<strong>"无状态"是服务设计的目标</strong>。任何一台服务器都应该能处理任何用户的请求。这样你才能自由扩缩容，而不受"session粘在哪个节点上"的约束。</p>
         </div>
 
-        <h3>20.4 限流策略</h3>
+        <h2>20.4 限流策略</h2>
 
         <p>限流是保护系统不被流量冲垮的最后一道防线。如果说负载均衡是"怎么分配流量"，限流就是"流量太多时怎么拒绝"。</p>
 
@@ -310,6 +344,33 @@ server {
         <p><strong>计数器（固定窗口）</strong>：在固定时间窗口内计数，超过阈值就拒绝。缺点是在窗口边界可能发生"突发"——前一秒末和后一秒初各允许一次突发，合在一起就超过了限制的两倍。</p>
 
         <p><strong>滑动窗口</strong>：把时间窗口细化成多个小格子，拒绝粒度和精度更好。</p>
+
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch20-rate-title fig-ch20-rate-desc" viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch20-rate-title">令牌桶与漏桶限流</title>
+            <desc id="fig-ch20-rate-desc">令牌桶按固定速率生成令牌，请求消耗令牌，桶有容量上限，可容纳一定突发；漏桶把请求先入队再以固定速率出队，队列满则丢弃，输出严格平滑。</desc>
+            <rect x="0" y="0" width="880" height="250" fill="#ffffff"/>
+            <g font-size="13">
+              <text x="40" y="28" font-weight="700" fill="#4338ca" font-size="14">令牌桶 Token Bucket（允许突发）</text>
+              <circle cx="90" cy="80" r="16" fill="#10b981"/><text x="90" y="85" fill="#ffffff" text-anchor="middle" font-size="12">r</text>
+              <text x="90" y="118" fill="#64748b" text-anchor="middle" font-size="11.5">生成令牌 r/s</text>
+              <rect x="190" y="46" width="150" height="90" rx="12" fill="#eef2ff" stroke="#6366f1"/><text x="265" y="80" fill="#4338ca" text-anchor="middle">桶（容量上限）</text><text x="265" y="104" fill="#6d28d9" text-anchor="middle" font-size="12">可积累应对突发</text>
+              <line x1="342" y1="90" x2="430" y2="90" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch20-b)"/>
+              <rect x="436" y="62" width="170" height="56" rx="9" fill="#10b981"/><text x="521" y="86" fill="#ffffff" text-anchor="middle">有令牌 → 处理</text><text x="521" y="106" fill="#d1fae5" text-anchor="middle" font-size="12">每个请求消耗 1 个</text>
+              <rect x="650" y="62" width="190" height="56" rx="9" fill="#fee2e2" stroke="#dc2626"/><text x="745" y="86" fill="#b91c1c" text-anchor="middle">无令牌 → 拒绝</text><text x="745" y="106" fill="#991b1b" text-anchor="middle" font-size="12">返回 429</text>
+
+              <text x="40" y="166" font-weight="700" fill="#0369a1" font-size="14">漏桶 Leaky Bucket（严格平滑）</text>
+              <rect x="40" y="182" width="120" height="46" rx="9" fill="#e0f2fe" stroke="#0ea5e9"/><text x="100" y="210" fill="#0369a1" text-anchor="middle">请求入队</text>
+              <line x1="162" y1="205" x2="250" y2="205" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch20-b)"/>
+              <rect x="256" y="182" width="170" height="46" rx="9" fill="#e0f2fe" stroke="#0ea5e9"/><text x="341" y="210" fill="#0369a1" text-anchor="middle">固定速率出队处理</text>
+              <line x1="428" y1="205" x2="516" y2="205" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch20-b)"/>
+              <rect x="522" y="182" width="150" height="46" rx="9" fill="#10b981"/><text x="597" y="210" fill="#ffffff" text-anchor="middle">匀速输出</text>
+              <rect x="690" y="182" width="150" height="46" rx="9" fill="#fee2e2" stroke="#dc2626"/><text x="765" y="210" fill="#b91c1c" text-anchor="middle">队列满 → 丢弃</text>
+            </g>
+            <defs><marker id="ch20-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+          </svg>
+          <figcaption><span class="fig-no">图 20.2</span>　令牌桶按固定速率发令牌、桶有容量上限，允许一定突发；漏桶先入队再匀速出队，队列满即丢弃，输出严格平滑。Nginx 的 <code>burst</code> 即是令牌桶容量。</figcaption>
+        </figure>
 
         <p>Nginx的限流配置：</p>
 
@@ -343,7 +404,7 @@ server {
           4. <strong>过载保护</strong>：限流不仅是限制客户端，也要保护下游——比如数据库连接池满了，就应该在API层限流。</p>
         </div>
 
-        <h3>20.5 健康检查</h3>
+        <h2>20.5 健康检查</h2>
 
         <p>负载均衡器必须知道哪些后端服务器是"活的"，才能把请求只转发给健康的服务器。这就是健康检查（Health Check）。</p>
 
@@ -381,13 +442,34 @@ server {
 
         <p>好了，第二十章的内容就到这里。我们从负载均衡的算法到Nginx配置、从会话保持到限流策略再到健康检查，完整覆盖了流量控制的各个方面。下一章我们换个角度——从<strong>RESTful API设计</strong>来看HTTP协议在应用层的使用规范。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：令牌桶与漏桶最关键的差别是什么？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch20-a1">显示答案</button>
+          <div class="answer" id="ch20-a1" hidden>
+            <p>令牌桶允许一定程度的突发——只要桶里有累积的令牌，瞬时多于平均速率的请求也能通过；漏桶把请求先排队再以固定速率出队，输出严格平滑，不吸收突发。Nginx 的 <code>burst</code> 参数就是令牌桶的桶容量。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="19.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="21.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

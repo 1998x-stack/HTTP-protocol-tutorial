@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -159,19 +160,22 @@
 <li><a href="21.html">第21章 RESTful API设计</a></li>
 <li><a href="22.html">第22章 HTTP性能优化</a></li>
 <li><a href="23.html">第23章 HTTP调试工具</a></li>
-<li><a href="24.html" class="active">第24章 Web服务器配置</a></li>
+<li><a href="24.html" class="active" aria-current="page">第24章 Web服务器配置</a></li>
 <li><a href="25.html">第25章 HTTP抓包实战</a></li>
 <li><a href="26.html">第26章 HTTP/2</a></li>
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第24章：Web服务器配置</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第24章：Web服务器配置</h1>
+            <p class="dek">Nginx 的指令与上下文、location 匹配优先级、虚拟主机、HTTPS 配置、静态文件优化与日志分析。</p>
+        </header>
 
         <p>大家好。之前我们学的HTTP协议都是站在客户端视角。但从今天开始，我们要走到服务器这一侧，看看HTTP请求到达服务器后发生了什么。本章以Nginx为例，因为它是目前最流行的Web服务器兼反向代理，市场占有率超过30%。</p>
 
-        <h3>24.1 Nginx基础配置</h3>
+        <h2>24.1 Nginx基础配置</h2>
 
         <p>Nginx的配置文件通常位于 <code>/etc/nginx/nginx.conf</code>，核心概念就是四个字：指令和上下文。上下文是指令的作用域，主要有：<code>http</code>、<code>server</code>、<code>location</code>、<code>upstream</code>。</p>
 
@@ -211,13 +215,30 @@
           <tr><td>优先前缀匹配</td><td><code>location ^~ /static/</code></td><td>匹配后不再检查正则</td></tr>
         </table>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch24-loc-title fig-ch24-loc-desc" viewBox="0 0 860 270" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch24-loc-title">Nginx location 匹配优先级</title>
+            <desc id="fig-ch24-loc-desc">匹配顺序由高到低：精确匹配 = 、优先前缀 ^~ 、正则 ~ 与 ~* 、普通前缀。一旦命中精确或优先前缀，就不再检查正则。</desc>
+            <rect x="0" y="0" width="860" height="270" fill="#ffffff"/>
+            <g font-size="13.5">
+              <rect x="40" y="30" width="640" height="44" rx="9" fill="#4338ca"/><text x="60" y="58" fill="#ffffff" font-weight="700">1. 精确匹配</text><text x="260" y="58" fill="#e0e7ff" font-family="monospace">location = /index.html</text><text x="660" y="58" fill="#ffffff" text-anchor="end">最高优先</text>
+              <rect x="40" y="82" width="640" height="44" rx="9" fill="#6366f1"/><text x="60" y="110" fill="#ffffff" font-weight="700">2. 优先前缀 ^~</text><text x="260" y="110" fill="#e0e7ff" font-family="monospace">location ^~ /static/</text><text x="660" y="110" fill="#ffffff" text-anchor="end">命中后不再看正则</text>
+              <rect x="40" y="134" width="640" height="44" rx="9" fill="#0ea5e9"/><text x="60" y="162" fill="#ffffff" font-weight="700">3. 正则 ~ / ~*</text><text x="260" y="162" fill="#e0f2fe" font-family="monospace">location ~ \.php$</text><text x="660" y="162" fill="#ffffff" text-anchor="end">区分 / 忽略大小写</text>
+              <rect x="40" y="186" width="640" height="44" rx="9" fill="#f1f5f9" stroke="#94a3b8"/><text x="60" y="214" fill="#334155" font-weight="700">4. 普通前缀</text><text x="260" y="214" fill="#475569" font-family="monospace">location /images/</text><text x="660" y="214" fill="#64748b" text-anchor="end">最低优先</text>
+              <line x1="720" y1="240" x2="720" y2="52" stroke="#cbd5e1" stroke-width="2" marker-end="url(#ch24-up)"/><text x="740" y="150" fill="#64748b" font-size="12">优先级递减</text>
+            </g>
+            <defs><marker id="ch24-up" viewBox="0 0 10 10" refX="5" refY="0" markerWidth="9" markerHeight="9" orient="auto"><path d="M5,0 L10,10 L0,10 z" fill="#cbd5e1"/></marker></defs>
+          </svg>
+          <figcaption><span class="fig-no">图 24.1</span>　location 匹配优先级：精确 &gt; 优先前缀 &gt; 正则 &gt; 普通前缀。正则优先于普通前缀，这就是“/api/ 被 \.php$ 抢走”的根源。</figcaption>
+        </figure>
+
         <p>匹配顺序是：先精确匹配（=），再优先前缀匹配（^~），再正则匹配（~/~*），最后普通前缀匹配。很多人在这里翻车，因为正则会覆盖前缀匹配。下面这个坑我栽过不止一次：</p>
 
         <div class="warning">
           <p><strong>踩坑故事</strong>：有次我写了一个 location /api/ 来处理后端API代理，又写了一个 location ~ \.php$ 来处理PHP请求。结果发现 /api/user.php 的请求被PHP location处理了，根本没有经过API代理。原因是正则匹配的优先级高于普通前缀匹配。解决方案是用 location ^~ /api/，告诉Nginx即使有正则匹配，这个前缀也优先。那次翻车让我花了一下午在线上排查"为什么API返回乱码"。结论：location匹配优先级一定要记牢。</p>
         </div>
 
-        <h3>24.2 虚拟主机</h3>
+        <h2>24.2 虚拟主机</h2>
 
         <p>虚拟主机（Virtual Host）就是用一台服务器托管多个网站。Nginx通过server块来实现虚拟主机，有两种方式：</p>
 
@@ -234,6 +255,28 @@ server {
     server_name shop.example.com;
     root /var/www/shop;
 }</code></pre>
+
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch24-vhost-title fig-ch24-vhost-desc" viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch24-vhost-title">基于名称的虚拟主机</title>
+            <desc id="fig-ch24-vhost-desc">同一个 IP 与端口下，Nginx 根据请求的 Host 头把 blog.example.com 与 shop.example.com 分别路由到不同的根目录。</desc>
+            <rect x="0" y="0" width="880" height="260" fill="#ffffff"/>
+            <defs><marker id="ch24-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+            <g font-size="13">
+              <rect x="40" y="46" width="200" height="46" rx="9" fill="#6366f1"/><text x="140" y="75" fill="#ffffff" text-anchor="middle" font-family="monospace">blog.example.com</text>
+              <rect x="40" y="148" width="200" height="46" rx="9" fill="#6366f1"/><text x="140" y="177" fill="#ffffff" text-anchor="middle" font-family="monospace">shop.example.com</text>
+              <line x1="242" y1="69" x2="330" y2="110" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch24-a)"/>
+              <line x1="242" y1="171" x2="330" y2="130" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch24-a)"/>
+              <rect x="336" y="78" width="180" height="84" rx="12" fill="#f8faff" stroke="#6366f1"/><text x="426" y="112" fill="#4338ca" text-anchor="middle" font-weight="700">Nginx</text><text x="426" y="134" fill="#64748b" text-anchor="middle" font-size="12">同一 IP:80 / 443</text>
+              <line x1="518" y1="100" x2="606" y2="69" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch24-a)"/>
+              <line x1="518" y1="140" x2="606" y2="171" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch24-a)"/>
+              <rect x="612" y="46" width="230" height="46" rx="9" fill="#d1fae5" stroke="#10b981"/><text x="727" y="75" fill="#065f46" text-anchor="middle" font-family="monospace">/var/www/blog</text>
+              <rect x="612" y="148" width="230" height="46" rx="9" fill="#d1fae5" stroke="#10b981"/><text x="727" y="177" fill="#065f46" text-anchor="middle" font-family="monospace">/var/www/shop</text>
+            </g>
+            <text x="440" y="234" font-size="12.5" fill="#94a3b8" text-anchor="middle">基于名称的虚拟主机依赖 Host 头；建议配置 default_server 拒绝未匹配的请求。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 24.2</span>　基于名称的虚拟主机：同一 IP 下按 Host 头把不同域名指向不同 root。未匹配的请求应交由 default_server 返回 444/403，避免暴露内部站点。</figcaption>
+        </figure>
 
         <p><strong>基于IP（IP-based）</strong>——不同网站绑定不同IP地址，现在用得比较少了：</p>
 
@@ -257,7 +300,7 @@ server {
           <p><strong>良好实践</strong>：强烈建议配置一个 default_server 来拒绝未匹配的请求。我曾经见过一个没配 default_server 的Nginx，被人用IP直接访问，暴露了内部管理后台。配置 default_server 返回 444 或 403 是最基本的防护。</p>
         </div>
 
-        <h3>24.3 HTTPS配置</h3>
+        <h2>24.3 HTTPS配置</h2>
 
         <p>HTTPS配置的核心是证书管理和安全参数。一个完整的HTTPS server块：</p>
 
@@ -297,7 +340,7 @@ server {
           <p><strong>检查工具</strong>：配置完HTTPS后，用 <a href="https://www.ssllabs.com/ssltest/" target="_blank">SSL Labs</a> 测试你的服务器评分。目标是拿到 A+ 评分。如果某个密码套件导致评分下降，可以参考 Mozilla SSL Configuration Generator 推荐的安全配置。</p>
         </div>
 
-        <h3>24.4 静态文件服务优化</h3>
+        <h2>24.4 静态文件服务优化</h2>
 
         <p>Nginx处理静态文件非常高效，但默认配置还有优化空间。下面是几个关键优化项：</p>
 
@@ -335,7 +378,7 @@ server {
           <p><strong>注意</strong>：sendfile 在某些文件系统（如某些网络文件系统）上可能有问题，会在高并发下导致连接挂起。如果发现请求偶尔卡死、日志里没有错误，试试关掉 sendfile 看是否复现。我就在一个NFS挂载的静态资源服务器上踩过这个坑。</p>
         </div>
 
-        <h3>24.5 日志分析</h3>
+        <h2>24.5 日志分析</h2>
 
         <p>日志是排查问题的重要依据。Nginx默认的日志格式包含的信息有限，建议自定义日志格式：</p>
 
@@ -380,13 +423,34 @@ server {
 
         <p>这一章我们从Nginx的基础配置开始，到虚拟主机、HTTPS、静态文件优化，最后到日志分析。Web服务器配置是一门实践性很强的学问，我鼓励大家在本地搭一个Nginx实例，把今天讲到的配置都动手试一遍。下一章我们进入更底层的抓包实战，看看HTTP在网络线路上到底长什么样。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：为什么 <code>location /api/</code> 可能被子串正则会抢走请求？如何解决？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch24-a1">显示答案</button>
+          <div class="answer" id="ch24-a1" hidden>
+            <p>因为 Nginx 的匹配优先级中正则（~/~*）高于普通前缀，形如 <code>location ~ \.php$</code> 的正则会命中 <code>/api/user.php</code>。解决方法是改用优先前缀 <code>location ^~ /api/</code>，声明该前缀命中后不再检查正则。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="23.html">← 第23章 HTTP调试工具</a>
             <a href="index.html">返回目录</a>
             <a href="25.html">第25章 HTTP抓包实战 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

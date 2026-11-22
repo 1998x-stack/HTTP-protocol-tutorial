@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -157,7 +158,7 @@
 <li><a href="19.html">第19章 代理与网关</a></li>
 <li><a href="20.html">第20章 负载均衡与限流</a></li>
 <li><a href="21.html">第21章 RESTful API设计</a></li>
-<li><a href="22.html" class="active">第22章 HTTP性能优化</a></li>
+<li><a href="22.html" class="active" aria-current="page">第22章 HTTP性能优化</a></li>
 <li><a href="23.html">第23章 HTTP调试工具</a></li>
 <li><a href="24.html">第24章 Web服务器配置</a></li>
 <li><a href="25.html">第25章 HTTP抓包实战</a></li>
@@ -165,15 +166,18 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第二十二章：HTTP性能优化</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第二十二章：HTTP性能优化</h1>
+            <p class="dek">请求数量与体积优化、async/defer 与懒加载、资源提示、缓存策略，以及 HTTP/1.1 与 HTTP/2 优化思路的差异。</p>
+        </header>
 
         <p>网页加载速度直接影响了用户体验、转化率和SEO排名。Google的研究表明：加载时间从1秒增加到3秒，跳出率增加32%；再增加到5秒，跳出率增加90%。</p>
 
         <p>HTTP性能优化的目标很明确：<strong>让浏览器尽快拿到所有需要的资源</strong>。这涉及到两个维度——减少<strong>请求数量</strong>和减少<strong>传输体积</strong>。但HTTP/2和HTTP/3的出现，让这两个维度的优先级发生了根本性变化。</p>
 
-        <h3>22.1 请求数量优化</h3>
+        <h2>22.1 请求数量优化</h2>
 
         <p>在<strong>HTTP/1.1</strong>时代，浏览器对每个域名有并发连接数限制（通常是6个）。超过限制的请求必须排队等待。这意味着：一个网页加载50个资源，很多时间花在了连接管理和排队上。</p>
 
@@ -196,7 +200,7 @@
           <p><strong>HTTP/2改变了什么</strong>：HTTP/2的多路复用允许在<strong>一个连接上同时传输多个资源</strong>，不再受并发连接数限制。所以HTTP/2环境下，<strong>反而不建议过度打包（Bundling）</strong>——因为打包会导致缓存失效的粒度变粗。比如你改了1个小组件的代码，整个大bundle的缓存都失效了。正确做法是拆成多个小文件，各自独立缓存。</p>
         </div>
 
-        <h3>22.2 资源体积优化</h3>
+        <h2>22.2 资源体积优化</h2>
 
         <p>无论什么协议版本，减少传输体积永远是有效的优化手段。</p>
 
@@ -231,7 +235,7 @@ function calculateTotal(a,b,c){return (a*b*(1-c)).toFixed(2)}</code></pre>
           <p><strong>实战建议</strong>：对图片做<strong>响应式加载</strong>——通过 <code>&lt;picture&gt;</code> 标签或 <code>srcset</code> 属性，让移动设备只加载小尺寸图片，桌面设备加载高清图。同时配合 <code>loading="lazy"</code> 实现图片懒加载。另外，图片CDN（如Imgix、Cloudinary）可以实时调整图片尺寸和质量，省去手动准备多版本的工作。</p>
         </div>
 
-        <h3>22.3 加载策略</h3>
+        <h2>22.3 加载策略</h2>
 
         <p>请求数量和体积都优化了，还有一个关键问题：<strong>什么时候加载什么资源</strong>。</p>
 
@@ -275,7 +279,7 @@ function calculateTotal(a,b,c){return (a*b*(1-c)).toFixed(2)}</code></pre>
           <p><strong>踩坑故事</strong>：有次我们给一个电商详情页加懒加载，商品图片全部设置了 <code>loading="lazy"</code>。上线后发现<strong>首屏最大内容绘制（LCP）指标变差了</strong>。排查发现：首屏的几张商品主图也在视口内，但浏览器把它们标记为"可能不需要立即加载"，导致它们延迟出现了。教训是：<strong>首屏可见的图片不要加懒加载</strong>，只给"折叠线以下"的图片加。而且 <code>loading="lazy"</code> 不适用于 <code>&lt;picture&gt;</code> 中作为首屏内容的图片。</p>
         </div>
 
-        <h3>22.4 资源提示</h3>
+        <h2>22.4 资源提示</h2>
 
         <p>资源提示（Resource Hints）是浏览器提供的一组声明式指令，告诉浏览器<strong>未来可能需要</strong>的资源，让浏览器提前做一些准备工作。</p>
 
@@ -286,6 +290,31 @@ function calculateTotal(a,b,c){return (a*b*(1-c)).toFixed(2)}</code></pre>
           <tr><td>prefetch</td><td>提前下载下一个页面需要的资源（低优先级）</td><td><code>&lt;link rel="prefetch" href="next-page.js"&gt;</code></td></tr>
           <tr><td>preload</td><td>提前下载当前页面关键资源（高优先级）</td><td><code>&lt;link rel="preload" href="font.woff2" as="font"&gt;</code></td></tr>
         </table>
+
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch22-hint-title fig-ch22-hint-desc" viewBox="0 0 880 240" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch22-hint-title">资源提示对连接建立的优化</title>
+            <desc id="fig-ch22-hint-desc">未使用资源提示时，DNS、TCP、TLS 需在需要时依次完成；使用 preconnect 可在真正请求前就完成这三步，preload 则提前下载关键资源，缩短关键路径。</desc>
+            <rect x="0" y="0" width="880" height="240" fill="#ffffff"/>
+            <g font-size="13">
+              <text x="40" y="36" font-weight="700" fill="#b45309" font-size="14">未用资源提示</text>
+              <rect x="40" y="48" width="120" height="40" rx="6" fill="#fef3c7" stroke="#b45309"/><text x="100" y="73" fill="#92400e" text-anchor="middle">DNS</text>
+              <rect x="162" y="48" width="120" height="40" rx="6" fill="#fef3c7" stroke="#b45309"/><text x="222" y="73" fill="#92400e" text-anchor="middle">TCP</text>
+              <rect x="284" y="48" width="120" height="40" rx="6" fill="#fef3c7" stroke="#b45309"/><text x="344" y="73" fill="#92400e" text-anchor="middle">TLS</text>
+              <rect x="406" y="48" width="150" height="40" rx="6" fill="#6366f1"/><text x="481" y="73" fill="#ffffff" text-anchor="middle">请求</text>
+              <rect x="558" y="48" width="150" height="40" rx="6" fill="#10b981"/><text x="633" y="73" fill="#ffffff" text-anchor="middle">响应</text>
+              <text x="730" y="73" fill="#64748b">首字节较晚</text>
+
+              <text x="40" y="136" font-weight="700" fill="#047857" font-size="14">使用 preconnect + preload</text>
+              <rect x="40" y="148" width="364" height="40" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-dasharray="6 5"/><text x="222" y="173" fill="#4338ca" text-anchor="middle" font-size="12.5">DNS + TCP + TLS 提前完成（preconnect）</text>
+              <rect x="406" y="148" width="150" height="40" rx="6" fill="#6366f1"/><text x="481" y="173" fill="#ffffff" text-anchor="middle">请求</text>
+              <rect x="558" y="148" width="150" height="40" rx="6" fill="#10b981"/><text x="633" y="173" fill="#ffffff" text-anchor="middle">响应</text>
+              <text x="730" y="173" fill="#64748b">首字节提前</text>
+            </g>
+            <text x="440" y="218" font-size="12.5" fill="#94a3b8" text-anchor="middle">preconnect 适用于关键的第三方源；preload 用于当前页面的关键资源（如首屏字体）。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 22.1</span>　资源提示的作用：preconnect 把 DNS/TCP/TLS 提前完成，preload 提前拉取关键资源，两者共同缩短首次渲染前的关键路径。</figcaption>
+        </figure>
 
         <p><strong>preconnect vs dns-prefetch</strong>：preconnect 做了 DNS 解析 + TCP 握手 + TLS 握手，比 dns-prefetch 更激进。对于关键的第三方源（比如CDN、支付API），用 preconnect；对于非关键但可能需要的，用 dns-prefetch。</p>
 
@@ -311,7 +340,7 @@ function calculateTotal(a,b,c){return (a*b*(1-c)).toFixed(2)}</code></pre>
           4. 别把所有资源都加上 preload——这会降低真正的关键资源的优先级。preload要用在刀刃上。</p>
         </div>
 
-        <h3>22.5 HTTP缓存策略</h3>
+        <h2>22.5 HTTP缓存策略</h2>
 
         <p>第九章已经详细讲了HTTP缓存机制。这里我们聚焦在<strong>性能优化</strong>场景下的缓存策略。</p>
 
@@ -359,7 +388,7 @@ location /api/ {
           <p><strong>缓存链整体设计</strong>：一个请求可能经过 客户端 → CDN → 反向代理 → 应用服务器 → 数据库。每一层都可以做缓存。好的缓存策略是"层层衰减"的——离用户越近的层，缓存时间越长；越靠近源的层，缓存时间越短。这样既保证了性能，又保证了数据新鲜度。</p>
         </div>
 
-        <h3>22.6 HTTP/2与HTTP/1.1优化策略的差异</h3>
+        <h2>22.6 HTTP/2与HTTP/1.1优化策略的差异</h2>
 
         <p>这是很多开发者容易忽略的问题。HTTP/2的多路复用、头部压缩、服务器推送等特性，让HTTP/1.1时代的一些"最佳实践"变成了<strong>反模式</strong>。</p>
 
@@ -372,6 +401,28 @@ location /api/ {
           <tr><td>资源预加载</td><td>很重要</td><td>依然重要</td></tr>
           <tr><td>压缩</td><td>重要</td><td>依然重要</td></tr>
         </table>
+
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch22-h2-title fig-ch22-h2-desc" viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch22-h2-title">HTTP/1.1 与 HTTP/2 下的优化策略差异</title>
+            <desc id="fig-ch22-h2-desc">文件合并、雪碧图、域名分片在 HTTP/1.1 下是推荐做法，但在 HTTP/2 下反而有害；资源预加载与压缩两者都重要。</desc>
+            <rect x="0" y="0" width="860" height="300" fill="#ffffff"/>
+            <g font-size="13">
+              <text x="300" y="30" fill="#94a3b8" text-anchor="middle">HTTP/1.1</text>
+              <text x="620" y="30" fill="#94a3b8" text-anchor="middle">HTTP/2</text>
+              <rect x="30" y="42" width="800" height="50" rx="9" fill="#f8faff" stroke="#c7d2fe"/>
+              <text x="60" y="72" fill="#334155">文件合并 Bundling</text><text x="300" y="72" fill="#047857" text-anchor="middle">✓ 推荐</text><text x="620" y="72" fill="#b91c1c" text-anchor="middle">✗ 不推荐</text>
+              <rect x="30" y="98" width="800" height="50" rx="9" fill="#f8faff" stroke="#c7d2fe"/>
+              <text x="60" y="128" fill="#334155">雪碧图 Sprites</text><text x="300" y="128" fill="#047857" text-anchor="middle">✓ 推荐</text><text x="620" y="128" fill="#b91c1c" text-anchor="middle">✗ 不推荐</text>
+              <rect x="30" y="154" width="800" height="50" rx="9" fill="#fef3c7" stroke="#b45309"/>
+              <text x="60" y="184" fill="#334155">域名分片 Sharding</text><text x="300" y="184" fill="#047857" text-anchor="middle">✓ 推荐</text><text x="620" y="184" fill="#b91c1c" text-anchor="middle">✗ 反模式</text>
+              <rect x="30" y="210" width="800" height="50" rx="9" fill="#d1fae5" stroke="#10b981"/>
+              <text x="60" y="240" fill="#334155">压缩 / 资源预加载</text><text x="300" y="240" fill="#047857" text-anchor="middle">✓ 重要</text><text x="620" y="240" fill="#047857" text-anchor="middle">✓ 依然重要</text>
+            </g>
+            <text x="440" y="288" font-size="12.5" fill="#94a3b8" text-anchor="middle">HTTP/2 多路复用下，把所有资源放同一域名、拆成粒度更小的文件更有利。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 22.2</span>　迁移到 HTTP/2 后的策略逆转：因多路复用消除了并发连接限制，文件合并、雪碧图、域名分片从“推荐”变为“不推荐”，而压缩与预加载依旧重要。</figcaption>
+        </figure>
 
         <p><strong>域名分片（Domain Sharding）</strong>特别值得一提。在HTTP/1.1时代，浏览器对每个域名只能建立6个并发连接。为了突破这个限制，开发者把资源分布到多个子域名上（如 <code>css.example.com</code>, <code>img.example.com</code>），每个子域名独立建立6个连接，总并发能力翻倍。</p>
 
@@ -395,13 +446,34 @@ location /api/ {
 
         <p>好了，第二十二章的内容就到这里。我们从请求数量优化、资源体积优化、加载策略、资源提示、HTTP缓存策略到HTTP/2优化差异，完整覆盖了HTTP性能优化的各个方面。下一章我们进入<strong>HTTP调试工具</strong>——把前面学到的所有知识都用在实际排查问题中。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：为什么在 HTTP/2 下“域名分片”反而会拖慢性能？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch22-a1">显示答案</button>
+          <div class="answer" id="ch22-a1" hidden>
+            <p>域名分片是为了绕过 HTTP/1.1 每个域名最多 6 个并发连接的限制。但 HTTP/2 在单连接上就能多路复用所有流，再分域名反而拆出多个连接，增加了额外的 TCP/TLS 握手与头部压缩上下文开销，实测反而降低 10–30%。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="21.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="23.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>
