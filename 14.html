@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -149,7 +150,7 @@
 <li><a href="11.html">第11章 HTTP认证</a></li>
 <li><a href="12.html">第12章 跨域资源共享(CORS)</a></li>
 <li><a href="13.html">第13章 内容编码与传输</a></li>
-<li><a href="14.html" class="active">第14章 重定向与URL重写</a></li>
+<li><a href="14.html" class="active" aria-current="page">第14章 重定向与URL重写</a></li>
 <li><a href="15.html">第15章 HTTPS概述</a></li>
 <li><a href="16.html">第16章 TLS深入</a></li>
 <li><a href="17.html">第17章 证书管理</a></li>
@@ -165,9 +166,12 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第十四章：重定向与URL重写</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第十四章：重定向与URL重写</h1>
+            <p class="dek">301/302/303/307/308 的语义差异、客户端重定向、Nginx/Apache 的 URL 重写，以及重定向循环的排查与预防。</p>
+        </header>
 
         <p>各位同学好。这一章我们来聊HTTP中的<strong>重定向（Redirection）</strong>和<strong>URL重写（URL Rewriting）</strong>。这两个概念经常被混为一谈，但实际上它们是不同层面的机制：重定向是服务器告诉浏览器"去另一个地址"，由浏览器再次发起请求；而URL重写是在服务器内部改写请求路径，浏览器对此毫无感知。</p>
 
@@ -175,7 +179,7 @@
 
         <p>再来看<strong>重定向</strong>的例子：当你访问 <code>http://example.com</code> 时，服务器返回 <code>301 Moved Permanently</code> 把浏览器指向 <code>https://example.com</code>，浏览器收到后重新发起HTTPS请求，地址栏也随之变成HTTPS。这就是重定向。</p>
 
-        <h3>14.1 重定向的类型</h3>
+        <h2>14.1 重定向的类型</h2>
 
         <p>HTTP定义了一系列3xx状态码用于重定向。不同状态码的含义差异很微妙，选错可能导致安全隐患。</p>
 
@@ -205,7 +209,7 @@ Location: https://backup.example.com/api/data</code></pre>
           <p><strong>重要选择指南</strong>：如果是GET请求的重定向，用301/302就可以，因为浏览器行为一致。如果是POST/PUT等非GET请求，要用307/308来保证请求方法不变。301/302对非GET请求的行为因浏览器而异，不可靠。我习惯记一个口诀："GET用301/302，POST用307/308"。</p>
         </div>
 
-        <h3>14.2 客户端重定向</h3>
+        <h2>14.2 客户端重定向</h2>
 
         <p>除了服务器端通过3xx状态码重定向，客户端也可以自己完成重定向。常用的方式有两种：<strong>meta refresh</strong> 和 <strong>JavaScript redirect</strong>。</p>
 
@@ -241,7 +245,7 @@ window.location.href = 'https://example.com/new-page';</code></pre>
           <p><strong>实际建议</strong>：绝大多数场景下，用服务端重定向就够了。客户端重定向只用于两种情况：一是SPA内部的路由跳转（这是单页应用的自然设计）；二是需要用户交互后跳转（比如"下载完成，3秒后返回首页"）。别把meta refresh当作301的替代品。</p>
         </div>
 
-        <h3>14.3 URL重写</h3>
+        <h2>14.3 URL重写</h2>
 
         <p>URL重写（URL Rewriting）完全不同——它在服务器内部修改请求路径，浏览器地址栏不发生变化。最典型的场景：把"漂亮的RESTful URL"映射到"实际的后端处理脚本"。</p>
 
@@ -294,11 +298,36 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ /index.html [L]</code></pre>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch14-cmp-title fig-ch14-cmp-desc" viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch14-cmp-title">重定向与 URL 重写的区别</title>
+            <desc id="fig-ch14-cmp-desc">重定向时服务器返回 3xx 与 Location，浏览器地址栏变为新地址并发起第二次请求；URL 重写时服务器内部改写路径（如 /article/123 → /article.php?id=123），浏览器地址栏不变。</desc>
+            <rect x="0" y="0" width="880" height="320" fill="#ffffff"/>
+            <defs><marker id="ch14-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4338ca"/></marker><marker id="ch14-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#047857"/></marker></defs>
+            <g font-size="14">
+              <text x="30" y="30" font-weight="700" fill="#b45309">重定向：地址栏变化，浏览器再次请求</text>
+              <rect x="50" y="46" width="160" height="46" rx="9" fill="#6366f1"/><text x="130" y="74" fill="#ffffff" text-anchor="middle" font-weight="700">浏览器</text>
+              <rect x="670" y="46" width="160" height="46" rx="9" fill="#10b981"/><text x="750" y="74" fill="#ffffff" text-anchor="middle" font-weight="700">服务器</text>
+              <line x1="212" y1="60" x2="668" y2="60" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch14-a)"/><text x="440" y="52" fill="#4338ca" text-anchor="middle" font-size="12.5">① GET /old</text>
+              <line x1="670" y1="82" x2="212" y2="82" stroke="#b45309" stroke-width="2.5" marker-end="url(#ch14-b)"/><text x="440" y="100" fill="#b45309" text-anchor="middle" font-size="12.5">② 301 · Location: /new</text>
+              <line x1="212" y1="120" x2="668" y2="120" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch14-a)"/><text x="440" y="138" fill="#4338ca" text-anchor="middle" font-size="12.5">③ GET /new（地址栏已变）</text>
+
+              <text x="30" y="186" font-weight="700" fill="#047857">URL 重写：地址栏不变，服务器内部改写</text>
+              <rect x="50" y="202" width="160" height="46" rx="9" fill="#6366f1"/><text x="130" y="230" fill="#ffffff" text-anchor="middle" font-weight="700">浏览器</text>
+              <rect x="670" y="202" width="160" height="46" rx="9" fill="#10b981"/><text x="750" y="230" fill="#ffffff" text-anchor="middle" font-weight="700">服务器</text>
+              <line x1="212" y1="216" x2="668" y2="216" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch14-a)"/><text x="440" y="208" fill="#4338ca" text-anchor="middle" font-size="12.5">GET /article/123（只有一次请求）</text>
+              <line x1="670" y1="238" x2="212" y2="238" stroke="#047857" stroke-width="2.5" marker-end="url(#ch14-b)"/><text x="440" y="256" fill="#047857" text-anchor="middle" font-size="12.5">200 OK · 地址栏始终是 /article/123</text>
+              <text x="440" y="286" font-size="12" fill="#64748b" text-anchor="middle" font-family="'JetBrains Mono',monospace">内部：rewrite ^/article/(\d+)$ /article.php?id=$1 last;</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 14.1</span>　重定向需要浏览器发起第二次请求且地址栏改变；URL 重写只发生一次请求，服务器内部改写路径，浏览器无感。</figcaption>
+        </figure>
+
         <div class="highlight">
           <p><strong>总结区别</strong>：URL重写是"偷梁换柱"——用户请求A，服务器悄悄处理B，用户不知道。重定向是"如实告知"——服务器说"我不在这，你去找那个地址"。两者用途不同但可以配合使用。它们还有个关键区别：URL重写不影响SEO，搜索引擎看到的URL就是用户访问的URL；重定向通常意味着搜索引擎最终会使用目标URL。</p>
         </div>
 
-        <h3>14.4 重定向循环</h3>
+        <h2>14.4 重定向循环</h2>
 
         <p>重定向循环（Redirect Loop）是每个Web开发者迟早都会遇到的问题。场景：页面A重定向到B，B重定向回A——浏览器陷入无限循环，最终在几十次跳转后显示"ERR_TOO_MANY_REDIRECTS"。</p>
 
@@ -309,6 +338,23 @@ RewriteRule ^ /index.html [L]</code></pre>
           <li>Cookie/Session认证判断出错：<code>未登录 → 跳登录页 → 登录完成 → 跳回原页 → 又检测到未登录</code></li>
           <li>301永久重定向被浏览器缓存：这是最坑的——第一次访问时服务器返回了301，浏览器永久记住了这个重定向。后面即使服务器改回了正确的配置，浏览器仍然使用缓存的301跳转到旧地址，而旧地址又跳转到新地址……</li>
         </ul>
+
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch14-loop-title fig-ch14-loop-desc" viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch14-loop-title">重定向循环</title>
+            <desc id="fig-ch14-loop-desc">A 重定向到 B，B 又重定向回 A，浏览器不断来回跳转，最终报 ERR_TOO_MANY_REDIRECTS。</desc>
+            <rect x="0" y="0" width="880" height="250" fill="#ffffff"/>
+            <defs><marker id="ch14-loop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker></defs>
+            <rect x="150" y="90" width="180" height="70" rx="12" fill="#6366f1"/><text x="240" y="132" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="16">http://A</text>
+            <rect x="550" y="90" width="180" height="70" rx="12" fill="#0ea5e9"/><text x="640" y="132" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="16">https://B</text>
+            <path d="M330,105 C420,60 460,60 550,105" fill="none" stroke="#dc2626" stroke-width="2.5" marker-end="url(#ch14-loop)"/>
+            <text x="440" y="62" fill="#b91c1c" text-anchor="middle" font-size="13">301 → B</text>
+            <path d="M550,145 C460,190 420,190 330,145" fill="none" stroke="#dc2626" stroke-width="2.5" marker-end="url(#ch14-loop)"/>
+            <text x="440" y="205" fill="#b91c1c" text-anchor="middle" font-size="13">301 → A</text>
+            <text x="440" y="236" font-size="13" fill="#b91c1c" text-anchor="middle">浏览器来回跳转，最终：ERR_TOO_MANY_REDIRECTS</text>
+          </svg>
+          <figcaption><span class="fig-no">图 14.2</span>　重定向循环：A 与 B 互相重定向，浏览器在有限次数后放弃并报 ERR_TOO_MANY_REDIRECTS。重定向逻辑应只在离用户最近的一层实施一次。</figcaption>
+        </figure>
 
         <p><strong>调试方法</strong>：</p>
         <ul>
@@ -344,13 +390,34 @@ curl -L --max-redirs 20 -v http://example.com 2>&1 | grep -E "^(> |< |Location)"
 
         <p>好了，第十四章的内容就到这里。我们学习了HTTP重定向的完整谱系（301/302/303/307/308）、客户端重定向方式、URL重写的实际应用、以及重定向循环的排查和预防。下一章我们将进入一个全新的领域——<strong>HTTPS</strong>，看看HTTP如何在TLS的保护下变得安全可靠。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：为什么用 POST 跳转时应优先选 307/308 而不是 301/302？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch14-a1">显示答案</button>
+          <div class="answer" id="ch14-a1" hidden>
+            <p>因为 301/302 早期规范允许浏览器自主改变请求方法，主流实现会把 POST 降为 GET，导致请求体丢失。307/308 明确规定不得改变请求方法，能保留 POST 及其请求体，适合非 GET 请求的重定向。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="13.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="15.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

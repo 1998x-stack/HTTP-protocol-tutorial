@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -148,7 +149,7 @@
 <li><a href="10.html">第10章 Cookie与会话</a></li>
 <li><a href="11.html">第11章 HTTP认证</a></li>
 <li><a href="12.html">第12章 跨域资源共享(CORS)</a></li>
-<li><a href="13.html" class="active">第13章 内容编码与传输</a></li>
+<li><a href="13.html" class="active" aria-current="page">第13章 内容编码与传输</a></li>
 <li><a href="14.html">第14章 重定向与URL重写</a></li>
 <li><a href="15.html">第15章 HTTPS概述</a></li>
 <li><a href="16.html">第16章 TLS深入</a></li>
@@ -165,13 +166,16 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第十三章：内容编码与传输</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第十三章：内容编码与传输</h1>
+            <p class="dek">gzip / brotli 内容压缩、chunked 分块传输、Range 范围请求与断点续传的原理与实战。</p>
+        </header>
 
         <p>各位同学好。上一章我们聊了CORS——一种跨域通信的许可机制。这一章我们换个角度，聊聊HTTP在<strong>传输效率</strong>方面的设计：内容怎么压缩节省带宽、大文件怎么分段传输、断点续传是怎么实现的。这些机制看起来不起眼，但直接影响你的网站加载速度。</p>
 
-        <h3>13.1 内容编码（Content-Encoding）</h3>
+        <h2>13.1 内容编码（Content-Encoding）</h2>
 
         <p>内容编码指的是服务端在发送响应之前，对<strong>响应体</strong>进行的压缩编码。浏览器会在请求时通过 <code>Accept-Encoding</code> 告诉服务器自己支持哪些压缩算法，服务器选择一种后，在 <code>Content-Encoding</code> 响应头中声明使用了哪种编码。</p>
 
@@ -210,7 +214,7 @@ Vary: Accept-Encoding</code></pre>
           <p><strong>实战配置</strong>：Nginx开启gzip/brotli压缩很简单。注意 <code>gzip_types</code> 要准确，只对文本类资源开启压缩，避免对图片和视频做无意义的CPU消耗。brotli需要额外安装模块 <code>ngx_brotli</code>，但性能收益值得投入。</p>
         </div>
 
-        <h3>13.2 传输编码（Transfer-Encoding）</h3>
+        <h2>13.2 传输编码（Transfer-Encoding）</h2>
 
         <p>内容编码解决的是"内容怎么压缩"，传输编码解决的是"数据怎么分段发送"。它们是不冲突的——一个响应可以同时使用<strong>内容编码</strong>和<strong>传输编码</strong>：先压缩内容，再分块传输。</p>
 
@@ -249,7 +253,27 @@ Transfer-Encoding: chunked
           <p><strong>理解传输编码 vs 内容编码</strong>：传输编码是"传输层的包装"——数据先被切成块，加上块大小标注，再发送。内容编码是"应用层的包装"——数据先被gzip压缩，再放到响应体里。两者可以同时使用：数据先压缩（Content-Encoding: gzip），再分块（Transfer-Encoding: chunked）。客户端接收时，先拼接块，再解压。</p>
         </div>
 
-        <h3>13.3 范围请求（Range Requests）</h3>
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch13-pipe-title fig-ch13-pipe-desc" viewBox="0 0 880 190" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch13-pipe-title">内容编码与传输编码的叠加</title>
+            <desc id="fig-ch13-pipe-desc">同一响应可以先做内容编码（如 brotli 压缩响应体），再做传输编码（chunked 分块发送）；接收端先拼接分块，再解压得到原文。</desc>
+            <rect x="0" y="0" width="880" height="190" fill="#ffffff"/>
+            <defs><marker id="ch13-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+            <g font-size="14">
+              <rect x="30" y="60" width="170" height="60" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/><text x="115" y="86" fill="#334155" text-anchor="middle" font-weight="700">原始内容</text><text x="115" y="106" fill="#64748b" text-anchor="middle" font-size="12.5">HTML / JSON …</text>
+              <line x1="202" y1="90" x2="250" y2="90" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch13-arrow)"/>
+              <rect x="256" y="60" width="180" height="60" rx="10" fill="#10b981"/><text x="346" y="86" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="13">内容编码</text><text x="346" y="106" fill="#d1fae5" text-anchor="middle" font-size="12">Content-Encoding: br</text>
+              <line x1="438" y1="90" x2="486" y2="90" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch13-arrow)"/>
+              <rect x="492" y="60" width="180" height="60" rx="10" fill="#0ea5e9"/><text x="582" y="86" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="13">传输编码</text><text x="582" y="106" fill="#e0f2fe" text-anchor="middle" font-size="12">Transfer-Encoding: chunked</text>
+              <line x1="674" y1="90" x2="722" y2="90" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch13-arrow)"/>
+              <rect x="728" y="60" width="120" height="60" rx="10" fill="#6366f1"/><text x="788" y="96" fill="#ffffff" text-anchor="middle" font-weight="700">网络传输</text>
+            </g>
+            <text x="440" y="156" font-size="13" fill="#94a3b8" text-anchor="middle">接收端逆序处理：先拼接分块，再解压响应体，最终得到原始内容。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 13.1</span>　两层编码可叠加：先做内容编码（压缩响应体），再做传输编码（分块发送）。发送与接收遵循相反的步骤顺序。</figcaption>
+        </figure>
+
+        <h2>13.3 范围请求（Range Requests）</h2>
 
         <p>范围请求是HTTP提供的<strong>断点续传</strong>和<strong>多线程下载</strong>的基础。它的核心思想是：客户端可以只请求资源的一部分，而不是整个文件。</p>
 
@@ -290,7 +314,7 @@ Content-Length: 1024</code></pre>
           <p><strong>调试技巧</strong>：用 <code>curl</code> 测试范围请求很方便。<code>curl -H "Range: bytes=0-99" https://example.com/file -I</code> 可以快速验证服务器是否支持Range请求。如果服务器返回200而不是206，说明它不支持范围请求，返回的是完整文件。</p>
         </div>
 
-        <h3>13.4 断点续传实战</h3>
+        <h2>13.4 断点续传实战</h2>
 
         <p>理解了Range请求的基础后，我们来看一个完整的<strong>多范围请求（Multi-part Range）</strong>场景——下载管理器如何同时从多个线程下载同一个文件的不同部分。</p>
 
@@ -333,19 +357,65 @@ Content-Range: bytes 10000-10999/10485760
           <li>所有线程完成后，合并（或者本身就是稀疏文件，不需要合并）</li>
         </ul>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch13-range-title fig-ch13-range-desc" viewBox="0 0 880 270" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch13-range-title">多线程分段下载与 Range 请求</title>
+            <desc id="fig-ch13-range-desc">下载器先通过 HEAD 获取文件总大小与 Accept-Ranges，支持则将文件分为多段，用多个线程各自以 Range 请求下载对应字节区间，最后合并为完整文件。</desc>
+            <rect x="0" y="0" width="880" height="270" fill="#ffffff"/>
+            <rect x="40" y="24" width="800" height="44" rx="9" fill="#eef2ff" stroke="#818cf8"/>
+            <text x="60" y="52" font-size="13" fill="#4338ca" font-family="'JetBrains Mono',monospace">HEAD /bigfile.zip → 200 · Content-Length: 10485760 · Accept-Ranges: bytes</text>
+            <text x="60" y="104" font-size="14" fill="#334155" font-weight="700">文件 10 MB，分为 4 段并行下载：</text>
+            <g font-size="11.5" font-family="'JetBrains Mono',monospace">
+              <rect x="60" y="120" width="190" height="46" rx="6" fill="#6366f1"/><text x="155" y="148" fill="#ffffff" text-anchor="middle" font-size="11">0-2621439</text>
+              <rect x="250" y="120" width="190" height="46" rx="6" fill="#0ea5e9"/><text x="345" y="148" fill="#ffffff" text-anchor="middle" font-size="11">2621440-5242879</text>
+              <rect x="440" y="120" width="190" height="46" rx="6" fill="#7c3aed"/><text x="535" y="148" fill="#ffffff" text-anchor="middle" font-size="11">5242880-7864319</text>
+              <rect x="630" y="120" width="210" height="46" rx="6" fill="#b45309"/><text x="735" y="148" fill="#ffffff" text-anchor="middle" font-size="11">7864320-10485759</text>
+            </g>
+            <g font-size="12" fill="#64748b" text-anchor="middle">
+              <text x="155" y="188">线程 1</text><text x="345" y="188">线程 2</text><text x="535" y="188">线程 3</text><text x="735" y="188">线程 4</text>
+            </g>
+            <g font-size="11" fill="#64748b" font-family="'JetBrains Mono',monospace" text-anchor="middle">
+              <text x="155" y="212">Range: bytes=0-2621439</text><text x="345" y="212">Range: bytes=2621440-5242879</text><text x="535" y="212">Range: bytes=5242880-7864319</text><text x="735" y="212">Range: bytes=7864320-</text>
+            </g>
+            <text x="440" y="248" font-size="13" fill="#94a3b8" text-anchor="middle">每段返回 206 Partial Content 并带 Content-Range；完整下载后再校验文件完整性。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 13.2</span>　多线程分段下载：先 HEAD 获取总大小与 Accept-Ranges，再把文件切成多段，各线程用不同 Range 并行下载，最后合并并校验。没有 Content-Length 时无法显示百分比进度。</figcaption>
+        </figure>
+
         <div class="warning">
           <p><strong>踩坑故事</strong>：早年做一个文件上传下载系统，用户下载大文件时经常断连，我们加入了断点续传功能。上线后发现一个诡异的问题：某些用户下载的文件<strong>校验和不对</strong>。排查了很久才发现，问题出在多线程下载的合并阶段——不同线程下载速度不同，完成顺序不确定，但我们的合并逻辑假设线程按顺序完成。更要命的是，有些CDN节点对Range请求的处理不一致，有的节点返回了正确的Range，有的节点忽略Range头直接返回了完整文件。从那以后我们加了两层防护：第一，收到每个Range响应后校验Content-Range是否匹配；第二，下载完成后对整个文件做MD5校验，不通过就重新下载。</p>
         </div>
 
         <p>好了，第十三章的内容就到这里。我们学习了HTTP的内容编码（gzip/brotli压缩）、传输编码（chunked分块传输）、以及范围请求与断点续传。这些机制共同构成了HTTP高效传输数据的基础。下一章我们将进入<strong>重定向与URL重写</strong>，看看HTTP是如何优雅地把请求从一个URL"转交"到另一个URL的。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：服务器响应带 <code>Transfer-Encoding: chunked</code> 时，为什么浏览器无法用百分比显示下载进度？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch13-a1">显示答案</button>
+          <div class="answer" id="ch13-a1" hidden>
+            <p>因为分块传输意味着服务器在开始发送时并不知道响应体总大小（如流式生成内容），故没有 <code>Content-Length</code>可参考。浏览器只知道已收到的字节数而不知道总量，所以无法计算百分比。需要提前知道大小时应用 Content-Length（例如静态文件下载）。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="12.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="14.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

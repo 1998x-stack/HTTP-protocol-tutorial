@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -146,7 +147,7 @@
 <li><a href="08.html">第8章 连接管理</a></li>
 <li><a href="09.html">第9章 HTTP缓存</a></li>
 <li><a href="10.html">第10章 Cookie与会话</a></li>
-<li><a href="11.html" class="active">第11章 HTTP认证</a></li>
+<li><a href="11.html" class="active" aria-current="page">第11章 HTTP认证</a></li>
 <li><a href="12.html">第12章 跨域资源共享(CORS)</a></li>
 <li><a href="13.html">第13章 内容编码与传输</a></li>
 <li><a href="14.html">第14章 重定向与URL重写</a></li>
@@ -165,13 +166,16 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第十一章：HTTP认证</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第十一章：HTTP认证</h1>
+            <p class="dek">认证与授权的区别、Basic / Digest / Bearer Token / API Key 四种方案，以及 Session Cookie 与 JWT 的取舍。</p>
+        </header>
 
         <p>各位同学好。上一章我们讲了Cookie和Session——HTTP如何通过Cookie实现"记住你是谁"。但Cookie只是传递身份信息的一种载体。这一章我们从更底层的角度，看HTTP协议本身提供了哪些<strong>认证（Authentication）</strong>机制，以及在实际系统中我们如何选择。</p>
 
-        <h3>11.1 认证 vs 授权</h3>
+        <h2>11.1 认证 vs 授权</h2>
 
         <p>在深入具体的认证方案之前，有必要先厘清两个被大量混用的概念：<strong>认证（Authentication）</strong>和<strong>授权（Authorization）</strong>。</p>
 
@@ -186,7 +190,7 @@
           <p><strong>一句话总结</strong>：认证是"证明你是你"（出示身份证），授权是"你能进哪个门"（检查门票）。HTTP帮你解决第一个问题，第二个问题由你的业务代码解决。实际开发中经常有人在API里把401和403混用——记住：401是认证失败（没出示或出示了无效凭证），403是授权不足（认证成功了但没权限）。</p>
         </div>
 
-        <h3>11.2 Basic认证</h3>
+        <h2>11.2 Basic认证</h2>
 
         <p>Basic认证是最简单的HTTP认证方式。流程如下：</p>
 
@@ -211,6 +215,24 @@ Host: example.com
 Authorization: Basic YWRtaW46cGFzc3dvcmQxMjM=
                     ↑ base64("admin:password123")</code></pre>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch11-basic-title fig-ch11-basic-desc" viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch11-basic-title">Basic 认证的挑战-响应流程</title>
+            <desc id="fig-ch11-basic-desc">客户端请求受保护资源，服务器返回 401 与 WWW-Authenticate: Basic；客户端以 base64(用户名:密码) 在 Authorization 头重试，服务器验证后返回 200。</desc>
+            <rect x="0" y="0" width="880" height="300" fill="#ffffff"/>
+            <rect x="70" y="24" width="190" height="42" rx="9" fill="#6366f1"/><text x="165" y="51" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="14">浏览器</text>
+            <rect x="620" y="24" width="190" height="42" rx="9" fill="#10b981"/><text x="715" y="51" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="14">服务器</text>
+            <line x1="165" y1="66" x2="165" y2="286" stroke="#cbd5e1" stroke-dasharray="5 5"/>
+            <line x1="715" y1="66" x2="715" y2="286" stroke="#cbd5e1" stroke-dasharray="5 5"/>
+            <defs><marker id="ch11-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4338ca"/></marker><marker id="ch11-l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#047857"/></marker></defs>
+            <line x1="167" y1="96" x2="713" y2="96" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch11-r)"/><text x="440" y="88" font-size="13" fill="#4338ca" text-anchor="middle">① GET /admin</text>
+            <line x1="715" y1="140" x2="167" y2="140" stroke="#b45309" stroke-width="2.5" marker-end="url(#ch11-l)"/><text x="440" y="132" font-size="13" fill="#b45309" text-anchor="middle">② 401 Unauthorized · WWW-Authenticate: Basic realm="管理后台"</text>
+            <line x1="167" y1="196" x2="713" y2="196" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch11-r)"/><text x="440" y="188" font-size="13" fill="#4338ca" text-anchor="middle">③ Authorization: Basic base64(user:pass)</text>
+            <line x1="715" y1="248" x2="167" y2="248" stroke="#047857" stroke-width="2.5" marker-end="url(#ch11-l)"/><text x="440" y="240" font-size="13" fill="#047857" text-anchor="middle">④ 200 OK（凭证正确）</text>
+          </svg>
+          <figcaption><span class="fig-no">图 11.1</span>　Basic 认证流程：服务器用 401 + WWW-Authenticate 发起挑战，客户端以 Authorization 头回传 base64 编码的凭证。注意 Base64 只是编码，不是加密。</figcaption>
+        </figure>
+
         <p>Basic认证的<strong>致命缺陷</strong>：Base64不是加密，是编码。任何人都可以轻松解码 <code>YWRtaW46cGFzc3dvcmQxMjM=</code> 得到用户名和密码。在HTTP明文传输下，中间人攻击可以轻松截获。所以：</p>
 
         <ul>
@@ -223,7 +245,7 @@ Authorization: Basic YWRtaW46cGFzc3dvcmQxMjM=
           <p><strong>踩坑故事</strong>：刚工作那会儿维护一个内部监控系统，用了Basic认证做登录。因为是内部网络，大家觉得不用HTTPS也没事。结果有天安全扫描发现——有人在办公楼的公共WiFi上抓包，拿到了管理员密码。就因为从监控页面到服务器之间是HTTP明文传输，Base64的"密码"等于明文。那次教训让我养成了个习惯：不管内外网，涉及密码传输的一律用HTTPS。</p>
         </div>
 
-        <h3>11.3 Digest认证</h3>
+        <h2>11.3 Digest认证</h2>
 
         <p>Digest认证是Basic的改进版，它解决了"密码明文传输"的问题。核心思路是<strong>挑战-响应（Challenge-Response）</strong>：</p>
 
@@ -260,7 +282,7 @@ Authorization: Digest username="admin",
 
         <p>由于以上原因，Digest认证在实践中用得很少。如果你的系统需要比Basic更强的安全性，更推荐直接用HTTPS + Token认证方案，而不是升级到Digest。</p>
 
-        <h3>11.4 Bearer Token</h3>
+        <h2>11.4 Bearer Token</h2>
 
         <p>Bearer Token是<strong>当前最主流的API认证方式</strong>。它属于HTTP的Bearer认证方案（RFC 6750），格式为：</p>
 
@@ -278,6 +300,28 @@ sQ0XK9zOq5p5e6P8dVgJ7f3L2kZ1bN4mR8cH5tV6yBw</code></pre>
           <li><strong>Payload</strong>：存放用户ID、角色、过期时间等声明（claims）</li>
           <li><strong>Signature</strong>：对前两部分的签名，防止篡改</li>
         </ul>
+
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch11-jwt-title fig-ch11-jwt-desc" viewBox="0 0 880 210" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch11-jwt-title">JWT 的三段结构</title>
+            <desc id="fig-ch11-jwt-desc">JWT 由 Header、Payload、Signature 三段组成，用点号分隔。Header 声明算法与类型，Payload 存放用户声明，Signature 对前两段签名防止篡改。</desc>
+            <rect x="0" y="0" width="880" height="210" fill="#ffffff"/>
+            <g font-size="15">
+              <rect x="50" y="40" width="210" height="40" rx="8" fill="#6366f1"/><text x="155" y="66" fill="#ffffff" text-anchor="middle" font-weight="700">Header</text>
+              <text x="272" y="66" fill="#475569" font-size="22" text-anchor="middle">.</text>
+              <rect x="290" y="40" width="270" height="40" rx="8" fill="#7c3aed"/><text x="425" y="66" fill="#ffffff" text-anchor="middle" font-weight="700">Payload</text>
+              <text x="572" y="66" fill="#475569" font-size="22" text-anchor="middle">.</text>
+              <rect x="590" y="40" width="240" height="40" rx="8" fill="#0ea5e9"/><text x="710" y="66" fill="#ffffff" text-anchor="middle" font-weight="700">Signature</text>
+            </g>
+            <g font-size="13" font-family="'JetBrains Mono','Consolas',monospace">
+              <text x="155" y="112" fill="#4338ca" text-anchor="middle">{“alg”:“HS256”,</text><text x="155" y="130" fill="#4338ca" text-anchor="middle">“typ”:“JWT”}</text>
+              <text x="425" y="112" fill="#6d28d9" text-anchor="middle">{“user_id”:123,</text><text x="425" y="130" fill="#6d28d9" text-anchor="middle">“role”:“admin”,“exp”:…}</text>
+              <text x="710" y="112" fill="#0369a1" text-anchor="middle">对前两段签名</text><text x="710" y="130" fill="#0369a1" text-anchor="middle">防篡改</text>
+            </g>
+            <text x="440" y="176" font-size="13" fill="#94a3b8" text-anchor="middle">三段均为 Base64URL 编码，可用点号拆分；Payload 可被解码，因此不应存放密码等敏感信息。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 11.2</span>　JWT 结构：<code>Header.Payload.Signature</code>。前两段是 Base64URL 编码（可解码，不保密），第三段是对它们的签名，用来验证内容未被篡改。</figcaption>
+        </figure>
 
         <p>JWT的核心优势：</p>
         <ul>
@@ -300,7 +344,7 @@ sQ0XK9zOq5p5e6P8dVgJ7f3L2kZ1bN4mR8cH5tV6yBw</code></pre>
           <p><strong>Token存储安全</strong>：Bearer Token应该存在哪里？这是个经典的安全问题。<code>localStorage</code> 最方便，但任何XSS漏洞都会导致Token泄露。HttpOnly Cookie可以防御XSS窃取，但容易受CSRF攻击（需要用SameSite或CSRF Token防御）。目前的主流建议是：对敏感度较高的应用，将Access Token存在内存变量中，Refresh Token存在HttpOnly Cookie中。没有完美的方案，需要根据你的安全等级和实现复杂度做权衡。</p>
         </div>
 
-        <h3>11.5 API Key认证</h3>
+        <h2>11.5 API Key认证</h2>
 
         <p>API Key认证是服务间通信中最简单的认证方式。它通常通过 <code>X-API-Key</code> 自定义头传递：</p>
 
@@ -327,7 +371,7 @@ X-API-Key: sk_live_abc123def456gh789</code></pre>
           <p><strong>踩坑故事</strong>：有次我们开发移动端App，为了方便直接把API Key写死在客户端代码里。结果被竞争对手反编译APK拿到Key，然后恶意刷我们接口，导致服务器过载。更麻烦的是，因为Key没有绑定具体用户，我们没法区分正常请求和恶意请求，只能紧急发版更换Key。从那以后我们养成了几个习惯：移动端不走API Key，改用OAuth2 + Access Token；API Key总是绑定IP或特定权限范围；每个API Key都配独立的Rate Limit。</p>
         </div>
 
-        <h3>11.6 Session Cookie vs Token</h3>
+        <h2>11.6 Session Cookie vs Token</h2>
 
         <p>这是现代Web架构中最常讨论的议题：Session Cookie方案和Token/JWT方案各有什么优缺点？我们在下面做一个全面的对比：</p>
 
@@ -359,13 +403,34 @@ X-API-Key: sk_live_abc123def456gh789</code></pre>
 
         <p>好了，第十一章的内容就到这里。我们介绍了HTTP协议的几种认证机制：从最原始的Basic，到改进版的Digest，再到当今主流的Bearer Token和API Key。最后对比了Session Cookie和Token方案，帮助你在实际项目中做出正确选择。下一章我们将进入另一个非常重要的主题——<strong>跨域资源共享（CORS）</strong>，这是前后端分离架构中几乎每天都要面对的挑战。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：为什么 JWT 的 Payload 不能存放密码等敏感信息？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch11-a1">显示答案</button>
+          <div class="answer" id="ch11-a1" hidden>
+            <p>JWT 的 Header 与 Payload 只是 Base64URL 编码，任何人拿到 Token 都能直接解码读出内容，签名只保证“未被篡改”而非“不可读”。因此 Payload 只应放非敏感声明（用户 ID、角色、过期时间），敏感数据应留在服务端。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="10.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="12.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>
