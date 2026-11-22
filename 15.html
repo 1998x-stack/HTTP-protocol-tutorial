@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -150,7 +151,7 @@
 <li><a href="12.html">第12章 跨域资源共享(CORS)</a></li>
 <li><a href="13.html">第13章 内容编码与传输</a></li>
 <li><a href="14.html">第14章 重定向与URL重写</a></li>
-<li><a href="15.html" class="active">第15章 HTTPS概述</a></li>
+<li><a href="15.html" class="active" aria-current="page">第15章 HTTPS概述</a></li>
 <li><a href="16.html">第16章 TLS深入</a></li>
 <li><a href="17.html">第17章 证书管理</a></li>
 <li><a href="18.html">第18章 HTTP安全头部</a></li>
@@ -165,9 +166,12 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第十五章：HTTPS概述</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第十五章：HTTPS概述</h1>
+            <p class="dek">HTTP 明文传输的三大风险、对称/非对称加密与混合加密、TLS 握手流程、证书信任链与常见误解。</p>
+        </header>
 
         <p>各位同学好。咱们这个教程前面十几章都在讲HTTP——它的报文、方法、状态码、缓存、Cookie、CORS等等。但大家心里可能一直有个疑问：前面讲的这些<strong>都是明文传输的</strong>，那真正的线上网站不是都用HTTPS吗？没错，今天这一章我们就来补齐这个至关重要的拼图——HTTPS。</p>
 
@@ -177,7 +181,7 @@
           <p><strong>核心认知</strong>：HTTPS = HTTP + TLS（传输层安全协议）。它不是一套新的应用层协议，而是在HTTP和TCP之间加了一层安全层。这一层负责加密、身份验证和完整性校验。换句话说，HTTP管的是"怎么说话"，TLS管的是"说话内容不被偷听"。</p>
         </div>
 
-        <h3>15.1 HTTP明文传输的风险</h3>
+        <h2>15.1 HTTP明文传输的风险</h2>
 
         <p>很多人觉得"我的网站没什么敏感信息，用HTTP就行"。这个想法非常危险。HTTP明文传输面临三大风险，安全领域称之为"CIA三元组被破坏"——不过这里不是中央情报局，而是机密性、完整性、可用性。</p>
 
@@ -193,7 +197,7 @@
 
         <p>总结一下，HTTP在公共网络上传输就像在明信片上写情书——每个经过的邮递员都能看。HTTPS则是在信封里写情书，只有收件人能打开。</p>
 
-        <h3>15.2 加密基础</h3>
+        <h2>15.2 加密基础</h2>
 
         <p>要理解HTTPS怎么工作，先得搞懂两种加密方式：对称加密和非对称加密。这两个概念是TLS的基石。</p>
 
@@ -222,7 +226,38 @@
           <p><strong>关键理解</strong>：HTTPS不是"只用非对称加密"或"只用对称加密"，而是两者结合——这就是<strong>混合加密</strong>。非对称加密用于安全地交换对称密钥（称为"会话密钥"），后续通信全部使用对称加密。这样既解决了密钥分发问题（用非对称加密），又保证了传输效率（用对称加密）。用个形象的比喻：非对称加密是"保险箱"，对称加密是"快递箱"。你用保险箱把快递箱的钥匙安全地寄给对方，之后双方用快递箱批量运送货物。</p>
         </div>
 
-        <h3>15.3 TLS握手过程</h3>
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch15-crypto-title fig-ch15-crypto-desc" viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch15-crypto-title">对称加密、非对称加密与混合加密</title>
+            <desc id="fig-ch15-crypto-desc">对称加密双方共用同一密钥，速度快但密钥分发困难；非对称加密用公钥加密、私钥解密，解决分发问题但速度慢；HTTPS 用非对称加密交换对称会话密钥，随后用对称加密传输数据。</desc>
+            <rect x="0" y="0" width="880" height="330" fill="#ffffff"/>
+            <defs><marker id="ch15-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+            <g font-size="13">
+              <rect x="30" y="24" width="380" height="160" rx="12" fill="#f8faff" stroke="#c7d2fe"/>
+              <text x="50" y="48" font-weight="700" fill="#4338ca" font-size="14">对称加密（快）</text>
+              <rect x="60" y="100" width="120" height="46" rx="9" fill="#6366f1"/><text x="120" y="128" fill="#ffffff" text-anchor="middle">客户端</text>
+              <rect x="260" y="100" width="120" height="46" rx="9" fill="#6366f1"/><text x="320" y="128" fill="#ffffff" text-anchor="middle">服务端</text>
+              <line x1="182" y1="123" x2="258" y2="123" stroke="#64748b" stroke-width="2.5" marker-end="url(#ch15-a)"/>
+              <text x="220" y="112" fill="#475569" text-anchor="middle" font-size="12">同一密钥 K</text>
+              <text x="220" y="162" fill="#64748b" text-anchor="middle" font-size="12">密钥如何安全分发？←难</text>
+
+              <rect x="470" y="24" width="380" height="160" rx="12" fill="#f8faff" stroke="#c7d2fe"/>
+              <text x="490" y="48" font-weight="700" fill="#047857" font-size="14">非对称加密（慢）</text>
+              <rect x="500" y="100" width="140" height="46" rx="9" fill="#10b981"/><text x="570" y="128" fill="#ffffff" text-anchor="middle" font-size="12">公钥加密</text>
+              <rect x="690" y="100" width="140" height="46" rx="9" fill="#b45309"/><text x="760" y="128" fill="#ffffff" text-anchor="middle" font-size="12">私钥解密</text>
+              <line x1="642" y1="123" x2="688" y2="123" stroke="#64748b" stroke-width="2.5" marker-end="url(#ch15-a)"/>
+              <text x="660" y="162" fill="#64748b" text-anchor="middle" font-size="12">公钥可公开，解决分发问题</text>
+
+              <rect x="30" y="212" width="820" height="92" rx="12" fill="#fef3c7" stroke="#b45309"/>
+              <text x="50" y="238" font-weight="700" fill="#b45309" font-size="14">HTTPS 混合加密</text>
+              <text x="50" y="266" fill="#92400e" font-size="13">① 用非对称加密安全地交换一个对称“会话密钥”　→　② 后续所有数据用对称加密传输</text>
+              <text x="50" y="290" fill="#92400e" font-size="13">兼顾安全（密钥分发）与效率（对称加密快）</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 15.1</span>　两种加密方式的取舍：对称加密快但难分发密钥，非对称加密解决分发但慢。HTTPS 用非对称交换会话密钥、再用对称加密传数据。</figcaption>
+        </figure>
+
+        <h2>15.3 TLS握手过程</h2>
 
         <p>TLS握手是整个HTTPS通信中最复杂、也最核心的部分。我们以最常用的TLS 1.2握手为例，一步步拆解。我先用文字描述流程，再看每一步具体发生了什么。</p>
 
@@ -275,7 +310,7 @@
           <p><strong>重要概念</strong>：握手的本质是<strong>认证 + 密钥协商</strong>两个过程。认证靠证书（证明服务端的身份），密钥协商靠随机数+非对称加密（确保只有合法双方能算出相同的会话密钥）。握手完成后的所有HTTP通信都使用这个会话密钥进行对称加密，效率极高。</p>
         </div>
 
-        <h3>15.4 证书信任链</h3>
+        <h2>15.4 证书信任链</h2>
 
         <p>刚才握手过程中，服务器发了一个数字证书。客户端怎么知道这个证书是可信的？这个信任不是凭空来的，它基于一个叫做<strong>PKI（公钥基础设施）</strong>的信任体系。</p>
 
@@ -294,6 +329,27 @@
    ┃ 绑定了你的域名（example.com）
    ▼
 你的浏览器</code></pre>
+
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch15-chain-title fig-ch15-chain-desc" viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch15-chain-title">证书信任链</title>
+            <desc id="fig-ch15-chain-desc">根证书自签名并内置于操作系统与浏览器，它签发中间证书，中间证书再签发服务器证书；浏览器逐级验证签名、域名与有效期。</desc>
+            <rect x="0" y="0" width="880" height="330" fill="#ffffff"/>
+            <defs><marker id="ch15-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+            <rect x="320" y="24" width="240" height="56" rx="10" fill="#1e293b"/><text x="440" y="58" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="15">根证书 Root CA</text>
+            <text x="600" y="48" font-size="12.5" fill="#64748b">自签名，内置在 OS / 浏览器（信任锚点）</text>
+            <line x1="440" y1="80" x2="440" y2="112" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch15-c)"/><text x="455" y="100" font-size="12" fill="#94a3b8">签发</text>
+            <rect x="320" y="116" width="240" height="56" rx="10" fill="#4338ca"/><text x="440" y="150" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="15">中间证书 Intermediate CA</text>
+            <text x="600" y="140" font-size="12.5" fill="#64748b">隔离风险：吊销它不影响根证书</text>
+            <line x1="440" y1="172" x2="440" y2="204" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch15-c)"/><text x="455" y="192" font-size="12" fill="#94a3b8">签发</text>
+            <rect x="320" y="208" width="240" height="56" rx="10" fill="#10b981"/><text x="440" y="242" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="15">服务器证书 example.com</text>
+            <text x="600" y="232" font-size="12.5" fill="#64748b">含域名 SAN、公钥、有效期</text>
+            <line x1="440" y1="264" x2="440" y2="296" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch15-c)"/>
+            <rect x="320" y="298" width="240" height="0" rx="0" fill="none"/>
+            <text x="440" y="312" font-size="13" fill="#4338ca" text-anchor="middle">浏览器：逐级验签 + 校域名 + 查有效期 / 吊销状态</text>
+          </svg>
+          <figcaption><span class="fig-no">图 15.2</span>　信任链结构：根证书（信任锚）→ 中间证书 → 服务器证书。浏览器从服务器证书回溯到内置根证书，逐级验证签名、域名与有效期。</figcaption>
+        </figure>
 
         <p><strong>根证书（Root CA）</strong>：这是信任的起点。操作系统和浏览器内置了一批根证书——比如DigiCert、GlobalSign、Let's Encrypt的根证书。根证书是自签名的（自己签自己），所以它们本身就是信任的锚点。全球大约有100多个受信任的根证书。</p>
 
@@ -318,7 +374,7 @@
           <p><strong>开发小贴士</strong>：你在开发环境访问 <code>https://localhost</code> 时经常看到证书警告，这是因为 localhost 的证书是自己签发的、没有被OS信任。你可以在本地生成自签名证书并添加到信任库，或者用 <code>mkcert</code> 这样的工具一键生成本地受信的证书。建议开发阶段就用HTTPS，避免上线后才发现HTTPS相关的问题。</p>
         </div>
 
-        <h3>15.5 HTTPS的误解</h3>
+        <h2>15.5 HTTPS的误解</h2>
 
         <p>关于HTTPS，行业内流传着不少误解。我挑几个最常见的来澄清。</p>
 
@@ -353,13 +409,34 @@
 
         <p>好了，第十五章的内容就到这里。我们从HTTP的风险讲起，到加密基础、TLS握手、证书信任链，最后澄清了HTTPS的几个常见误解。下一章我们要深入TLS内部，看看TLS 1.2和1.3到底有什么区别、密码套件怎么选择、以及如何优化TLS性能。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：TLS 为什么采用“混合加密”，而不是全程非对称加密或全程对称加密？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch15-a1">显示答案</button>
+          <div class="answer" id="ch15-a1" hidden>
+            <p>全程对称加密无法安全地分发密钥；全程非对称加密速度又慢几个数量级。混合方案取两者之长：用非对称加密安全交换一个对称“会话密钥”，之后用高效的对称加密传输数据，兼顾安全与性能。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="14.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="16.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

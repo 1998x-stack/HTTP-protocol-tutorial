@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -152,7 +153,7 @@
 <li><a href="14.html">第14章 重定向与URL重写</a></li>
 <li><a href="15.html">第15章 HTTPS概述</a></li>
 <li><a href="16.html">第16章 TLS深入</a></li>
-<li><a href="17.html" class="active">第17章 证书管理</a></li>
+<li><a href="17.html" class="active" aria-current="page">第17章 证书管理</a></li>
 <li><a href="18.html">第18章 HTTP安全头部</a></li>
 <li><a href="19.html">第19章 代理与网关</a></li>
 <li><a href="20.html">第20章 负载均衡与限流</a></li>
@@ -165,15 +166,18 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第十七章：证书管理</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第十七章：证书管理</h1>
+            <p class="dek">DV/OV/EV 证书类型、CA 签发与 CSR 流程、Let's Encrypt 与 ACME 自动化、自签名证书，以及证书过期的监控与教训。</p>
+        </header>
 
         <p>各位同学好。通过前两章的学习，你已经理解了HTTPS和TLS的工作原理，知道了TLS握手要靠证书来验证服务器身份。但实际工作中，证书管理往往是运维和开发最头疼的事之一——从申请证书、配置证书、到监控证书过期，稍有不慎就是一场生产事故。</p>
 
         <p>我的一个朋友曾经开玩笑说："程序员分两种——被证书过期坑过的，和即将被证书过期坑到的。"这话虽然夸张，但确实反映了证书管理的现实困境。这一章我们就来系统性地解决这个问题。</p>
 
-        <h3>17.1 证书类型</h3>
+        <h2>17.1 证书类型</h2>
 
         <p>数字证书根据验证级别的不同，分为三个等级：DV、OV、EV。它们的安全性和验证严格程度逐级递增。</p>
 
@@ -190,11 +194,35 @@
 
         <p><strong>EV证书（扩展验证型）</strong>：最严格的验证级别。CA需要做深度的背景调查——确认企业的注册地址、运营状态、法律存续性等。2018年以前，EV证书会在浏览器地址栏显示绿色的公司名称（比如"Google Inc. [US]"），非常显眼。但后来浏览器厂商认为EV证书的绿色地址栏存在用户体验和安全方面的问题（攻击者也可以申请EV证书），Chrome 77版本（2019年）移除了EV证书的绿色地址栏显示，改成了点击小锁图标查看。EV证书的实际作用已经大大降低。</p>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch17-level-title fig-ch17-level-desc" viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch17-level-title">DV / OV / EV 证书的验证级别</title>
+            <desc id="fig-ch17-level-desc">DV 仅验证域名所有权，签发快、价格低；OV 额外验证企业身份；EV 做深度背景调查，验证最严、耗时最长。三者都提供同等的加密强度。</desc>
+            <rect x="0" y="0" width="860" height="300" fill="#ffffff"/>
+            <g font-size="14">
+              <rect x="40" y="200" width="500" height="62" rx="12" fill="#6366f1"/>
+              <text x="60" y="228" fill="#ffffff" font-weight="700" font-size="16">DV · 域名验证</text><text x="60" y="250" fill="#e0e7ff" font-size="13">仅验证域名所有权 → 几分钟签发，免费/低价</text>
+
+              <rect x="90" y="128" width="500" height="62" rx="12" fill="#0ea5e9"/>
+              <text x="110" y="156" fill="#ffffff" font-weight="700" font-size="16">OV · 组织验证</text><text x="110" y="178" fill="#e0f2fe" font-size="13">域名所有权 + 企业身份 → 几天签发</text>
+
+              <rect x="140" y="56" width="500" height="62" rx="12" fill="#10b981"/>
+              <text x="160" y="84" fill="#ffffff" font-weight="700" font-size="16">EV · 扩展验证</text><text x="160" y="106" fill="#d1fae5" font-size="13">严格实体背景审核 → 几周签发，费用高</text>
+
+              <line x1="680" y1="262" x2="680" y2="78" stroke="#cbd5e1" stroke-width="2" marker-end="url(#ch17-up)"/>
+              <text x="700" y="170" font-size="13" fill="#64748b">验证越严</text><text x="700" y="190" font-size="13" fill="#64748b">耗时越长</text>
+            </g>
+            <defs><marker id="ch17-up" viewBox="0 0 10 10" refX="5" refY="0" markerWidth="9" markerHeight="9" orient="auto"><path d="M5,0 L10,10 L0,10 z" fill="#cbd5e1"/></marker></defs>
+            <text x="340" y="290" font-size="12.5" fill="#94a3b8" text-anchor="middle">三者的加密强度相同；区别只在 CA 对申请主体做了多少身份核实。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 17.1</span>　DV/OV/EV 三级验证：加密强度相同，差别在于 CA 核实的身份信息深度——DV 只看域名，OV 看企业，EV 做深度背景审核。</figcaption>
+        </figure>
+
         <div class="tip">
           <p><strong>选型建议</strong>：对于绝大多数场景，<strong>DV证书完全够用</strong>。HTTPS的核心功能——加密通信和身份验证——DV证书都能提供。OV和EV多出来的"企业身份验证"在实际用户体验中几乎不可见（浏览器已经不再突出显示了）。除非你的业务确实需要"购买了OV/EV证书"这个事实来做合规或客户信任背书，否则免费的DV证书（Let's Encrypt）是最明智的选择。</p>
         </div>
 
-        <h3>17.2 CA签发流程</h3>
+        <h2>17.2 CA签发流程</h2>
 
         <p>不管是哪种类型的证书，签发的核心流程都包括三个步骤：生成CSR、验证域名所有权、下载并配置证书。我们以DV证书为例，走一遍完整的流程。</p>
 
@@ -239,7 +267,7 @@ server {
           <p><strong>重要提醒</strong>：私钥必须严格保护！不要把私钥提交到Git仓库、不要用邮件发送私钥、不要在日志中打印私钥。一旦私钥泄露，证书需要立即吊销并重新签发。建议私钥设置文件权限为600（只有root可读），并且定期轮换。</p>
         </div>
 
-        <h3>17.3 Let's Encrypt</h3>
+        <h2>17.3 Let's Encrypt</h2>
 
         <p>Let's Encrypt是互联网安全历史上一个里程碑式的项目。它由Internet Security Research Group（ISRG）运营，是第一个大规模的、免费的、自动化的证书颁发机构。它的使命很简单——让每一个网站都用上HTTPS。</p>
 
@@ -275,7 +303,7 @@ certbot renew --dry-run</code></pre>
           <p><strong>实践建议</strong>：Let's Encrypt的速率限制对于大多数网站来说完全够用。但如果你的业务有大量子域名（比如多租户SaaS平台），每个租户一个域名，可能会撞到限制。这种情况下可以考虑用通配符证书（<code>*.example.com</code>），一个证书覆盖所有子域名，或者使用商业CA的批量签发服务。</p>
         </div>
 
-        <h3>17.4 自签名证书</h3>
+        <h2>17.4 自签名证书</h2>
 
         <p>自签名证书（Self-Signed Certificate）就是自己给自己签发的证书，没有CA的签名。在浏览器看来，这种证书是"不受信任"的——因为它的签发者不在操作系统信任的根证书列表中。</p>
 
@@ -317,7 +345,7 @@ Import-Certificate -FilePath localhost.crt -CertStoreLocation Cert:\LocalMachine
           <p><strong>不要在生产环境用自签名证书</strong>：我再强调一遍——<strong>永远不要在面向用户的生产环境使用自签名证书</strong>。你可能觉得"反正是内网系统，用户都是公司内部人员"，问题在于：1）用户浏览器会显示红色警告页面，很多用户会忽略这个警告，这本身就是安全风险；2）自签名证书无法被撤销——如果私钥泄露，你没有任何办法通知浏览器"这个证书不再可信"；3）自签名证书无法证明你的身份——任何攻击者都可以签发一张"example.com"的自签名证书。如果内网系统确实需要HTTPS，建议搭建内部CA（如使用OpenSSL或Easy-RSA建私有的PKI），而不是用自签名证书。</p>
         </div>
 
-        <h3>17.5 证书过期</h3>
+        <h2>17.5 证书过期</h2>
 
         <p>证书都有一个有效期，过期后浏览器会显示"NET::ERR_CERT_DATE_INVALID"错误。证书过期是运维中最常见（且最尴尬）的生产事故之一。我们来谈谈怎么避免。</p>
 
@@ -335,6 +363,26 @@ Import-Certificate -FilePath localhost.crt -CertStoreLocation Cert:\LocalMachine
           <li><strong>证书过期监控</strong>：使用监控工具（Prometheus + blackbox_exporter、Nagios、或者云厂商的证书监控服务）定期检查证书剩余有效期，在过期前30天、14天、7天发出告警。</li>
           <li><strong>多团队通知</strong>：证书过期影响的不只是运维团队——它影响所有用户。过期告警应该发给相关的开发、运维、产品团队。</li>
         </ol>
+
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch17-life-title fig-ch17-life-desc" viewBox="0 0 880 210" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch17-life-title">证书有效期与自动续期窗口</title>
+            <desc id="fig-ch17-life-desc">以 Let's Encrypt 的 90 天有效期为例，Certbot 每天检查并在到期前 30 天自动续期；监控系统可在到期前 30/14/7 天分级告警。</desc>
+            <rect x="0" y="0" width="880" height="210" fill="#ffffff"/>
+            <line x1="80" y1="110" x2="800" y2="110" stroke="#cbd5e1" stroke-width="10" stroke-linecap="round"/>
+            <line x1="560" y1="110" x2="800" y2="110" stroke="#10b981" stroke-width="10" stroke-linecap="round"/>
+            <line x1="80" y1="110" x2="560" y2="110" stroke="#6366f1" stroke-width="10" stroke-linecap="round"/>
+            <g font-size="13" text-anchor="middle">
+              <line x1="80" y1="92" x2="80" y2="128" stroke="#475569" stroke-width="2"/><text x="80" y="80" fill="#334155">第 0 天</text><text x="80" y="150" fill="#64748b" font-size="12">签发</text>
+              <line x1="560" y1="92" x2="560" y2="128" stroke="#047857" stroke-width="2"/><text x="560" y="80" fill="#047857">第 60 天</text><text x="560" y="150" fill="#047857" font-size="12">开始自动续期</text>
+              <line x1="800" y1="92" x2="800" y2="128" stroke="#b91c1c" stroke-width="2"/><text x="800" y="80" fill="#b91c1c">第 90 天</text><text x="800" y="150" fill="#b91c1c" font-size="12">到期</text>
+            </g>
+            <text x="320" y="104" fill="#ffffff" font-size="12" text-anchor="middle">有效期内</text>
+            <text x="680" y="104" fill="#ffffff" font-size="12" text-anchor="middle">续期后新证书</text>
+            <text x="440" y="192" font-size="12.5" fill="#94a3b8" text-anchor="middle">监控建议在到期前 30 / 14 / 7 天分级告警；自动续期仍需验证是否真实生效。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 17.2</span>　以 90 天有效期为例：Certbot 每日检查、在到期前 30 天自动续期；监控系统应在 30/14/7 天分级告警，自动续期也要定期验证确实生效。</figcaption>
+        </figure>
 
         <pre><code># 使用openssl检查证书过期时间
 echo | openssl s_client -connect example.com:443 -servername example.com 2>/dev/null \
@@ -358,9 +406,9 @@ done</code></pre>
           <p><strong>重要变更</strong>：从2020年9月开始，苹果Safari和Google Chrome对有效期超过398天的证书会直接拒绝。如果你购买的是商业证书，确保CA签发给你的证书有效期不超过398天。对于用户来说，这意味着即使你忘了续期，浏览器也不会再纵容过期证书——以前那种"过期了也能用，只是浏览器警告一下"的日子一去不复返了。</p>
         </div>
 
-        <h3>17.5 证书过期的惨痛教训</h3>
+        <h2>17.6 证书过期的惨痛教训</h2>
 
-        <p>（没错，17.5又来了——因为值得单独拿出来说。）</p>
+        <p>上面讲了证书过期的原理与预防，这里用两则真实复盘说明它可能带来的后果。</p>
 
         <p><strong>故事一：我的第一次证书事故</strong></p>
         <p>2018年一个周日凌晨3点，我被电话叫醒——线上支付接口报错了，所有用户无法完成支付。我登录服务器一看：证书过期了。因为是周日，CA的客服不在，支付渠道方的证书变更需要人工审核。全公司二十多号人忙活了一上午，最终在中午12点恢复了服务。仅半天时间，直接经济损失约30万，流失了至少200个付费用户。</p>
@@ -387,13 +435,34 @@ done</code></pre>
 
         <p>好了，第十七章的内容就到这里。我们从证书类型、签发流程、Let's Encrypt、自签名证书到证书过期的惨痛教训，把证书管理的方方面面都覆盖了。下一章我们进入HTTP安全头部——用几个简单的响应头就能大幅提升网站的安全性，是投入产出比极高的安全措施。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：证书管理的“黄金三则”是什么？为什么自动续期仍需要监控？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch17-a1">显示答案</button>
+          <div class="answer" id="ch17-a1" hidden>
+            <p>黄金三则：自动化（Automate）、监控（Monitor）、错峰（Stagger）。自动续期也可能因 DNS 变更、权限、速率限制等原因静默失败，所以必须有独立监控在到期前分级告警，并定期验证续期确实生效。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="16.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="18.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

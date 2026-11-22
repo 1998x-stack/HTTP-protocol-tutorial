@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -153,7 +154,7 @@
 <li><a href="15.html">第15章 HTTPS概述</a></li>
 <li><a href="16.html">第16章 TLS深入</a></li>
 <li><a href="17.html">第17章 证书管理</a></li>
-<li><a href="18.html" class="active">第18章 HTTP安全头部</a></li>
+<li><a href="18.html" class="active" aria-current="page">第18章 HTTP安全头部</a></li>
 <li><a href="19.html">第19章 代理与网关</a></li>
 <li><a href="20.html">第20章 负载均衡与限流</a></li>
 <li><a href="21.html">第21章 RESTful API设计</a></li>
@@ -165,19 +166,78 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第十八章：HTTP安全头部</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第十八章：HTTP安全头部</h1>
+            <p class="dek">HSTS、CSP、X-Frame-Options、X-Content-Type-Options、Referrer-Policy 与 Permissions-Policy：六个响应头各自防御什么威胁，以及完整配置示例。</p>
+        </header>
 
         <p>各位同学好。前面三章我们一直在聊HTTPS、TLS和证书——这些都属于"传输层安全"。但HTTP协议本身也提供了一些非常强大的安全机制：<strong>安全响应头</strong>。这些头部字段可以让浏览器帮你做很多安全检查，有时候只需一行配置就能防御一整类攻击。</p>
 
         <p>我个人把HTTP安全头部称为"性价比最高的安全措施"——配置简单（几句话的事）、防御效果好（浏览器级别的保护），而且大部分头部对用户完全透明。很多安全扫描工具（比如Mozilla Observatory、Qualys SSL Labs）会根据这些头部给网站打分，所以配置好它们也是安全合规的一部分。</p>
 
-        <h3>18.1 HSTS（Strict-Transport-Security）</h3>
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch18-map-title fig-ch18-map-desc" viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch18-map-title">六个关键安全响应头及其防御目标</title>
+            <desc id="fig-ch18-map-desc">HSTS 防降级与 SSL 剥离；CSP 防 XSS 与数据注入；X-Frame-Options 防点击劫持；X-Content-Type-Options 防 MIME 嗅探型 XSS；Referrer-Policy 防信息泄露；Permissions-Policy 限制浏览器 API 滥用。</desc>
+            <rect x="0" y="0" width="880" height="320" fill="#ffffff"/>
+            <g font-size="13.5">
+              <rect x="30" y="26" width="400" height="40" rx="8" fill="#eef2ff" stroke="#818cf8"/><text x="46" y="52" fill="#4338ca" font-family="'JetBrains Mono',monospace" font-size="12.5">Strict-Transport-Security</text>
+              <line x1="430" y1="46" x2="470" y2="46" stroke="#94a3b8"/><text x="480" y="52" fill="#334155">防降级 / SSL 剥离</text>
+
+              <rect x="30" y="74" width="400" height="40" rx="8" fill="#eef2ff" stroke="#818cf8"/><text x="46" y="100" fill="#4338ca" font-family="'JetBrains Mono',monospace" font-size="12.5">Content-Security-Policy</text>
+              <line x1="430" y1="94" x2="470" y2="94" stroke="#94a3b8"/><text x="480" y="100" fill="#334155">防 XSS / 数据注入</text>
+
+              <rect x="30" y="122" width="400" height="40" rx="8" fill="#eef2ff" stroke="#818cf8"/><text x="46" y="148" fill="#4338ca" font-family="'JetBrains Mono',monospace" font-size="12.5">X-Frame-Options</text>
+              <line x1="430" y1="142" x2="470" y2="142" stroke="#94a3b8"/><text x="480" y="148" fill="#334155">防点击劫持</text>
+
+              <rect x="30" y="170" width="400" height="40" rx="8" fill="#eef2ff" stroke="#818cf8"/><text x="46" y="196" fill="#4338ca" font-family="'JetBrains Mono',monospace" font-size="12.5">X-Content-Type-Options</text>
+              <line x1="430" y1="190" x2="470" y2="190" stroke="#94a3b8"/><text x="480" y="196" fill="#334155">防 MIME 嗅探型 XSS</text>
+
+              <rect x="30" y="218" width="400" height="40" rx="8" fill="#eef2ff" stroke="#818cf8"/><text x="46" y="244" fill="#4338ca" font-family="'JetBrains Mono',monospace" font-size="12.5">Referrer-Policy</text>
+              <line x1="430" y1="238" x2="470" y2="238" stroke="#94a3b8"/><text x="480" y="244" fill="#334155">防来源信息泄露</text>
+
+              <rect x="30" y="266" width="400" height="40" rx="8" fill="#eef2ff" stroke="#818cf8"/><text x="46" y="292" fill="#4338ca" font-family="'JetBrains Mono',monospace" font-size="12.5">Permissions-Policy</text>
+              <line x1="430" y1="286" x2="470" y2="286" stroke="#94a3b8"/><text x="480" y="292" fill="#334155">限制浏览器 API 滥用</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 18.1</span>　六个安全响应头与各自的防御目标。配置简单、对用户透明，是最具性价比的安全加固手段。</figcaption>
+        </figure>
+
+        <h2>18.1 HSTS（Strict-Transport-Security）</h2>
 
         <p>HSTS的中文名是"HTTP严格传输安全"。它的作用是告诉浏览器：<strong>这个网站只能用HTTPS访问，如果你发现我用HTTP访问，请自动升级到HTTPS，不要给我机会加载不安全的版本</strong>。</p>
 
         <p>为什么需要HSTS？你已经知道HTTPS很重要了，但有个问题：用户在浏览器地址栏输入 <code>example.com</code> 时，浏览器默认使用 <code>http://</code> 协议。服务器要做一次301重定向到 <code>https://example.com</code>。但就在这个重定向发生之前——在第一次HTTP请求发出时——攻击者可以进行<strong>SSL剥离攻击（SSL Stripping）</strong>：把服务器返回的301重定向篡改掉，让用户停留在HTTP版本上。</p>
+
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch18-hsts-title fig-ch18-hsts-desc" viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch18-hsts-title">HSTS 如何阻止 SSL 剥离</title>
+            <desc id="fig-ch18-hsts-desc">无 HSTS 时，用户首次以 HTTP 发起请求，中间人可剥离 301 重定向，使通信停畕在明文 HTTP；启用 HSTS 后，浏览器自动把该类请求升级为 HTTPS，中间人无法降级。</desc>
+            <rect x="0" y="0" width="880" height="300" fill="#ffffff"/>
+            <defs><marker id="ch18-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+            <g font-size="13.5">
+              <text x="30" y="30" font-weight="700" fill="#b91c1c" font-size="15">无 HSTS：首次 HTTP 请求可被剥离</text>
+              <rect x="40" y="52" width="170" height="44" rx="9" fill="#6366f1"/><text x="125" y="79" fill="#ffffff" text-anchor="middle">浏览器</text>
+              <rect x="530" y="52" width="170" height="44" rx="9" fill="#10b981"/><text x="615" y="79" fill="#ffffff" text-anchor="middle">服务器</text>
+              <rect x="300" y="52" width="140" height="44" rx="9" fill="#fee2e2" stroke="#dc2626"/><text x="370" y="79" fill="#b91c1c" text-anchor="middle">中间人</text>
+              <line x1="212" y1="74" x2="298" y2="74" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch18-a)"/><line x1="442" y1="74" x2="528" y2="74" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch18-a)"/>
+              <text x="440" y="124" fill="#b91c1c" text-anchor="middle">http:// →（301 被篡改）→ 停留在明文 HTTP</text>
+
+              <line x1="40" y1="150" x2="840" y2="150" stroke="#e2e8f0"/>
+
+              <text x="30" y="182" font-weight="700" fill="#047857" font-size="15">有 HSTS：浏览器自动升级为 HTTPS</text>
+              <rect x="40" y="204" width="170" height="44" rx="9" fill="#6366f1"/><text x="125" y="231" fill="#ffffff" text-anchor="middle">浏览器</text>
+              <rect x="300" y="204" width="140" height="44" rx="9" fill="#f1f5f9" stroke="#cbd5e1"/><text x="370" y="231" fill="#64748b" text-anchor="middle">中间人</text>
+              <rect x="530" y="204" width="170" height="44" rx="9" fill="#10b981"/><text x="615" y="231" fill="#ffffff" text-anchor="middle">服务器</text>
+              <path d="M212,226 C300,190 480,190 528,226" fill="none" stroke="#10b981" stroke-width="2.5" marker-end="url(#ch18-a)"/>
+              <text x="440" y="188" fill="#047857" text-anchor="middle">强制 https://，中间人无法降级</text>
+              <text x="440" y="276" font-size="12.5" fill="#94a3b8" text-anchor="middle">HSTS Preload 列表可在“首次访问”前就生效，彻底堵住这个窗口。</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 18.2</span>　HSTS 的作用：没有它，首次 HTTP 请求可能被 SSL 剥离；启用后浏览器自动把该域请求升级为 HTTPS，配合 Preload 连首次访问也受保护。</figcaption>
+        </figure>
 
         <p>HSTS的配置方式：</p>
 
@@ -196,7 +256,7 @@
           <p><strong>HSTS的"坑"</strong>：设置 <code>includeSubDomains</code> 时一定要小心——它会把规则应用到你域名的所有子域名上。如果你有一个子域名跑在HTTP上（比如一些老系统不支持HTTPS），配置了 <code>includeSubDomains</code> 后这个子域名就彻底不可用了。我就吃过这个亏：某次给主站点配HSTS时顺手加了 <code>includeSubDomains</code>，导致公司一个用了十年的HTTP-only子域名系统（供应商的系统，没法改）全部无法访问。最后花了三周迁移那个系统到HTTPS才恢复。所以<strong>如果你不确定所有子域名都支持HTTPS，不要加 <code>includeSubDomains</code></strong>。</p>
         </div>
 
-        <h3>18.2 CSP（Content-Security-Policy）</h3>
+        <h2>18.2 CSP（Content-Security-Policy）</h2>
 
         <p>CSP是HTTP安全头部中最强大、也最复杂的一个。它的全称是"内容安全策略"，主要作用是防御<strong>跨站脚本攻击（XSS）</strong>和数据注入攻击。</p>
 
@@ -250,7 +310,7 @@ Content-Security-Policy: script-src 'nonce-r@nd0m'
           <p><strong>CSP实施建议</strong>：不要试图一步到位配置完美的CSP——这对现有项目来说基本不可能。正确的做法是：先用 <code>Content-Security-Policy-Report-Only</code> 收集违规报告，逐步调整策略，等违规报告基本清零后，再切换到正式策略。另外，大多数前端框架（React、Vue、Angular）在开发模式下会使用内联脚本（eval、inline style），可能导致CSP违规，记得在构建时关闭这些特性。</p>
         </div>
 
-        <h3>18.3 X-Frame-Options</h3>
+        <h2>18.3 X-Frame-Options</h2>
 
         <p><code>X-Frame-Options</code> 是一个相对简单的头部，用于防御<strong>点击劫持（Clickjacking）</strong>攻击。点击劫持的原理是：攻击者把目标网站嵌入到一个透明的iframe中，用户在攻击者的页面上点击，实际上点到了目标网站上的按钮（比如"删除账号"或"点赞"）。</p>
 
@@ -277,7 +337,7 @@ Content-Security-Policy: frame-ancestors 'self' https://trusted-partner.com;</co
           <p><strong>最佳实践</strong>：除非你确实需要把你的页面嵌入到其他网站的iframe中（比如做支付跳转后的回显页面），否则设置 <code>X-Frame-Options: DENY</code> 或 <code>frame-ancestors 'none'</code>。如果你确实需要iframe嵌入（比如提供widget服务），那就明确指定允许的来源，不要用通配符。</p>
         </div>
 
-        <h3>18.4 X-Content-Type-Options</h3>
+        <h2>18.4 X-Content-Type-Options</h2>
 
         <p>这个头部虽然名字长，但功能很简单：它只有一个值 <code>nosniff</code>，作用是<strong>禁止浏览器进行MIME类型嗅探（MIME Sniffing）</strong>。</p>
 
@@ -294,7 +354,7 @@ Content-Security-Policy: frame-ancestors 'self' https://trusted-partner.com;</co
 
         <p>这是最简单的安全头部之一——一行配置，零负面影响，强烈建议所有网站都加上。</p>
 
-        <h3>18.5 Referrer-Policy</h3>
+        <h2>18.5 Referrer-Policy</h2>
 
         <p><code>Referrer-Policy</code> 控制的是<strong>HTTP Referer头</strong>（没错，拼写是referrer，但HTTP头的名字是referer——这是当初HTTP规范的一个拼写错误，将错就错保留至今了）在用户从你的网站跳转到其他网站时，你会不会把这个请求的来源信息告诉目标网站。这个信息泄露在隐私保护意识增强的今天越来越受关注。</p>
 
@@ -317,11 +377,11 @@ Referrer-Policy: strict-origin-when-cross-origin</code></pre>
           <tr><td>strict-origin-when-cross-origin</td><td>同源发送完整URL，跨域只发送源（无路径），HTTPS→HTTP不发送</td><td>默认值（推荐！）</td></tr>
           <tr><td>origin</td><td>始终只发送源（无路径）</td><td>内容聚合站点</td></tr>
           <tr><td>unsafe-url</td><td>始终发送完整的URL（包括路径和参数），即使跨域</td><td>不推荐——完全不安全</td></tr>
-        </ul>
+        </table>
 
         <p>从2020年开始，<code>strict-origin-when-cross-origin</code> 已经成为浏览器的<strong>默认行为</strong>（即使你没有设置这个头部）。但显式设置仍然是好习惯——你可以更精确地控制Referer策略，而且不会被浏览器未来可能的默认值变更影响。</p>
 
-        <h3>18.6 Permissions-Policy</h3>
+        <h2>18.6 Permissions-Policy</h2>
 
         <p><code>Permissions-Policy</code>（之前叫 <code>Feature-Policy</code>）是一个比较新的安全头部，用于<strong>控制浏览器API的访问权限</strong>。它可以限制当前页面以及其子iframe能够使用哪些浏览器功能。</p>
 
@@ -353,7 +413,7 @@ Permissions-Policy: usb=(self "https://trusted-device.example.com")</code></pre>
           <p><strong>快速配置指南</strong>：如果你不想逐一配置每个Permission，一个保守但安全的策略是：<code>Permissions-Policy: camera=(), microphone=(), geolocation=()</code>。这禁用了三个最敏感的隐私API。等你的网站确实需要某个API时，再改为 <code>(self)</code>。另外，Permissions-Policy的语法已经从旧的 <code>Feature-Policy</code> 头发生了变化，请使用新的 <code>Permissions-Policy</code> 头。</p>
         </div>
 
-        <h3>18.7 安全头部配置示例</h3>
+        <h2>18.7 安全头部配置示例</h2>
 
         <p>最后，我们把这些安全头部汇总到一个完整的Nginx配置示例中，方便你参考配置：</p>
 
@@ -386,13 +446,34 @@ Permissions-Policy: usb=(self "https://trusted-device.example.com")</code></pre>
 
         <p>好了，第十八章的内容就到这里。我们从HSTS、CSP、X-Frame-Options、X-Content-Type-Options、Referrer-Policy到Permissions-Policy，把这六个关键的安全头部都讲清楚了。这些头部配置简单但防御效果显著，是Web安全中投入产出比最高的措施之一。希望你在读完这一章后，马上检查自己网站的安全头部配置——你可能会发现，只需要几分钟的配置就能让网站的安全性提升一大截。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：为什么设置 HSTS 的 <code>includeSubDomains</code> 要特别谨慎？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch18-a1">显示答案</button>
+          <div class="answer" id="ch18-a1" hidden>
+            <p><code>includeSubDomains</code> 会把“强制 HTTPS”应用到该域名的所有子域。如果某个子域尚不支持 HTTPS（例如畖旧系统），它将彻底无法访问，而且一旦浏览器已缓存 HSTS（或在 Preload 列表中）很难回退。不确定所有子域都支持 HTTPS 时，不要加它。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="17.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="19.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -154,7 +155,7 @@
 <li><a href="16.html">第16章 TLS深入</a></li>
 <li><a href="17.html">第17章 证书管理</a></li>
 <li><a href="18.html">第18章 HTTP安全头部</a></li>
-<li><a href="19.html" class="active">第19章 代理与网关</a></li>
+<li><a href="19.html" class="active" aria-current="page">第19章 代理与网关</a></li>
 <li><a href="20.html">第20章 负载均衡与限流</a></li>
 <li><a href="21.html">第21章 RESTful API设计</a></li>
 <li><a href="22.html">第22章 HTTP性能优化</a></li>
@@ -165,9 +166,12 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第十九章：代理与网关</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第十九章：代理与网关</h1>
+            <p class="dek">正向代理、反向代理与透明代理的区别，<code>X-Forwarded-For</code> 信任链，以及 CDN 的调度与缓存原理。</p>
+        </header>
 
         <p>各位同学好。从这一章开始，我们进入HTTP协议<strong>架构层面</strong>的话题。前面十几章我们聊的都是一个客户端和一个服务器之间的通信细节，但在真实世界里，客户端和服务器之间很少是直连的——中间会经过很多"中间人"。</p>
 
@@ -175,7 +179,7 @@
 
         <p>区别在于：谁来配置它？用它来做什么？客户端知不知道它的存在？</p>
 
-        <h3>19.1 正向代理</h3>
+        <h2>19.1 正向代理</h2>
 
         <p><strong>正向代理（Forward Proxy）</strong>是离客户端最近的代理。客户端主动配置代理地址，把自己所有的HTTP请求都发给代理，由代理代为发送出去。</p>
 
@@ -204,7 +208,7 @@ Connection: Keep-Alive</code></pre>
           <p><strong>实战提示</strong>：很多HTTP客户端库（包括curl、Python requests、Node.js的fetch）都支持通过环境变量 <code>HTTP_PROXY</code> 和 <code>HTTPS_PROXY</code> 来配置代理。但注意HTTPS请求走正向代理时，客户端会先通过HTTP CONNECT方法建立一个隧道，代理只负责透传加密数据，无法查看HTTPS内容——这就是HTTPS的"端到端加密"特性。</p>
         </div>
 
-        <h3>19.2 反向代理</h3>
+        <h2>19.2 反向代理</h2>
 
         <p><strong>反向代理（Reverse Proxy）</strong>是离服务器最近的代理。客户端并不知道它的存在——客户端以为自己直接连的是目标服务器，实际上请求先到了反向代理，由反向代理转发给后端的真实服务器。</p>
 
@@ -232,6 +236,37 @@ server {
 
         <p>反向代理的<strong>核心价值</strong>：</p>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch19-proxy-title fig-ch19-proxy-desc" viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch19-proxy-title">正向代理与反向代理的位形对比</title>
+            <desc id="fig-ch19-proxy-desc">正向代理靠客户端配置，位于客户端一侧，代表客户端访问众多服务器；反向代理由服务端部署，位于服务器一侧，代表服务器接收众多客户端请求。</desc>
+            <rect x="0" y="0" width="880" height="300" fill="#ffffff"/>
+            <defs><marker id="ch19-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+            <g font-size="13.5">
+              <text x="30" y="30" font-weight="700" fill="#4338ca" font-size="15">正向代理：客户端配置，代表客户端</text>
+              <rect x="40" y="52" width="150" height="48" rx="9" fill="#6366f1"/><text x="115" y="81" fill="#ffffff" text-anchor="middle">客户端</text>
+              <rect x="300" y="52" width="170" height="48" rx="9" fill="#f8faff" stroke="#6366f1"/><text x="385" y="81" fill="#4338ca" text-anchor="middle">正向代理</text>
+              <rect x="640" y="42" width="200" height="28" rx="6" fill="#d1fae5" stroke="#10b981"/><text x="740" y="62" fill="#065f46" text-anchor="middle" font-size="12">服务器 A</text>
+              <rect x="640" y="78" width="200" height="28" rx="6" fill="#d1fae5" stroke="#10b981"/><text x="740" y="98" fill="#065f46" text-anchor="middle" font-size="12">服务器 B</text>
+              <line x1="192" y1="76" x2="298" y2="76" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch19-a)"/>
+              <line x1="472" y1="76" x2="638" y2="76" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch19-a)"/>
+              <text x="300" y="126" fill="#64748b" font-size="12">客户端知道代理存在</text>
+
+              <line x1="30" y1="152" x2="850" y2="152" stroke="#e2e8f0"/>
+
+              <text x="30" y="182" font-weight="700" fill="#047857" font-size="15">反向代理：服务端部署，代表服务器</text>
+              <rect x="40" y="204" width="200" height="28" rx="6" fill="#eef2ff" stroke="#818cf8"/><text x="140" y="224" fill="#4338ca" text-anchor="middle" font-size="12">客户端 A</text>
+              <rect x="40" y="238" width="200" height="28" rx="6" fill="#eef2ff" stroke="#818cf8"/><text x="140" y="258" fill="#4338ca" text-anchor="middle" font-size="12">客户端 B</text>
+              <rect x="330" y="204" width="170" height="62" rx="9" fill="#f0fdf4" stroke="#10b981"/><text x="415" y="240" fill="#047857" text-anchor="middle">反向代理</text>
+              <rect x="620" y="210" width="230" height="50" rx="9" fill="#10b981"/><text x="735" y="241" fill="#ffffff" text-anchor="middle">后端服务器集群</text>
+              <line x1="242" y1="235" x2="328" y2="235" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch19-a)"/>
+              <line x1="502" y1="235" x2="618" y2="235" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch19-a)"/>
+              <text x="415" y="288" fill="#64748b" font-size="12" text-anchor="middle">客户端以为在直连服务器</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 19.1</span>　正向代理位于客户端一侧、由客户端配置，代表客户端访问众多服务器；反向代理位于服务器一侧、由服务端部署，代表服务器接收众多客户端请求，对客户端透明。</figcaption>
+        </figure>
+
         <ul>
           <li><strong>负载均衡</strong>：把请求分散到多台后端服务器，提升整体处理能力。</li>
           <li><strong>SSL终止（SSL Termination）</strong>：HTTPS证书和加解密工作由反向代理负责，后端服务器用HTTP通信即可，降低后端复杂度。</li>
@@ -246,7 +281,7 @@ server {
           <p><strong>核心理解</strong>：反向代理是微服务架构的标配。不管你用的是Nginx、HAProxy、Traefik还是Envoy，本质上都是在做同一件事——<strong>用统一的入口收束所有流量，做一层控制</strong>。我见过不少初创团队起步时只有一台服务器，不需要反向代理；但一旦扩展到两台服务器以上，就一定要在前面架一个反向代理。</p>
         </div>
 
-        <h3>19.3 透明代理</h3>
+        <h2>19.3 透明代理</h2>
 
         <p><strong>透明代理（Transparent Proxy）</strong>也叫"拦截代理"。它的特点是：<strong>客户端不需要做任何配置</strong>，甚至完全不知道它的存在。</p>
 
@@ -264,7 +299,7 @@ server {
           <p><strong>踩坑故事</strong>：有一次我排查一个诡异的问题——用户反馈说访问我们网站时，看到的CSS样式"不太对"，但刷新一下又恢复正常了。查了半天发现，问题出在运营商的透明代理上。运营商会缓存静态资源来省钱，但缓存策略很粗暴——不管资源的新鲜度，直接返回旧版本。最后我们在所有静态资源URL里加了版本号参数（如 <code>style.css?v=20240301</code>），问题才解决。这也告诉我们：<strong>透明代理虽然是透明的，但它的副作用一点也不透明</strong>。</p>
         </div>
 
-        <h3>19.4 X-Forwarded-For链</h3>
+        <h2>19.4 X-Forwarded-For链</h2>
 
         <p>当一个请求经过多层代理时，后端服务器想知道客户端的真实IP——不能直接用TCP连接的IP，因为那是最后一层代理的IP。</p>
 
@@ -285,6 +320,31 @@ X-Forwarded-For: 1.1.1.1
 GET /api HTTP/1.1
 Host: example.com
 X-Forwarded-For: 1.1.1.1, 2.2.2.2</code></pre>
+
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch19-xff-title fig-ch19-xff-desc" viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch19-xff-title">X-Forwarded-For 逐层追加</title>
+            <desc id="fig-ch19-xff-desc">请求从客户端 1.1.1.1 经代理 A（2.2.2.2）、代理 B（3.3.3.3）到后端，每层代理在 X-Forwarded-For 末尾追加上一跳 IP，后端取最左侧可信 IP 为客户端真实 IP。</desc>
+            <rect x="0" y="0" width="880" height="260" fill="#ffffff"/>
+            <defs><marker id="ch19-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4338ca"/></marker></defs>
+            <rect x="30" y="70" width="150" height="56" rx="9" fill="#6366f1"/><text x="105" y="94" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="13">客户端</text><text x="105" y="113" fill="#e0e7ff" text-anchor="middle" font-size="12" font-family="monospace">1.1.1.1</text>
+            <rect x="250" y="70" width="150" height="56" rx="9" fill="#0ea5e9"/><text x="325" y="94" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="13">代理 A</text><text x="325" y="113" fill="#e0f2fe" text-anchor="middle" font-size="12" font-family="monospace">2.2.2.2</text>
+            <rect x="470" y="70" width="150" height="56" rx="9" fill="#7c3aed"/><text x="545" y="94" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="13">代理 B</text><text x="545" y="113" fill="#e9d5ff" text-anchor="middle" font-size="12" font-family="monospace">3.3.3.3</text>
+            <rect x="690" y="70" width="160" height="56" rx="9" fill="#10b981"/><text x="770" y="94" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="13">后端服务器</text><text x="770" y="113" fill="#d1fae5" text-anchor="middle" font-size="12">真实 IP 在此判定</text>
+            <line x1="182" y1="98" x2="248" y2="98" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch19-b)"/>
+            <line x1="402" y1="98" x2="468" y2="98" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch19-b)"/>
+            <line x1="622" y1="98" x2="688" y2="98" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch19-b)"/>
+            <g font-family="'JetBrains Mono',monospace" font-size="11.5" fill="#334155">
+              <text x="30" y="158">XFF: （无）</text>
+              <text x="250" y="158">XFF: 1.1.1.1</text>
+              <text x="470" y="158">XFF: 1.1.1.1, 2.2.2.2</text>
+              <text x="690" y="158">取最左 = 1.1.1.1</text>
+            </g>
+            <text x="440" y="206" font-size="13" fill="#b45309" text-anchor="middle">只有可信代理追加的值可信；客户端可自行伪造 XFF，安全决策需只信任已知代理范围。</text>
+            <text x="440" y="234" font-size="12.5" fill="#94a3b8" text-anchor="middle">Nginx 中用 set_real_ip_from 指定可信代理网段，配合 real_ip_recursive 逐层回推。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 19.2</span>　X-Forwarded-For 逐层追加：每层代理把上一跳 IP 追加到末尾。后端通常取最左侧 IP 作为客户端真实 IP，但必须只信任已知代理追加的值。</figcaption>
+        </figure>
 
         <p>后端从<code>X-Forwarded-For</code>头里取<strong>最左边</strong>的IP，就是客户端的真实IP。</p>
 
@@ -320,7 +380,7 @@ real_ip_recursive on;</code></pre>
           <p><strong>安全提醒</strong>：如果你用 <code>X-Forwarded-For</code> 来做IP白名单、频率限制、地理定位等安全决策，一定要确保只信任可信代理传来的值。如果直接取最左边的IP，攻击者伪造一个内网IP的 <code>X-Forwarded-For</code> 就能绕过你的安全策略。这种攻击方式叫"IP欺骗"——虽老但依然有效。</p>
         </div>
 
-        <h3>19.5 CDN原理</h3>
+        <h2>19.5 CDN原理</h2>
 
         <p>CDN（Content Delivery Network，内容分发网络）是反向代理+缓存+全球分布式网络的集合体。它把一个网站的静态资源（以及日益增多的动态资源）部署到全球几百个甚至上千个节点上。</p>
 
@@ -357,13 +417,34 @@ real_ip_recursive on;</code></pre>
 
         <p>好了，第十九章的内容就到这里。我们介绍了正向代理、反向代理、透明代理、X-Forwarded-For以及CDN原理。下一章我们进入<strong>负载均衡与限流</strong>——这两个话题和反向代理紧密相关，是做高并发系统绕不开的硬核知识。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：正向代理与反向代理最本质的区别是什么？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch19-a1">显示答案</button>
+          <div class="answer" id="ch19-a1" hidden>
+            <p>看“谁部署、代表谁”：正向代理由客户端配置、位于客户端一侧，代表客户端去访问外部服务器（客户端知道它的存在）；反向代理由服务端部署、位于服务器一侧，代表服务器接收大量客户端请求（客户端无感）。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="18.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="20.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>
