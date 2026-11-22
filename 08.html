@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -143,7 +144,7 @@
 <li><a href="05.html">第5章 HTTP状态码</a></li>
 <li><a href="06.html">第6章 HTTP头部字段</a></li>
 <li><a href="07.html">第7章 MIME类型与内容协商</a></li>
-<li><a href="08.html" class="active">第8章 连接管理</a></li>
+<li><a href="08.html" class="active" aria-current="page">第8章 连接管理</a></li>
 <li><a href="09.html">第9章 HTTP缓存</a></li>
 <li><a href="10.html">第10章 Cookie与会话</a></li>
 <li><a href="11.html">第11章 HTTP认证</a></li>
@@ -165,15 +166,18 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第八章：连接管理</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第八章：连接管理</h1>
+            <p class="dek">短连接与长连接、Keep-Alive 与浏览器 6 连接限制、管线化的队头阻塞，以及连接池的实战配置。</p>
+        </header>
 
         <p>各位同学好，欢迎来到第八章。前面七章我们主要讨论了HTTP协议的应用层特性——报文结构、方法、状态码、头部字段、内容协商。现在我们要往下走一层，看看HTTP和底层TCP连接之间的关系。坦白说，连接管理是Web性能优化的第一块基石——不懂连接，谈性能就是空中楼阁。</p>
 
         <p>你可能有过这种体验：明明网速很快，加载一个页面却要好几秒。问题往往出在连接建立上，而不仅仅是带宽。今天我们就把HTTP的连接管理彻底搞明白。</p>
 
-        <h3>8.1 短连接与长连接</h3>
+        <h2>8.1 短连接与长连接</h2>
 
         <p>在HTTP的早期版本（0.9和1.0）中，每个HTTP请求都要创建一个新的TCP连接。流程是这样的：</p>
 
@@ -192,7 +196,7 @@
           <p><strong>核心数据</strong>：建立一次TCP连接的开销大约是1-3个RTT（Round-Trip Time）。如果客户端到服务器的物理距离是200ms延迟（比如从中国到美国西海岸），三次握手就花掉至少200ms。短连接下每个资源都要额外等这个时间，而长连接只需在第一次请求时付出这个代价。</p>
         </div>
 
-        <h3>8.2 Keep-Alive机制</h3>
+        <h2>8.2 Keep-Alive机制</h2>
 
         <p>持久连接是通过 <code>Connection: keep-alive</code> 头实现的。在HTTP/1.0中，你需要显式发送这个头来启用长连接。到了HTTP/1.1，持久连接变成了<strong>默认行为</strong>，除非你发送 <code>Connection: close</code> 明确要求关闭。</p>
 
@@ -215,7 +219,43 @@ keepalive_requests 100; # 一个连接最多处理100个请求</code></pre>
           <tr><td>HTTP/2</td><td>多路复用</td><td>1个连接</td><td>并行复用</td></tr>
         </table>
 
-        <h3>8.3 HTTP管线化</h3>
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch8-conn-title fig-ch8-conn-desc" viewBox="0 0 900 330" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch8-conn-title">短连接、长连接与多路复用的对比</title>
+            <desc id="fig-ch8-conn-desc">短连接下每个请求都需重新建立 TCP 连接（含握手开销）；HTTP/1.1 长连接在一个连接上串行完成多个请求；HTTP/2 多路复用在单个连接上并行多个请求流。</desc>
+            <rect x="0" y="0" width="900" height="330" fill="#ffffff"/>
+            <g font-size="14">
+              <text x="20" y="52" fill="#334155" font-weight="700">短连接</text>
+              <g>
+                <rect x="120" y="30" width="46" height="30" rx="5" fill="#b45309"/><text x="143" y="50" fill="#fff" text-anchor="middle" font-size="12">TCP</text>
+                <rect x="170" y="30" width="70" height="30" rx="5" fill="#6366f1"/><text x="205" y="50" fill="#fff" text-anchor="middle" font-size="12">req/res</text>
+                <rect x="260" y="30" width="46" height="30" rx="5" fill="#b45309"/><text x="283" y="50" fill="#fff" text-anchor="middle" font-size="12">TCP</text>
+                <rect x="310" y="30" width="70" height="30" rx="5" fill="#6366f1"/><text x="345" y="50" fill="#fff" text-anchor="middle" font-size="12">req/res</text>
+                <rect x="400" y="30" width="46" height="30" rx="5" fill="#b45309"/><text x="423" y="50" fill="#fff" text-anchor="middle" font-size="12">TCP</text>
+                <rect x="450" y="30" width="70" height="30" rx="5" fill="#6366f1"/><text x="485" y="50" fill="#fff" text-anchor="middle" font-size="12">req/res</text>
+              </g>
+              <text x="540" y="50" fill="#b45309" font-size="12.5">← 每次请求重握手</text>
+
+              <text x="20" y="148" fill="#334155" font-weight="700">长连接</text>
+              <rect x="120" y="126" width="46" height="30" rx="5" fill="#b45309"/><text x="143" y="146" fill="#fff" text-anchor="middle" font-size="12">TCP</text>
+              <rect x="170" y="126" width="70" height="30" rx="5" fill="#6366f1"/><text x="205" y="146" fill="#fff" text-anchor="middle" font-size="12">req/res</text>
+              <rect x="244" y="126" width="70" height="30" rx="5" fill="#6366f1"/><text x="279" y="146" fill="#fff" text-anchor="middle" font-size="12">req/res</text>
+              <rect x="318" y="126" width="70" height="30" rx="5" fill="#6366f1"/><text x="353" y="146" fill="#fff" text-anchor="middle" font-size="12">req/res</text>
+              <text x="400" y="146" fill="#4338ca" font-size="12.5">← 串行复用同一连接</text>
+
+              <text x="20" y="244" fill="#334155" font-weight="700">多路复用</text>
+              <rect x="120" y="222" width="46" height="30" rx="5" fill="#b45309"/><text x="143" y="242" fill="#fff" text-anchor="middle" font-size="12">TCP</text>
+              <rect x="170" y="210" width="220" height="18" rx="4" fill="#10b981"/><text x="280" y="224" fill="#fff" text-anchor="middle" font-size="11">流 1</text>
+              <rect x="170" y="232" width="220" height="18" rx="4" fill="#0ea5e9"/><text x="280" y="246" fill="#fff" text-anchor="middle" font-size="11">流 2</text>
+              <rect x="170" y="254" width="220" height="18" rx="4" fill="#7c3aed"/><text x="280" y="268" fill="#fff" text-anchor="middle" font-size="11">流 3</text>
+              <text x="400" y="244" fill="#047857" font-size="12.5">← 单连接内并行</text>
+            </g>
+            <text x="20" y="308" font-size="13" fill="#94a3b8">横轴为时间；棕色小块是 TCP 握手开销，仅在长连接 / 多路复用中发生一次。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 8.1</span>　短连接每个请求都要重新握手；HTTP/1.1 长连接在单连接上串行复用；HTTP/2 多路复用在单连接上并行多条流。横轴为时间。</figcaption>
+        </figure>
+
+        <h2>8.3 HTTP管线化</h2>
 
         <p>在讲管线化（Pipelining）之前，我们先理解一下HTTP/1.1的基本工作模式——<strong>请求-应答</strong>。在同一个连接上，浏览器必须先发一个请求，等收到响应后才能发下一个请求。这叫串行，或者叫"停等协议"。</p>
 
@@ -223,11 +263,35 @@ keepalive_requests 100; # 一个连接最多处理100个请求</code></pre>
 
         <p>管线化的核心问题在于<strong>队头阻塞（Head-of-Line Blocking）</strong>：如果连续发送了请求A、B、C，服务器的处理顺序也必须是A→B→C。但如果A处理得特别慢（比如A是一个数据库慢查询），B和C的响应即使已经准备好了，也必须排队等A处理完才能发送。这就跟只有一个收银台的超市一样——前面的人买东西磨磨蹭蹭，后面的人只能干等。</p>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch8-hol-title fig-ch8-hol-desc" viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch8-hol-title">管线化中的队头阻塞</title>
+            <desc id="fig-ch8-hol-desc">请求 A、B、C 已连续发出。若 A 处理很慢，即使 B、C 早已处理完成，它们的响应也必须按 A→B→C 的顺序等待 A 完成后才能返回。</desc>
+            <rect x="0" y="0" width="880" height="260" fill="#ffffff"/>
+            <text x="30" y="40" font-size="16" font-weight="700" fill="#334155">服务器处理队列</text>
+            <rect x="40" y="70" width="340" height="80" rx="12" fill="#fee2e2" stroke="#dc2626"/>
+            <text x="210" y="105" font-size="18" font-weight="700" fill="#b91c1c" text-anchor="middle">A · 慢查询</text>
+            <text x="210" y="130" font-size="13" fill="#991b1b" text-anchor="middle">处理中 —— 阻塞了后面</text>
+            <rect x="400" y="70" width="200" height="80" rx="12" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="6 5"/>
+            <text x="500" y="105" font-size="18" font-weight="700" fill="#64748b" text-anchor="middle">B</text>
+            <text x="500" y="130" font-size="13" fill="#64748b" text-anchor="middle">已完成，等待中</text>
+            <rect x="620" y="70" width="200" height="80" rx="12" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="6 5"/>
+            <text x="720" y="105" font-size="18" font-weight="700" fill="#64748b" text-anchor="middle">C</text>
+            <text x="720" y="130" font-size="13" fill="#64748b" text-anchor="middle">已完成，等待中</text>
+
+            <defs><marker id="ch8-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+            <line x1="380" y1="190" x2="620" y2="190" stroke="#b91c1c" stroke-width="2.5" marker-end="url(#ch8-arrow)"/>
+            <text x="500" y="212" font-size="13" fill="#b91c1c" text-anchor="middle">响应必须严格按 A→B→C 顺序返回</text>
+            <text x="500" y="236" font-size="13" fill="#94a3b8" text-anchor="middle">B、C 虽已就绪，仍被 A 阻塞——这就是队头阻塞</text>
+          </svg>
+          <figcaption><span class="fig-no">图 8.2</span>　队头阻塞：一个慢请求（A）会阻塞同一连接上后面请求（B、C）的响应，这也是浏览器极少启用管线化的原因。</figcaption>
+        </figure>
+
         <div class="tip">
           <p><strong>为什么浏览器禁用了管线化？</strong> 因为管线化在实际部署中问题太多了：1）队头阻塞导致整体延迟更差；2）很多代理服务器和中间设备不支持或实现有bug；3）如果连接中途断开，所有已发送但未收到响应的请求必须重发。Chrome在2012年尝试过启用管线化，发现延迟没有改善反而恶化，最后在2015年彻底禁用了。直到HTTP/2的多路复用，才算真正解决了这个问题。</p>
         </div>
 
-        <h3>8.4 TCP连接开销</h3>
+        <h2>8.4 TCP连接开销</h2>
 
         <p>很多人低估了建立TCP连接的实际开销。我们拆开来看：</p>
 
@@ -247,7 +311,7 @@ keepalive_requests 100; # 一个连接最多处理100个请求</code></pre>
           <p><strong>真实数据</strong>：一个从中国访问美国西海岸的HTTPS请求，TCP+TLS握手大约需要200-300ms。加上慢启动的影响，一个10KB的响应可能要400-500ms才能完整下载。而如果复用已有的连接，完全绕过了握手和慢启动，同样的请求可能只需100ms。这就是为什么连接复用如此重要的原因。</p>
         </div>
 
-        <h3>8.5 连接池实战</h3>
+        <h2>8.5 连接池实战</h2>
 
         <p>理解了连接的开销后，我们来看看在实际系统中如何管理连接。</p>
 
@@ -305,13 +369,34 @@ keepalive_requests 100; # 一个连接最多处理100个请求</code></pre>
 
         <p>好了，第八章的内容就到这里。我们从短连接的历史讲到Keep-Alive和管线化的实践，再到TCP连接开销的细节分析。理解连接管理是理解HTTP性能的关键——无论是浏览器加载页面还是微服务间调用，连接复用的设计直接影响整体效率。下一章我们进入另一个对性能至关重要的主题——<strong>HTTP缓存</strong>。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：为什么浏览器对同一域名通常只开 6 个连接？把图片放在两个域名的做法叫什么？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch8-a1">显示答案</button>
+          <div class="answer" id="ch8-a1" hidden>
+            <p>因为浏览器对同一域名限制并发连接数（HTTP/1.1 下主流浏览器统一为 6）以免服务器被单客户端耗尽；把静态资源分散到多个子域名的做法叫“域名分片（Domain Sharding）”，可把总并发上限翻倍。代价是每个域名仍需单独握手，且 HTTP/2 下已不再需要。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="07.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="09.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

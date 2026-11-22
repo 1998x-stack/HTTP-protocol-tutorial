@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -142,7 +143,7 @@
 <li><a href="04.html">第4章 HTTP请求方法</a></li>
 <li><a href="05.html">第5章 HTTP状态码</a></li>
 <li><a href="06.html">第6章 HTTP头部字段</a></li>
-<li><a href="07.html" class="active">第7章 MIME类型与内容协商</a></li>
+<li><a href="07.html" class="active" aria-current="page">第7章 MIME类型与内容协商</a></li>
 <li><a href="08.html">第8章 连接管理</a></li>
 <li><a href="09.html">第9章 HTTP缓存</a></li>
 <li><a href="10.html">第10章 Cookie与会话</a></li>
@@ -165,15 +166,18 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第七章：MIME类型与内容协商</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第七章：MIME类型与内容协商</h1>
+            <p class="dek">MIME 的 type/subtype 结构、Content-Type 参数、Accept 质量值与服务端驱动的内容协商，以及中文乱码的排查路径。</p>
+        </header>
 
         <p>欢迎来到第七章。上一章我们全面了解了HTTP头部字段，这一章我们聚焦一个非常具体的主题：<strong>MIME类型和内容协商</strong>。这两个概念是Content-Type系列头部的核心，也是浏览器和服务器之间沟通"用什么格式传输数据"的桥梁。</p>
 
         <p>你可能有过这样的经历：明明访问的是同一个URL，但浏览器和curl返回的数据格式不一样。或者上传图片时报错"文件格式不支持"——这些都跟MIME类型有关。今天我们就来把这个知识点彻底讲透。</p>
 
-        <h3>7.1 什么是MIME类型</h3>
+        <h2>7.1 什么是MIME类型</h2>
 
         <p>MIME的全称是 <strong>Multipurpose Internet Mail Extensions</strong>（多用途互联网邮件扩展）。没错，它最早是为电子邮件设计的——用来在邮件中传输非ASCII字符、图片、音视频等附件。后来HTTP沿用了这个机制，用来标识传输内容的格式。</p>
 
@@ -185,13 +189,34 @@
           <li>还有<strong>可选的参数</strong>，如 <code>charset=utf-8</code> 或 <code>boundary=----xxx</code>。</li>
         </ul>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch7-struct-title fig-ch7-struct-desc" viewBox="0 0 840 200" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch7-struct-title">MIME 类型的三段结构</title>
+            <desc id="fig-ch7-struct-desc">以 text/html; charset=utf-8 为例，MIME 类型由 type、subtype 与可选参数组成，中间用斜杠和分号分隔。</desc>
+            <rect x="0" y="0" width="840" height="200" fill="#ffffff"/>
+            <g font-family="'JetBrains Mono','Consolas',monospace" font-size="22">
+              <rect x="60" y="60" width="120" height="46" rx="8" fill="#6366f1"/><text x="120" y="91" fill="#ffffff" text-anchor="middle">text</text>
+              <text x="196" y="91" fill="#475569" font-size="24">/</text>
+              <rect x="216" y="60" width="130" height="46" rx="8" fill="#0ea5e9"/><text x="281" y="91" fill="#ffffff" text-anchor="middle">html</text>
+              <text x="362" y="91" fill="#475569" font-size="24">;</text>
+              <rect x="382" y="60" width="300" height="46" rx="8" fill="#10b981"/><text x="532" y="91" fill="#ffffff" text-anchor="middle" font-size="19">charset=utf-8</text>
+            </g>
+            <g font-size="14" text-anchor="middle">
+              <line x1="120" y1="110" x2="120" y2="140" stroke="#cbd5e1"/><text x="120" y="160" fill="#4338ca" font-weight="700">type</text><text x="120" y="178" fill="#64748b" font-size="12.5">大类</text>
+              <line x1="281" y1="110" x2="281" y2="140" stroke="#cbd5e1"/><text x="281" y="160" fill="#0369a1" font-weight="700">subtype</text><text x="281" y="178" fill="#64748b" font-size="12.5">具体格式</text>
+              <line x1="532" y1="110" x2="532" y2="140" stroke="#cbd5e1"/><text x="532" y="160" fill="#047857" font-weight="700">parameter</text><text x="532" y="178" fill="#64748b" font-size="12.5">可选参数（如字符编码）</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 7.1</span>　MIME 类型 = <code>type/subtype</code>，后接可选参数。参数用分号分隔，如 <code>charset</code>、<code>boundary</code>。</figcaption>
+        </figure>
+
         <p>所有标准化的MIME类型由 <strong>IANA（互联网号码分配机构）</strong>维护和注册。目前IANA注册了上千种MIME类型，从 <code>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</code>（Excel文件）到 <code>text/vcard</code>（电子名片），非常丰富。</p>
 
         <div class="highlight">
           <p><strong>核心认知</strong>：MIME类型是HTTP理解"这个数据是什么"的关键。服务器通过 <code>Content-Type</code> 头告诉浏览器响应体的格式，浏览器据此决定如何渲染或处理。如果你传了一个错误的MIME类型，浏览器就会用错误的方式处理数据——最常见的后果就是"乱码"或"下载而不是显示"。</p>
         </div>
 
-        <h3>7.2 常见MIME类型</h3>
+        <h2>7.2 常见MIME类型</h2>
 
         <p>以下是你日常开发中最常遇到的MIME类型：</p>
 
@@ -215,7 +240,7 @@
           <tr><td>video/mp4</td><td>MP4视频</td><td>视频播放</td></tr>
         </table>
 
-        <h3>7.3 Content-Type头</h3>
+        <h2>7.3 Content-Type头</h2>
 
         <p><code>Content-Type</code> 是Entity Header（实体头），出现在请求和响应中，告诉对方发送的数据是什么格式。</p>
 
@@ -239,7 +264,7 @@
           <p><strong>踩坑故事</strong>：有个同事做文件上传功能，只校验了文件的扩展名，没验证Content-Type。结果用户上传了一个 <code>.txt</code> 文件，但实际上内容是HTML + JavaScript。服务器把Content-Type设置为 <code>text/plain</code>，但浏览器嗅探后发现里面有HTML标签，强行当作HTML渲染了——XSS漏洞就这样产生了。解决方案是返回 <code>X-Content-Type-Options: nosniff</code> 头，禁止浏览器嗅探，同时服务器端严格校验文件内容。</p>
         </div>
 
-        <h3>7.4 内容协商机制</h3>
+        <h2>7.4 内容协商机制</h2>
 
         <p>内容协商（Content Negotiation）是HTTP的一个优雅设计：<strong>同一个URL，可以根据客户端的偏好返回不同格式的内容</strong>。</p>
 
@@ -259,7 +284,38 @@
 
         <p>在实践中，绝大多数内容协商是服务端驱动的。浏览器自动发送Accept系列头，服务器读取后决定返回什么格式。</p>
 
-        <h3>7.5 Accept系列头实战</h3>
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch7-neg-title fig-ch7-neg-desc" viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch7-neg-title">服务端驱动的内容协商流程</title>
+            <desc id="fig-ch7-neg-desc">客户端通过 Accept 系列头声明偏好，服务器按质量值 q 选择最合适的表示，再在响应用 Content-Type 标明实际返回的类型；无法满足时返回 406。</desc>
+            <rect x="0" y="0" width="880" height="250" fill="#ffffff"/>
+            <defs><marker id="ch7-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+            <g font-size="14">
+              <rect x="30" y="70" width="230" height="100" rx="12" fill="#6366f1"/>
+              <text x="145" y="100" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="15">① 客户端声明偏好</text>
+              <text x="145" y="126" fill="#e0e7ff" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12">Accept: application/json,</text>
+              <text x="145" y="146" fill="#e0e7ff" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12">text/html;q=0.9</text>
+
+              <line x1="262" y1="120" x2="320" y2="120" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch7-arrow)"/>
+
+              <rect x="326" y="70" width="230" height="100" rx="12" fill="#0ea5e9"/>
+              <text x="441" y="100" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="15">② 服务器按 q 值选择</text>
+              <text x="441" y="126" fill="#e0f2fe" text-anchor="middle" font-size="12.5">q 值高者优先</text>
+              <text x="441" y="146" fill="#e0f2fe" text-anchor="middle" font-size="12.5">无法满足则回 406</text>
+
+              <line x1="558" y1="120" x2="616" y2="120" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ch7-arrow)"/>
+
+              <rect x="622" y="70" width="230" height="100" rx="12" fill="#10b981"/>
+              <text x="737" y="100" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="15">③ 响应标注类型</text>
+              <text x="737" y="126" fill="#d1fae5" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12">Content-Type:</text>
+              <text x="737" y="146" fill="#d1fae5" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12">application/json</text>
+            </g>
+            <text x="30" y="212" font-size="13" fill="#94a3b8">同一 URL 可因 Accept 不同而返回不同表示；带 <tspan font-family="'JetBrains Mono',monospace">Vary: Accept</tspan> 可让缓存区分这些变体。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 7.2</span>　服务端驱动的内容协商：客户端用 Accept 声明偏好，服务器按 q 值挑选表示，并用 Content-Type 标出实际返回类型。</figcaption>
+        </figure>
+
+        <h2>7.5 Accept系列头实战</h2>
 
         <p>Accept头最精妙的设计是<strong>质量值（Quality Values，q=）</strong>：</p>
 
@@ -289,7 +345,7 @@ curl -H "Accept: text/html" https://api.example.com/user/1</code></pre>
           <p>看看返回格式是否不同。很多框架（如Spring、Express、Django REST Framework）都原生支持内容协商，配置一下就能让一个接口同时服务前端和API调用。</p>
         </div>
 
-        <h3>7.6 字符编码——中文乱码的根源</h3>
+        <h2>7.6 字符编码——中文乱码的根源</h2>
 
         <p>字符编码跟MIME类型关系密切，尤其是文本类型的响应。这里我想重点聊聊中文开发者最常遇到的问题——<strong>乱码</strong>。</p>
 
@@ -308,13 +364,34 @@ curl -H "Accept: text/html" https://api.example.com/user/1</code></pre>
 
         <p>好了，第七章到这里。MIME类型是HTTP里非常"润物细无声"的知识——平时看不到它的存在，但一旦出了问题，会让你头疼很久。从下一章开始，我们将进入HTTP的连接管理层面——<strong>持久连接、队头阻塞、管线化与域名分片</strong>，这些可是性能优化的根基。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：服务器上明明存的是 UTF-8，为什么响应还是乱码？列出最可能的两处排查点。</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch7-a1">显示答案</button>
+          <div class="answer" id="ch7-a1" hidden>
+            <p>一是响应头缺少 <code>charset=utf-8</code>（或 meta 未声明），浏览器只能猜测编码；二是数据库连接或表字符集不是 UTF-8，数据在写入阶段就已损坏。编码链路上文件、HTTP 头、数据库连接、表字符集四处的任何一处不一致都可能导致乱码。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="06.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="08.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

