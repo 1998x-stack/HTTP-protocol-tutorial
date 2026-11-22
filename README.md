@@ -33,7 +33,7 @@ open index.html   # macOS
 | 14 | 重定向与URL重写 | 301/302/307/308、Nginx rewrite、重定向循环 |
 | 15 | HTTPS概述 | 对称/非对称加密、TLS握手过程、证书信任链 |
 | 16 | TLS深入 | 版本演进、密码套件、前向保密/ALPN |
-| 17 | 证书管理 | DV/OV/EV证书、s Encrypt",  |
+| 17 | 证书管理 | DV/OV/EV证书、Let's Encrypt、证书链与续期 |
 | 18 | HTTP安全头部 | HSTS/CSP、X-Frame-Options、Referrer-Policy |
 | 19 | 代理与网关 | 正向/反向代理、X-Forwarded-For、CDN原理 |
 | 20 | 负载均衡与限流 | 负载均衡算法、Nginx upstream、限流策略 |
