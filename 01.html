@@ -131,12 +131,13 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
-            <li><a href="01.html" class="active">第1章 HTTP协议概述</a></li>
+            <li><a href="01.html" class="active" aria-current="page">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
 <li><a href="03.html">第3章 HTTP报文结构</a></li>
 <li><a href="04.html">第4章 HTTP请求方法</a></li>
@@ -165,13 +166,16 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第一章：HTTP协议概述</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第一章：HTTP协议概述</h1>
+            <p class="dek">从 HTTP/0.9 到 HTTP/3 的演进脉络、客户端-服务器模型，以及 HTTP 在网络分层中的位置。</p>
+        </header>
 
 	<p>大家好，我是你们的讲师。在Web开发这行摸爬滚打十几年，HTTP协议可以说是天天打交道的老朋友了。今天咱们就来聊聊这个看似简单、实则门道不少的协议。</p>
 
-	<h3>1.1 HTTP的发展历史</h3>
+	<h2>1.1 HTTP的发展历史</h2>
 
 	<p>说到HTTP，得从上世纪90年代初说起。那时候互联网刚刚起步，Tim Berners-Lee 在 CERN 搞出了万维网（World Wide Web），随之而来的就是 HTTP 0.9。你没看错，最早的版本号是0.9，连1.0都不到。</p>
 
@@ -187,11 +191,48 @@
 
 	<p>我个人习惯把HTTP的发展分为三个阶段：第一阶段是"能用"（0.9/1.0），第二阶段是"好用"（1.1），第三阶段是"够快"（2/3）。现在大多数网站还跑在HTTP/1.1上，但HTTP/2和HTTP/3的占比正在快速增长。</p>
 
+	<figure>
+	  <svg role="img" aria-labelledby="fig-ch1-tl-title fig-ch1-tl-desc" viewBox="0 0 960 260" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+	    <title id="fig-ch1-tl-title">HTTP 各版本发布时间与关键特性</title>
+	    <desc id="fig-ch1-tl-desc">时间轴从 1991 年到 2022 年，依次标出 HTTP/0.9、1.0、1.1、2、3 五个版本及其代表性能力。</desc>
+	    <rect x="0" y="0" width="960" height="260" fill="#ffffff"/>
+	    <line x1="40" y1="140" x2="920" y2="140" stroke="#cbd5e1" stroke-width="3"/>
+	    <g fill="#64748b" font-size="14" text-anchor="middle">
+	      <circle cx="96" cy="140" r="9" fill="#64748b"/>
+	      <text x="96" y="116" font-weight="700" fill="#334155">HTTP/0.9</text>
+	      <text x="96" y="168">1991</text>
+	      <text x="96" y="192">只能请求 HTML</text>
+
+	      <circle cx="288" cy="140" r="9" fill="#0ea5e9"/>
+	      <text x="288" y="116" font-weight="700" fill="#0369a1">HTTP/1.0</text>
+	      <text x="288" y="168">1996</text>
+	      <text x="288" y="192">头部 · 状态码 · POST</text>
+
+	      <circle cx="480" cy="140" r="9" fill="#6366f1"/>
+	      <text x="480" y="116" font-weight="700" fill="#4338ca">HTTP/1.1</text>
+	      <text x="480" y="168">1997</text>
+	      <text x="480" y="192">持久连接 · Host · 分块</text>
+
+	      <circle cx="672" cy="140" r="9" fill="#10b981"/>
+	      <text x="672" y="116" font-weight="700" fill="#047857">HTTP/2</text>
+	      <text x="672" y="168">2015</text>
+	      <text x="672" y="192">多路复用 · HPACK</text>
+
+	      <circle cx="864" cy="140" r="9" fill="#b45309"/>
+	      <text x="864" y="116" font-weight="700" fill="#b45309">HTTP/3</text>
+	      <text x="864" y="168">2022</text>
+	      <text x="864" y="192">QUIC · 基于 UDP</text>
+	    </g>
+	    <text x="40" y="228" font-size="13" fill="#94a3b8">年份与版本号对应本节列出的关键节点（RFC 1945 / 2068·2616 / 7540 / 9114）。</text>
+	  </svg>
+	  <figcaption><span class="fig-no">图 1.1</span>　HTTP 各版本发布时间与关键特性。越靠右的版本在复用、压缩与传输层上改动越大；HTTP/1.1 至今仍是部署最广的版本。</figcaption>
+	</figure>
+
 	<div class="highlight">
 	  <p><strong>核心要点</strong>：HTTP协议从诞生到现在30多年了，依然是互联网通信的基石。为什么它能活这么久？因为简单、可扩展、和语言/平台无关。我见过无数新技术想取代HTTP，最后都成了HTTP之上的应用层协议。</p>
 	</div>
 
-	<h3>1.2 客户端-服务器模型</h3>
+	<h2>1.2 客户端-服务器模型</h2>
 
 	<p>HTTP最核心的设计就是客户端-服务器模型。说白了就是：浏览器（客户端）发请求，Web服务器处理请求后返回响应。这个模型简单到你可能会觉得不值一提，但它的精妙之处在于：</p>
 
@@ -203,11 +244,41 @@
 
 	<p>你想想看，你去访问一个网页，浏览器会发多少个HTTP请求？看起来是一个页面，但背后可能要请求几十个甚至上百个资源（HTML、CSS、JS、图片、字体、API数据...）。每一个都是一个独立的HTTP请求。</p>
 
+	<figure>
+	  <svg role="img" aria-labelledby="fig-ch1-cs-title fig-ch1-cs-desc" viewBox="0 0 900 240" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+	    <title id="fig-ch1-cs-title">客户端-服务器模型与中间层</title>
+	    <desc id="fig-ch1-cs-desc">请求从左侧客户端发出，经中间的代理、网关、CDN、缓存等中间层转发到右侧源服务器，响应再沿相同路径返回。中间层对两端透明。</desc>
+	    <rect x="0" y="0" width="900" height="240" fill="#ffffff"/>
+	    <rect x="30" y="80" width="200" height="80" rx="14" fill="#6366f1"/>
+	    <text x="130" y="114" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">客户端</text>
+	    <text x="130" y="138" font-size="14" fill="#e0e7ff" text-anchor="middle">浏览器 / App</text>
+
+	    <rect x="350" y="80" width="200" height="80" rx="14" fill="#ffffff" stroke="#818cf8" stroke-width="2" stroke-dasharray="7 6"/>
+	    <text x="450" y="112" font-size="16" font-weight="700" fill="#4338ca" text-anchor="middle">中间层</text>
+	    <text x="450" y="136" font-size="13" fill="#6366f1" text-anchor="middle">代理 · 网关 · CDN · 缓存</text>
+
+	    <rect x="670" y="80" width="200" height="80" rx="14" fill="#10b981"/>
+	    <text x="770" y="114" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">服务器</text>
+	    <text x="770" y="138" font-size="14" fill="#d1fae5" text-anchor="middle">源站</text>
+
+	    <defs><marker id="ch1-arrow-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4338ca"/></marker>
+	    <marker id="ch1-arrow-l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#047857"/></marker></defs>
+	    <line x1="230" y1="100" x2="348" y2="100" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch1-arrow-r)"/>
+	    <line x1="550" y1="100" x2="668" y2="100" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch1-arrow-r)"/>
+	    <text x="450" y="66" font-size="14" fill="#4338ca" text-anchor="middle">请求 Request</text>
+	    <line x1="668" y1="140" x2="550" y2="140" stroke="#047857" stroke-width="2.5" marker-end="url(#ch1-arrow-l)"/>
+	    <line x1="348" y1="140" x2="230" y2="140" stroke="#047857" stroke-width="2.5" marker-end="url(#ch1-arrow-l)"/>
+	    <text x="450" y="176" font-size="14" fill="#047857" text-anchor="middle">响应 Response</text>
+	    <text x="450" y="216" font-size="13" fill="#94a3b8" text-anchor="middle">无状态：源服务器不保存上一次请求的上下文，状态由 Cookie / Session 等机制在两端补足。</text>
+	  </svg>
+	  <figcaption><span class="fig-no">图 1.2</span>　客户端-服务器模型与中间层：请求与响应沿同一路径往返；正因为两端报文格式统一，代理、CDN 这类中间层才能无缝插入。</figcaption>
+	</figure>
+
 	<div class="tip">
 	  <p><strong>实战技巧</strong>：打开浏览器DevTools的Network面板（F12），刷新任意一个网页，你就能直观看到所有HTTP请求。我刚入行时就喜欢干这事——看到一个网页"长什么样"不稀奇，能看到它"怎么加载的"才是真本事。</p>
 	</div>
 
-	<h3>1.3 HTTP的版本差异速览</h3>
+	<h2>1.3 HTTP的版本差异速览</h2>
 
 	<table>
 	  <tr><th>特性</th><th>HTTP/1.0</th><th>HTTP/1.1</th><th>HTTP/2</th><th>HTTP/3</th></tr>
@@ -223,7 +294,7 @@
 	  <p><strong>注意</strong>：HTTP/1.1虽然支持管线化（Pipelining），但实际上浏览器几乎都不开启。因为队头阻塞问题太严重——一个请求卡住了，后面全部排队等。我就吃过这个亏，早期用管线化做并发优化，结果生产环境经常超时，最后乖乖改回连接池方案。</p>
 	</div>
 
-	<h3>1.4 HTTP在整个网络栈中的位置</h3>
+	<h2>1.4 HTTP在整个网络栈中的位置</h2>
 
 	<p>HTTP是应用层协议，跑在TCP/IP之上。整个网络栈从上到下是：</p>
 
@@ -237,13 +308,34 @@
 	<p>理解这个分层很重要。比如，你在排查问题的时候，如果HTTP层一切正常但请求超时，那问题可能在TCP层（握手失败）或网络层（路由问题）。我建议你遇到问题从下往上排查，先ping通不通，再telnet端口开不开，最后才看HTTP报文。</p>
 
 	<p>好了，第一章的内容就到这里。我们建立了一个宏观的认知框架，下一章咱们开始深入HTTP的第一个核心概念——URL与资源定位。</p>
+        <aside class="self-check">
+          <p class="q">自测：为什么说 HTTP 是"无状态"协议？这带来了什么代价与补足机制？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch1-a1">显示答案</button>
+          <div class="answer" id="ch1-a1" hidden>
+            <p>无状态指每个请求彼此独立，服务器不依赖上一次请求的上下文来处理本次请求。代价是它无法"记住"用户，于是需要 Cookie、Session、Token 等机制在两端把状态补回来；好处是服务器设计简单、水平扩展容易，且中间层可以无差别地转发请求。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="javascript:void(0)">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="02.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

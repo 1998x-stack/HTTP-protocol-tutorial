@@ -131,13 +131,14 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
-<li><a href="02.html" class="active">第2章 URL与资源定位</a></li>
+<li><a href="02.html" class="active" aria-current="page">第2章 URL与资源定位</a></li>
 <li><a href="03.html">第3章 HTTP报文结构</a></li>
 <li><a href="04.html">第4章 HTTP请求方法</a></li>
 <li><a href="05.html">第5章 HTTP状态码</a></li>
@@ -165,13 +166,16 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第二章：URL与资源定位</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第二章：URL与资源定位</h1>
+            <p class="dek">URI/URL/URN 的区分、URL 语法部件、百分号编码规则，以及相对路径解析与长度限制。</p>
+        </header>
 
         <p>大家好，我是你们的讲师。上一章咱们聊了HTTP的宏观图景，今天开始进入细节——URL。你每天在浏览器地址栏里输入的那串东西，看似简单，但里面的门道真不少。我带团队面试前端和后台工程师的时候，经常发现好多人工作了几年，对URL的理解还停留在"就是网址"的地步。今天我们把这个坑填上。</p>
 
-        <h3>2.1 URI、URL、URN的区别</h3>
+        <h2>2.1 URI、URL、URN的区别</h2>
 
         <p>很多同学搞不清URI、URL、URN这三者的关系。其实很简单：<strong>URI</strong>（统一资源标识符）是最大的概念，它有两个子类型——<strong>URL</strong>（统一资源定位符）和<strong>URN</strong>（统一资源名称）。用一句话记住：URI标识资源，URL告诉你"去哪找"，URN告诉你"它叫什么"。</p>
 
@@ -190,7 +194,7 @@
           <p><strong>面试高频题</strong>：URL和URI的区别是什么？标准回答：URI是标识资源的抽象概念（ID card），URL是定位资源的具体方式（home address）。所有URL都是URI，但不是所有URI都是URL。</p>
         </div>
 
-        <h3>2.2 URL的语法结构</h3>
+        <h2>2.2 URL的语法结构</h2>
 
         <p>一个完整的HTTP URL长这样：</p>
 
@@ -211,15 +215,72 @@
 
         <p>这里有几个容易忽略的点：端口号如果用的是默认值（HTTP 80、HTTPS 443），浏览器地址栏通常会隐藏它，但实际请求中并不缺失。<strong>Fragment（#后面的部分）不会被发送到服务器</strong>，它只在浏览器端用于页面内定位。我刚入行时不知道这个，在fragment里放参数让后端处理，debug了一下午才发现真相……</p>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch2-url-title fig-ch2-url-desc" viewBox="0 0 940 200" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch2-url-title">HTTP URL 的语法部件</title>
+            <desc id="fig-ch2-url-desc">以 https://api.example.com:443/users?id=123&amp;page=1#top 为例，用不同颜色标出 scheme、host、port、path、query、fragment 六个部件；fragment 只由浏览器使用，不会随请求发往服务器。</desc>
+            <rect x="0" y="0" width="940" height="200" fill="#ffffff"/>
+            <g font-family="'JetBrains Mono','Consolas',monospace" font-size="15">
+              <rect x="20" y="40" width="90" height="34" rx="7" fill="#6366f1"/>
+              <text x="65" y="63" fill="#ffffff" text-anchor="middle">https</text>
+              <text x="124" y="63" fill="#475569">://</text>
+              <rect x="146" y="40" width="206" height="34" rx="7" fill="#0ea5e9"/>
+              <text x="249" y="63" fill="#ffffff" text-anchor="middle">api.example.com</text>
+              <rect x="358" y="40" width="56" height="34" rx="7" fill="#b45309"/>
+              <text x="386" y="63" fill="#ffffff" text-anchor="middle">443</text>
+              <rect x="420" y="40" width="86" height="34" rx="7" fill="#10b981"/>
+              <text x="463" y="63" fill="#ffffff" text-anchor="middle">/users</text>
+              <rect x="512" y="40" width="196" height="34" rx="7" fill="#7c3aed"/>
+              <text x="610" y="63" fill="#ffffff" text-anchor="middle">?id=123&amp;page=1</text>
+              <rect x="714" y="40" width="62" height="34" rx="7" fill="#64748b"/>
+              <text x="745" y="63" fill="#ffffff" text-anchor="middle">#top</text>
+            </g>
+            <g font-size="13" text-anchor="middle">
+              <line x1="65" y1="74" x2="65" y2="104" stroke="#cbd5e1"/><text x="65" y="122" fill="#4338ca">scheme</text><text x="65" y="140" fill="#64748b">协议方案</text>
+              <line x1="249" y1="74" x2="249" y2="104" stroke="#cbd5e1"/><text x="249" y="122" fill="#0369a1">host</text><text x="249" y="140" fill="#64748b">主机名或 IP</text>
+              <line x1="386" y1="74" x2="386" y2="104" stroke="#cbd5e1"/><text x="386" y="122" fill="#b45309">port</text><text x="386" y="140" fill="#64748b">默认 80/443</text>
+              <line x1="463" y1="74" x2="463" y2="104" stroke="#cbd5e1"/><text x="463" y="122" fill="#047857">path</text><text x="463" y="140" fill="#64748b">资源路径</text>
+              <line x1="610" y1="74" x2="610" y2="104" stroke="#cbd5e1"/><text x="610" y="122" fill="#6d28d9">query</text><text x="610" y="140" fill="#64748b">查询参数</text>
+              <line x1="745" y1="74" x2="745" y2="104" stroke="#cbd5e1"/><text x="745" y="122" fill="#475569">fragment</text><text x="745" y="140" fill="#b91c1c">不发给服务器</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 2.1</span>　URL 的六个部件：<code>://</code> 分隔 scheme 与 authority；port 省略时取默认值；fragment 由浏览器保留，不出现在请求行中。</figcaption>
+        </figure>
+
         <div class="warning">
           <p><strong>踩坑回顾</strong>：有一次我在前端用 <code>window.location.hash</code> 存了API token，想着每次请求从hash里取。结果发现服务器根本收不到hash部分——fragment是由浏览器处理的，不会出现在HTTP请求中。这是一个典型的"新手坑"。</p>
         </div>
 
-        <h3>2.3 URL编码规则</h3>
+        <h2>2.3 URL编码规则</h2>
 
         <p>URL里能用的字符其实很有限。RFC 3986规定，URL中只有字母（a-z, A-Z）、数字（0-9）以及 <code>- _ . ~</code> 这些保留字符可以直接使用。其他字符——包括中文、空格、特殊符号——都需要<strong>百分号编码</strong>（Percent-encoding）。</p>
 
         <p>编码规则很简单：把字符的UTF-8字节值前面加上 <code>%</code>。比如空格是 <code>%20</code>，中文"你"的UTF-8编码是 <code>E4 BD A0</code>，所以URL编码就是 <code>%E4%BD%A0</code>。</p>
+
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch2-enc-title fig-ch2-enc-desc" viewBox="0 0 900 200" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch2-enc-title">百分号编码的处理过程</title>
+            <desc id="fig-ch2-enc-desc">字符“你”先取其 UTF-8 字节 E4 BD A0，再在每个字节前加百分号得到 %E4%BD%A0。只有字母、数字和 - _ . ~ 可以直接出现在 URL 中。</desc>
+            <rect x="0" y="0" width="900" height="200" fill="#ffffff"/>
+            <rect x="40" y="60" width="200" height="76" rx="14" fill="#6366f1"/>
+            <text x="140" y="92" font-size="15" fill="#e0e7ff" text-anchor="middle">原始字符</text>
+            <text x="140" y="120" font-size="22" font-weight="700" fill="#ffffff" text-anchor="middle">你</text>
+
+            <rect x="330" y="60" width="240" height="76" rx="14" fill="#0ea5e9"/>
+            <text x="450" y="92" font-size="15" fill="#e0f2fe" text-anchor="middle">UTF-8 字节</text>
+            <text x="450" y="120" font-size="20" font-weight="700" fill="#ffffff" text-anchor="middle" font-family="'JetBrains Mono','Consolas',monospace">E4 BD A0</text>
+
+            <rect x="660" y="60" width="200" height="76" rx="14" fill="#10b981"/>
+            <text x="760" y="92" font-size="15" fill="#d1fae5" text-anchor="middle">百分号编码</text>
+            <text x="760" y="120" font-size="20" font-weight="700" fill="#ffffff" text-anchor="middle" font-family="'JetBrains Mono','Consolas',monospace">%E4%BD%A0</text>
+
+            <defs><marker id="ch2-enc-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+            <line x1="240" y1="98" x2="330" y2="98" stroke="#64748b" stroke-width="2.5" marker-end="url(#ch2-enc-arrow)"/>
+            <line x1="570" y1="98" x2="660" y2="98" stroke="#64748b" stroke-width="2.5" marker-end="url(#ch2-enc-arrow)"/>
+            <text x="450" y="176" font-size="13" fill="#94a3b8" text-anchor="middle">空格的字节是 20，所以编码为 %20；只有字母、数字与 - _ . ~ 可以原样保留。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 2.2</span>　百分号编码：先取字符的 UTF-8 字节，再逐字节前置 <code>%</code>。这是 URL 中传输中文与特殊字符的统一做法。</figcaption>
+        </figure>
 
         <p>JavaScript中提供两个编码方法，很多人分不清：</p>
 
@@ -252,7 +313,7 @@ const fullUrl = base + '?' + params;
           <p><strong>实用建议</strong>：在前端拼接URL参数时，永远不要手动拼接字符串。使用 <code>URLSearchParams</code> 或 <code>new URL()</code> 构造函数，它们会自动帮你处理编码。手动拼接 <code>?q=" + value</code> 是很多线上bug的根源。</p>
         </div>
 
-        <h3>2.4 绝对URL与相对URL</h3>
+        <h2>2.4 绝对URL与相对URL</h2>
 
         <p><strong>绝对URL</strong>包含完整的scheme、host、path等信息，比如 <code>https://example.com/images/logo.png</code>。在任何地方都能直接使用。</p>
 
@@ -267,7 +328,7 @@ const fullUrl = base + '?' + params;
 
         <p>一个常见的坑是：在CSS文件里用相对路径引图片。假设你的CSS在 <code>/css/style.css</code>，里面写的 <code>background: url("../images/bg.png")</code>，这个路径是<strong>相对于CSS文件的位置</strong>，而不是相对于HTML页面！</p>
 
-        <h3>2.5 URL长度限制</h3>
+        <h2>2.5 URL长度限制</h2>
 
         <p>URL有没有长度限制？严格来说，HTTP规范<strong>没有</strong>规定URL的最大长度。但在实际应用中，限制无处不在：</p>
 
@@ -288,13 +349,34 @@ const fullUrl = base + '?' + params;
 
         <p>好了，第二章的内容就是这些。URL看似简单，但涉及的知识点从字符编码到安全策略贯穿整个Web技术栈。下一章咱们来看HTTP真正的"报文"长什么样——你会看到浏览器和服务器之间到底在聊什么。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：为什么 Fragment（<code>#</code> 之后的部分）不能用来向服务器传参？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch2-a1">显示答案</button>
+          <div class="answer" id="ch2-a1" hidden>
+            <p>因为 fragment 由浏览器保留，用于页面内定位（锚点），它根本不会出现在发往服务器的请求行里。要让服务器拿到数据，应放在 path 或 query 中；需要传输大量数据时改用 POST 请求体。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="01.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="03.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>
