@@ -131,14 +131,15 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
-<li><a href="03.html" class="active">第3章 HTTP报文结构</a></li>
+<li><a href="03.html" class="active" aria-current="page">第3章 HTTP报文结构</a></li>
 <li><a href="04.html">第4章 HTTP请求方法</a></li>
 <li><a href="05.html">第5章 HTTP状态码</a></li>
 <li><a href="06.html">第6章 HTTP头部字段</a></li>
@@ -165,13 +166,16 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第三章：HTTP报文结构</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第三章：HTTP报文结构</h1>
+            <p class="dek">请求行 / 状态行、头部字段与消息体的组织方式，以及用 <code>curl -v</code> 直接观察原始报文。</p>
+        </header>
 
         <p>大家好，我是你们的讲师。前面两章我们聊了HTTP的宏观概念和URL，今天终于进入核心——HTTP报文。可以把报文理解为HTTP的"语言"：浏览器说一句请求，服务器回一句响应，一问一答之间完成了数据的交换。如果你能读懂原始的HTTP报文，那调试网络问题的时候就相当于开了"透视眼"。</p>
 
-        <h3>3.1 请求报文解剖</h3>
+        <h2>3.1 请求报文解剖</h2>
 
         <p>一个HTTP请求报文由三部分组成：<strong>请求行</strong>（Request Line）、<strong>头部</strong>（Headers）、<strong>消息体</strong>（Body）。请求行和头部之间用回车换行（CRLF，即 <code>\r\n</code>）分隔，头部和消息体之间有一个空行分隔。</p>
 
@@ -200,7 +204,44 @@ Cache-Control: no-cache
 
         <p>最后留了一个空行。因为这是GET请求，<strong>没有消息体</strong>。如果有消息体（比如POST请求），空行之后就是body的内容。</p>
 
-        <h3>3.2 响应报文解剖</h3>
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch3-req-title fig-ch3-req-desc" viewBox="0 0 920 320" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch3-req-title">HTTP 请求报文的三段结构</title>
+            <desc id="fig-ch3-req-desc">请求报文自上而下由请求行、头部、空行和消息体组成。请求行含方法、请求 URI 与版本；头部每行一个 Name: Value；空行将头部与消息体分开；GET 请求通常没有消息体。</desc>
+            <rect x="0" y="0" width="920" height="320" fill="#ffffff"/>
+            <rect x="40" y="30" width="540" height="264" rx="14" fill="#f8faff" stroke="#c7d2fe"/>
+            <g font-family="'JetBrains Mono','Consolas',monospace" font-size="14">
+              <rect x="60" y="50" width="500" height="34" rx="7" fill="#6366f1"/>
+              <text x="72" y="73" fill="#ffffff">GET /api/users?page=1 HTTP/1.1</text>
+              <rect x="60" y="92" width="500" height="26" rx="5" fill="#e0e7ff"/>
+              <text x="72" y="110" fill="#3730a3">Host: api.example.com</text>
+              <rect x="60" y="122" width="500" height="26" rx="5" fill="#e0e7ff"/>
+              <text x="72" y="140" fill="#3730a3">User-Agent: Mozilla/5.0 …</text>
+              <rect x="60" y="152" width="500" height="26" rx="5" fill="#e0e7ff"/>
+              <text x="72" y="170" fill="#3730a3">Accept: application/json</text>
+              <rect x="60" y="182" width="500" height="26" rx="5" fill="#e0e7ff"/>
+              <text x="72" y="200" fill="#3730a3">Authorization: Bearer …</text>
+              <text x="72" y="226" fill="#94a3b8">⋮ 其余头部</text>
+            </g>
+            <rect x="60" y="238" width="500" height="8" fill="#cbd5e1"/>
+            <rect x="60" y="256" width="500" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="6 5"/>
+            <text x="72" y="276" font-size="13" fill="#64748b" font-family="'JetBrains Mono','Consolas',monospace">（消息体：GET 请求通常为空）</text>
+
+            <g font-size="14" fill="#4338ca">
+              <line x1="580" y1="67" x2="620" y2="67" stroke="#94a3b8"/>
+              <text x="626" y="63">请求行</text><text x="626" y="80" fill="#64748b" font-size="12.5">方法 + 请求 URI + 版本</text>
+              <line x1="580" y1="140" x2="620" y2="140" stroke="#94a3b8"/>
+              <text x="626" y="136">请求头部</text><text x="626" y="153" fill="#64748b" font-size="12.5">每行一个 Name: Value</text>
+              <line x1="580" y1="242" x2="620" y2="242" stroke="#94a3b8"/>
+              <text x="626" y="246" fill="#b45309">空行</text>
+              <line x1="580" y1="271" x2="620" y2="271" stroke="#94a3b8"/>
+              <text x="626" y="267">消息体</text><text x="626" y="284" fill="#64748b" font-size="12.5">POST/PUT 时携带数据</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 3.1</span>　请求报文自上而下分三段：请求行、头部、消息体，中间用空行分隔。响应报文结构完全对称，只是第一行换成状态行。</figcaption>
+        </figure>
+
+        <h2>3.2 响应报文解剖</h2>
 
         <p>服务器收到请求后，会返回一个响应报文。响应报文的结构和请求报文类似，区别在于第一行不是请求行，而是<strong>状态行</strong>（Status Line）：</p>
 
@@ -227,7 +268,7 @@ Cache-Control: no-store
           <p><strong>重要概念</strong>：请求报文和响应报文的结构非常对称，就第一行不同。一个是"我想干嘛"，一个是"结果如何"。HTTP的这种对称设计使得客户端和服务器都能用同一套解析逻辑处理报文——这也是HTTP中间件（代理、网关）能透明工作的原因。</p>
         </div>
 
-        <h3>3.3 HTTP头部的格式</h3>
+        <h2>3.3 HTTP头部的格式</h2>
 
         <p>头部字段（Header）是HTTP报文中最有"信息量"的部分，格式规则如下：</p>
 
@@ -249,7 +290,7 @@ Cache-Control: no-store
 
         <p>这里有个细节：头部字段名虽然大小写不敏感（<code>Content-Type</code> 和 <code>content-type</code> 是一样的），但业界惯例是首字母大写的驼峰格式。我见过几次线上因为自定义头部的命名不一致导致代理层无法识别的案例——虽然HTTP协议说大小写不敏感，但你永远不知道中间件是怎么实现的。建议统一规范。</p>
 
-        <h3>3.4 消息体（Body）</h3>
+        <h2>3.4 消息体（Body）</h2>
 
         <p>消息体是HTTP报文的"大货仓"。不是所有请求都有body——GET、DELETE、HEAD等方法通常没有body；POST、PUT、PATCH等方法通常在body中携带数据。</p>
 
@@ -275,11 +316,37 @@ and this is the second one.
 
         <p>分块传输在实时数据流、大文件下载等场景非常实用。注意，<code>Transfer-Encoding: chunked</code> 和 <code>Content-Length</code> 是互斥的——有Transfer-Encoding就不能有Content-Length。</p>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch3-chunk-title fig-ch3-chunk-desc" viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch3-chunk-title">分块传输编码的消息组织</title>
+            <desc id="fig-ch3-chunk-desc">消息体被拆成多个块，每块先给出十六进制长度再给出数据；最后用一个长度为 0 的块表示结束，接收方据此知道消息已传输完毕。</desc>
+            <rect x="0" y="0" width="900" height="250" fill="#ffffff"/>
+            <g font-family="'JetBrains Mono','Consolas',monospace">
+              <rect x="40" y="80" width="200" height="28" rx="6" fill="#6366f1"/><text x="52" y="100" font-size="15" fill="#ffffff">25</text>
+              <rect x="40" y="108" width="200" height="52" rx="6" fill="#e0e7ff"/><text x="52" y="132" font-size="13" fill="#3730a3">This is the first</text><text x="52" y="150" font-size="13" fill="#3730a3">chunk of data.</text>
+
+              <rect x="270" y="80" width="200" height="28" rx="6" fill="#6366f1"/><text x="282" y="100" font-size="15" fill="#ffffff">1C</text>
+              <rect x="270" y="108" width="200" height="52" rx="6" fill="#e0e7ff"/><text x="282" y="132" font-size="13" fill="#3730a3">and this is the</text><text x="282" y="150" font-size="13" fill="#3730a3">second one.</text>
+
+              <rect x="500" y="80" width="180" height="28" rx="6" fill="#b45309"/><text x="512" y="100" font-size="15" fill="#ffffff">0</text>
+              <rect x="500" y="108" width="180" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="6 5"/><text x="512" y="140" font-size="13" fill="#64748b">（结束块，无数据）</text>
+            </g>
+            <g font-size="13" fill="#64748b">
+              <text x="60" y="64">十六进制长度</text>
+              <text x="60" y="188">数据块</text>
+              <text x="155" y="64">↓</text>
+              <text x="155" y="188">↓</text>
+            </g>
+            <text x="60" y="222" font-size="13" fill="#b45309">长度为 0 的块表示消息结束 → 连接可复用或关闭。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 3.2</span>　分块传输编码：每个块 = 十六进制长度 + 数据；长度为 0 的块标记消息结束。块大小之和即消息体总长，无需提前知道 Content-Length。</figcaption>
+        </figure>
+
         <div class="tip">
           <p><strong>实战提醒</strong>：在调试POST请求的body时，我经常发现开发同学搞不清 <code>application/x-www-form-urlencoded</code> 和 <code>multipart/form-data</code> 的区别。简单来说：前者适合短文本（key=value&key2=value2），后者适合传文件或二进制数据。如果表单里有 <code>&lt;input type="file"&gt;</code>，务必用 <code>multipart/form-data</code>。</p>
         </div>
 
-        <h3>3.5 用curl查看原始报文</h3>
+        <h2>3.5 用curl查看原始报文</h2>
 
         <p>理论讲完了，来看看怎么在现实中观察HTTP报文。我强烈推荐大家学会使用 <code>curl</code> 命令，它是网络调试的瑞士军刀。<code>curl -v</code> （verbose模式）会输出完整的请求和响应报文：</p>
 
@@ -317,13 +384,34 @@ and this is the second one.
 
         <p>好了，第三章的内容就到这里。你现在已经能读懂HTTP的"语言"了——请求什么格式、响应什么格式、头部怎么组织、body怎么传输。下一章我们来仔细看看请求报文的第一部分：请求方法。GET、POST、PUT、DELETE……这些方法各自有什么讲究？</p>
 
+        <aside class="self-check">
+          <p class="q">自测：为什么说请求报文和响应报文“结构对称”，这一点带来了什么工程收益？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch3-a1">显示答案</button>
+          <div class="answer" id="ch3-a1" hidden>
+            <p>两者都由“首行 + 头部 + 空行 + 消息体”组成，仅首行不同：请求是请求行（方法 · URI · 版本），响应是状态行（版本 · 状态码 · 原因短语）。因为解析规则完全一致，客户端、服务器与中间件可以复用同一套解析逻辑，这也是代理、网关能透明转发报文的基础。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="02.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="04.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

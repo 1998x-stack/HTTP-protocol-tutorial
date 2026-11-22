@@ -131,16 +131,17 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
 <li><a href="03.html">第3章 HTTP报文结构</a></li>
 <li><a href="04.html">第4章 HTTP请求方法</a></li>
-<li><a href="05.html" class="active">第5章 HTTP状态码</a></li>
+<li><a href="05.html" class="active" aria-current="page">第5章 HTTP状态码</a></li>
 <li><a href="06.html">第6章 HTTP头部字段</a></li>
 <li><a href="07.html">第7章 MIME类型与内容协商</a></li>
 <li><a href="08.html">第8章 连接管理</a></li>
@@ -165,15 +166,18 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第五章：HTTP状态码</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第五章：HTTP状态码</h1>
+            <p class="dek">5 大类的划分逻辑、常用 2xx/3xx/4xx/5xx 的语义差异，以及为什么不应该自定义状态码。</p>
+        </header>
 
         <p>大家好，欢迎来到第五章。前四章咱们把HTTP的基本骨架搭起来了——协议历史、URL、报文结构、请求方法。今天要讲的是HTTP响应里最重要的信息之一：<strong>状态码</strong>（Status Code）。</p>
 
         <p>可以说，状态码是服务器给你的"一句话反馈"——我的请求处理得怎么样了？是成功了、被拒绝了、还是出错了？服务器用三位数字告诉你。别小看这三个数字，我Debug的时候第一眼看的就是它。毫不夸张地说，读懂状态码是Web开发者的基本功，就跟医生读懂化验单一样。</p>
 
-        <h3>5.1 状态码分类</h3>
+        <h2>5.1 状态码分类</h2>
 
         <p>HTTP状态码由三位数字组成，首位数字定义了响应的类别。总共五大类：</p>
 
@@ -188,11 +192,36 @@
 
         <p>记忆口诀很简单：<strong>1字头接着来，2字头万事OK，3字头换个地方，4字头你搞错了，5字头我崩了</strong>。你可能在实际中很少看到1xx和3xx的状态码出现在浏览器开发者工具里——1xx浏览器自动处理了，3xx浏览器帮你跳转完了。但它们确实在背后默默工作。</p>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch5-class-title fig-ch5-class-desc" viewBox="0 0 860 330" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch5-class-title">HTTP 状态码的五大类</title>
+            <desc id="fig-ch5-class-desc">1xx 为信息性（100–199），2xx 为成功（200–299），3xx 为重定向（300–399），4xx 为客户端错误（400–499），5xx 为服务端错误（500–599）。首位数字决定大类。</desc>
+            <rect x="0" y="0" width="860" height="330" fill="#ffffff"/>
+            <g font-size="16">
+              <rect x="30" y="24" width="800" height="48" rx="10" fill="#f1f5f9" stroke="#64748b"/>
+              <text x="52" y="54" font-weight="700" fill="#475569">1xx</text><text x="130" y="54" fill="#334155">信息性 Informational</text><text x="470" y="54" fill="#64748b">“收到请求，正在处理”</text>
+
+              <rect x="30" y="84" width="800" height="48" rx="10" fill="#d1fae5" stroke="#10b981"/>
+              <text x="52" y="114" font-weight="700" fill="#047857">2xx</text><text x="130" y="114" fill="#065f46">成功 Success</text><text x="470" y="114" fill="#047857">“没问题，搞定了”</text>
+
+              <rect x="30" y="144" width="800" height="48" rx="10" fill="#e0f2fe" stroke="#0ea5e9"/>
+              <text x="52" y="174" font-weight="700" fill="#0369a1">3xx</text><text x="130" y="174" fill="#075985">重定向 Redirection</text><text x="470" y="174" fill="#0369a1">“你要的东西在别处”</text>
+
+              <rect x="30" y="204" width="800" height="48" rx="10" fill="#fef3c7" stroke="#b45309"/>
+              <text x="52" y="234" font-weight="700" fill="#b45309">4xx</text><text x="130" y="234" fill="#92400e">客户端错误 Client Error</text><text x="470" y="234" fill="#b45309">“你的请求有问题”</text>
+
+              <rect x="30" y="264" width="800" height="48" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+              <text x="52" y="294" font-weight="700" fill="#b91c1c">5xx</text><text x="130" y="294" fill="#991b1b">服务端错误 Server Error</text><text x="470" y="294" fill="#b91c1c">“服务器出状况了”</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 5.1</span>　状态码按首位数字分五类：1xx 信息、2xx 成功、3xx 重定向、4xx 客户端错误、5xx 服务端错误。先判大类，再看后两位。</figcaption>
+        </figure>
+
         <div class="highlight">
           <p><strong>核心要点</strong>：状态码的设计是分层的。首位数字告诉你是哪一类问题，后两位告诉你具体细节。比如看到4xx，你就知道是客户端的问题——先检查自己的请求，别急着骂服务器。这个思维习惯我在排故时用了几百遍了。</p>
         </div>
 
-        <h3>5.2 常用2xx——一切正常</h3>
+        <h2>5.2 常用2xx——一切正常</h2>
 
         <p>2xx系列是最让人放心的状态码。常见的就三个：</p>
 
@@ -206,7 +235,7 @@
           <p><strong>实战建议</strong>：开始设计RESTful API时，尽量使用精确的状态码。200用来表示"读取成功"，201表示"创建成功"，204表示"删除成功"。精准的状态码让你的API更加自描述，也方便监控和日志分析。你的同事会感谢你的。</p>
         </div>
 
-        <h3>5.3 3xx重定向——你找的东西在别处</h3>
+        <h2>5.3 3xx重定向——你找的东西在别处</h2>
 
         <p>重定向状态码初看有点复杂，核心就是两个维度：<strong>永久 vs 临时</strong>，<strong>是否允许改变请求方法</strong>。</p>
 
@@ -222,11 +251,35 @@
 
         <p>307和308是HTTP/1.1后补充的，明确规定不能改变请求方法。所以如果你需要保持POST方法做重定向，用307（临时）或308（永久）。</p>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch5-redir-title fig-ch5-redir-desc" viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch5-redir-title">重定向状态码对请求方法的影响</title>
+            <desc id="fig-ch5-redir-desc">客户端发出 POST 请求后，若收到 301 或 302，浏览器通常改为 GET，请求体丢失；若收到 307 或 308，则保持 POST 并保留请求体。</desc>
+            <rect x="0" y="0" width="880" height="300" fill="#ffffff"/>
+            <defs><marker id="ch5-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+            <g font-size="15">
+              <rect x="30" y="40" width="190" height="56" rx="10" fill="#6366f1"/><text x="125" y="65" fill="#ffffff" text-anchor="middle" font-weight="700">客户端</text><text x="125" y="85" fill="#e0e7ff" text-anchor="middle" font-size="13">POST /pay（带 body）</text>
+              <line x1="222" y1="68" x2="300" y2="68" stroke="#64748b" stroke-width="2.5" marker-end="url(#ch5-arrow)"/>
+              <rect x="304" y="40" width="180" height="56" rx="10" fill="#e0f2fe" stroke="#0ea5e9"/><text x="394" y="65" fill="#0369a1" text-anchor="middle" font-weight="700">301 / 302</text><text x="394" y="85" fill="#075985" text-anchor="middle" font-size="13">允许改变方法</text>
+              <line x1="486" y1="68" x2="564" y2="68" stroke="#64748b" stroke-width="2.5" marker-end="url(#ch5-arrow)"/>
+              <rect x="568" y="40" width="282" height="56" rx="10" fill="#fee2e2" stroke="#dc2626"/><text x="709" y="65" fill="#b91c1c" text-anchor="middle" font-weight="700">变为 GET</text><text x="709" y="85" fill="#991b1b" text-anchor="middle" font-size="13">请求体丢失——数据没了</text>
+
+              <rect x="30" y="160" width="190" height="56" rx="10" fill="#6366f1"/><text x="125" y="185" fill="#ffffff" text-anchor="middle" font-weight="700">客户端</text><text x="125" y="205" fill="#e0e7ff" text-anchor="middle" font-size="13">POST /pay（带 body）</text>
+              <line x1="222" y1="188" x2="300" y2="188" stroke="#64748b" stroke-width="2.5" marker-end="url(#ch5-arrow)"/>
+              <rect x="304" y="160" width="180" height="56" rx="10" fill="#e0f2fe" stroke="#0ea5e9"/><text x="394" y="185" fill="#0369a1" text-anchor="middle" font-weight="700">307 / 308</text><text x="394" y="205" fill="#075985" text-anchor="middle" font-size="13">规定不改变方法</text>
+              <line x1="486" y1="188" x2="564" y2="188" stroke="#64748b" stroke-width="2.5" marker-end="url(#ch5-arrow)"/>
+              <rect x="568" y="160" width="282" height="56" rx="10" fill="#d1fae5" stroke="#10b981"/><text x="709" y="185" fill="#047857" text-anchor="middle" font-weight="700">保持 POST</text><text x="709" y="205" fill="#065f46" text-anchor="middle" font-size="13">请求体保留——数据完整</text>
+            </g>
+            <text x="30" y="262" font-size="13" fill="#94a3b8">需要保持方法与请求体重定向时，应使用 307 / 308 而非 301 / 302。</text>
+          </svg>
+          <figcaption><span class="fig-no">图 5.2</span>　重定向对请求方法的影响：301/302 在浏览器实现中常把 POST 降为 GET，丢掉请求体；307/308 则保持原方法与请求体。</figcaption>
+        </figure>
+
         <div class="warning">
           <p><strong>踩坑故事</strong>：早年做支付系统时，我们用一个中间页面做表单提交，遇到会话过期就302跳转到登录页。结果支付POST请求被302重定向后变成GET，数据全丢了，用户看到的是空白页面。查了整整一个下午才发现是重定向把请求方法改了。后来全换成了307——血的教训。</p>
         </div>
 
-        <h3>5.4 4xx客户端错误——别怪服务器，看看你的请求</h3>
+        <h2>5.4 4xx客户端错误——别怪服务器，看看你的请求</h2>
 
         <p>4xx是日常开发中最常打交道的一类。它们大多意味着"你的请求有问题"。</p>
 
@@ -244,7 +297,7 @@
           <p><strong>Debug技巧</strong>：遇到4xx状态码时，第一步永远检查请求本身——URL对不对？参数格式对不对？Header有没有带对？认证token是不是过期了？80%的情况下，是请求写错了，而不是服务端出了bug。</p>
         </div>
 
-        <h3>5.5 5xx服务端错误——服务器出状况了</h3>
+        <h2>5.5 5xx服务端错误——服务器出状况了</h2>
 
         <p>5xx对用户来说是"网站打不开"，对开发者来说是"赶紧起来修Bug"。</p>
 
@@ -260,7 +313,7 @@
           <p><strong>踩坑故事</strong>：刚工作时有个后台报表功能，查一个月的数据要跑几十秒。当时架构是Nginx反代Tomcat，Nginx默认60s超时，平时没事。赶上月底数据量大查询超过60s，Nginx就返回504，报表页面白屏了。用户投诉了一堆，我们才发现Nginx的 <code>proxy_read_timeout</code> 默认值没调。所以遇到504，先检查代理超时配置。</p>
         </div>
 
-        <h3>5.6 自定义状态码的最佳实践</h3>
+        <h2>5.6 自定义状态码的最佳实践</h2>
 
         <p>HTTP协议允许非标准的状态码吗？技术上可以，但<strong>强烈不建议</strong>。</p>
 
@@ -286,13 +339,34 @@ Content-Type: application/json
 
         <p>好了，第五章的内容就到这里。状态码是HTTP协议的"表情符号"——三个数字告诉你这次交互是喜是悲。下一章我们进入HTTP报文里最复杂、最丰富的部分——<strong>头部字段（Headers）</strong>，这里面的门道可多了。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：401 与 403 的区别是什么？各自应对应什么处理？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch5-a1">显示答案</button>
+          <div class="answer" id="ch5-a1" hidden>
+            <p>401 Unauthorized 表示身份认证失败或缺失，语义是“请先证明你是谁”，通常在响应中带 WWW-Authenticate 头；403 Forbidden 表示已识别身份但权限不足，重登也无用。正确的做法：未登录/凭证无效回 401，已登录但不够权限回 403。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="04.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="06.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

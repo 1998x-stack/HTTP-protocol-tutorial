@@ -131,17 +131,18 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
 <li><a href="03.html">第3章 HTTP报文结构</a></li>
 <li><a href="04.html">第4章 HTTP请求方法</a></li>
 <li><a href="05.html">第5章 HTTP状态码</a></li>
-<li><a href="06.html" class="active">第6章 HTTP头部字段</a></li>
+<li><a href="06.html" class="active" aria-current="page">第6章 HTTP头部字段</a></li>
 <li><a href="07.html">第7章 MIME类型与内容协商</a></li>
 <li><a href="08.html">第8章 连接管理</a></li>
 <li><a href="09.html">第9章 HTTP缓存</a></li>
@@ -165,15 +166,18 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第六章：HTTP头部字段</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第六章：HTTP头部字段</h1>
+            <p class="dek">通用头 / 请求头 / 响应头 / 实体头四类划分、常用头部详解，以及大小写与重复头部的处理规则。</p>
+        </header>
 
         <p>各位同学，第五章我们聊了状态码，现在进入HTTP协议中信息最丰富的部分——<strong>头部字段（Headers）</strong>。如果把HTTP报文比作一封信，状态码是信封上的"收件状况"标签，那么Headers就是信的内容提要、寄件人信息、邮寄方式说明……可以说，Headers是HTTP协议的"元数据"层。</p>
 
         <p>在Web开发里你几乎每天都在跟Headers打交道：浏览器自动添加、服务器返回的Set-Cookie、CDN的缓存指令、API的认证Token……不理解Headers，就等于不理解HTTP的通信语言。而且，Headers也是排查问题的利器——我调试网络请求时，首先展开的就是Request Headers和Response Headers面板。</p>
 
-        <h3>6.1 头部字段分类</h3>
+        <h2>6.1 头部字段分类</h2>
 
         <p>HTTP头部字段按作用范围可以分为四类：</p>
 
@@ -187,7 +191,27 @@
 
         <p>你打开Chrome DevTools，随便看一个网络请求，就能看到这些头部的实际样子。值得说明的是，Entity Headers的分类在实际中有时会模糊——很多Entity Headers在当今的规范中也被归入Representation Headers，但核心思想不变：都是描述"数据本身"的。</p>
 
-        <h3>6.2 常用通用头</h3>
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch6-cat-title fig-ch6-cat-desc" viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch6-cat-title">HTTP 头部字段的四类划分</title>
+            <desc id="fig-ch6-cat-desc">通用头（General）可用于请求和响应；请求头（Request）仅用于请求；响应头（Response）仅用于响应；实体头（Entity）用于请求和响应，描述消息体。</desc>
+            <rect x="0" y="0" width="860" height="300" fill="#ffffff"/>
+            <g font-size="15">
+              <text x="40" y="24" font-size="13" fill="#94a3b8">分类　　　　　　　　适用对象　　　　　　　　　　　示例</text>
+              <rect x="30" y="36" width="800" height="48" rx="10" fill="#eef2ff" stroke="#818cf8"/>
+              <text x="48" y="66" font-weight="700" fill="#4338ca">通用头 General</text><text x="300" y="66" fill="#3730a3">请求 &amp; 响应</text><text x="500" y="66" fill="#475569" font-family="'JetBrains Mono',monospace" font-size="13">Cache-Control · Connection · Date</text>
+              <rect x="30" y="96" width="800" height="48" rx="10" fill="#e0f2fe" stroke="#0ea5e9"/>
+              <text x="48" y="126" font-weight="700" fill="#0369a1">请求头 Request</text><text x="300" y="126" fill="#075985">仅请求</text><text x="500" y="126" fill="#475569" font-family="'JetBrains Mono',monospace" font-size="13">User-Agent · Accept · Authorization</text>
+              <rect x="30" y="156" width="800" height="48" rx="10" fill="#d1fae5" stroke="#10b981"/>
+              <text x="48" y="186" font-weight="700" fill="#047857">响应头 Response</text><text x="300" y="186" fill="#065f46">仅响应</text><text x="500" y="186" fill="#475569" font-family="'JetBrains Mono',monospace" font-size="13">Server · Set-Cookie · WWW-Authenticate</text>
+              <rect x="30" y="216" width="800" height="48" rx="10" fill="#fef3c7" stroke="#b45309"/>
+              <text x="48" y="246" font-weight="700" fill="#b45309">实体头 Entity</text><text x="300" y="246" fill="#92400e">请求 &amp; 响应</text><text x="500" y="246" fill="#475569" font-family="'JetBrains Mono',monospace" font-size="13">Content-Type · Content-Length</text>
+            </g>
+          </svg>
+          <figcaption><span class="fig-no">图 6.1</span>　头部四类划分。通用头与实体头在请求和响应中都可能出现，请求头 / 响应头各仅限一侧；实体头专门描述消息体本身。</figcaption>
+        </figure>
+
+        <h2>6.2 常用通用头</h2>
 
         <p><strong>Cache-Control</strong>——控制缓存的"总开关"。可以出现在请求和响应中。常见值：<code>no-cache</code>（每次都向服务器验证）、<code>no-store</code>（完全不缓存）、<code>max-age=3600</code>（缓存1小时）、<code>public</code>（中间缓存可缓存）、<code>private</code>（仅浏览器可缓存）。内容很多，我们第9章会专门讲。</p>
 
@@ -197,11 +221,37 @@
 
         <p><strong>Transfer-Encoding</strong>——传输编码。最常用的是 <code>Transfer-Encoding: chunked</code>——分块传输。服务器在不知道响应体总大小时，可以一块一块地发，每块前面带一个长度字段。好处是动态内容可以边生成边发送，不用等全部数据算完。注意它和Content-Encoding的区别：Content-Encoding是内容编码（如gzip压缩），Transfer-Encoding是传输编码。</p>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch6-enc-title fig-ch6-enc-desc" viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch6-enc-title">Content-Encoding 与 Transfer-Encoding 的作用范围</title>
+            <desc id="fig-ch6-enc-desc">Content-Encoding 是端到端的，描述消息体本身被压缩，代理透传；Transfer-Encoding 是逐跳的，描述每一段连接如何分块传输，代理可以移除或重写。</desc>
+            <rect x="0" y="0" width="880" height="280" fill="#ffffff"/>
+            <defs><marker id="ch6-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+            <!-- end-to-end -->
+            <text x="30" y="28" font-size="15" font-weight="700" fill="#047857">Content-Encoding　端到端</text>
+            <rect x="30" y="44" width="160" height="46" rx="9" fill="#6366f1"/><text x="110" y="72" fill="#ffffff" text-anchor="middle" font-size="14">客户端</text>
+            <rect x="360" y="44" width="160" height="46" rx="9" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="6 5"/><text x="440" y="72" fill="#64748b" text-anchor="middle" font-size="14">代理</text>
+            <rect x="690" y="44" width="160" height="46" rx="9" fill="#6366f1"/><text x="770" y="72" fill="#ffffff" text-anchor="middle" font-size="14">源服务器</text>
+            <line x1="192" y1="104" x2="810" y2="104" stroke="#10b981" stroke-width="3"/>
+            <text x="500" y="126" font-size="13" fill="#047857" text-anchor="middle">body 本身被 gzip 压缩，代理只透传，浏览器解压后得到原文</text>
+
+            <!-- hop-by-hop -->
+            <text x="30" y="176" font-size="15" font-weight="700" fill="#0369a1">Transfer-Encoding　逐跳</text>
+            <rect x="30" y="192" width="160" height="46" rx="9" fill="#6366f1"/><text x="110" y="220" fill="#ffffff" text-anchor="middle" font-size="14">客户端</text>
+            <rect x="360" y="192" width="160" height="46" rx="9" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="6 5"/><text x="440" y="220" fill="#64748b" text-anchor="middle" font-size="14">代理</text>
+            <rect x="690" y="192" width="160" height="46" rx="9" fill="#6366f1"/><text x="770" y="220" fill="#ffffff" text-anchor="middle" font-size="14">源服务器</text>
+            <line x1="192" y1="215" x2="358" y2="215" stroke="#0ea5e9" stroke-width="3" marker-end="url(#ch6-arrow)"/>
+            <line x1="522" y1="215" x2="688" y2="215" stroke="#0ea5e9" stroke-width="3" marker-end="url(#ch6-arrow)"/>
+            <text x="500" y="258" font-size="13" fill="#0369a1" text-anchor="middle">每段连接可独立分块，代理可以去掉 chunked 并重新封装</text>
+          </svg>
+          <figcaption><span class="fig-no">图 6.2</span>　Content-Encoding 作用于消息体本身（端到端），Transfer-Encoding 作用于逐段连接的分块方式（逐跳，代理可改写）。简单记：前者管“数据是什么”，后者管“数据怎么包”。</figcaption>
+        </figure>
+
         <div class="highlight">
           <p><strong>容易混淆的概念</strong>：很多人分不清 Content-Encoding 和 Transfer-Encoding。前者是"内容本身被压缩了"，是端到端的，浏览器解压后拿到的就是原始数据。后者是"传输过程中用了分块"，是逐跳的，代理可以去掉它。简单记：Content-Encoding影响的是body里的数据，Transfer-Encoding影响的是怎么把数据包在HTTP报文中。</p>
         </div>
 
-        <h3>6.3 常用请求头</h3>
+        <h2>6.3 常用请求头</h2>
 
         <p><strong>Host</strong>——目标主机名和端口。这是HTTP/1.1唯一强制要求的请求头，也是实现虚拟主机的关键。同一个IP上托管多个域名，服务器通过Host头来区分你要访问哪个网站。没有Host头，互联网时代的虚拟主机就没法实现。</p>
 
@@ -215,7 +265,7 @@
 
         <p><strong>Referer</strong>——来源页面的URL。告诉服务器用户是从哪个页面跳转过来的。注意拼写——规范里就是少了一个"r"（应该是Referrer的笔误，但将错就错了）。在做防盗链和来源统计时非常有用，但注意敏感URL可能会泄露信息。</p>
 
-        <h3>6.4 常用响应头</h3>
+        <h2>6.4 常用响应头</h2>
 
         <p><strong>Server</strong>——服务器的软件信息。比如 <code>Server: nginx/1.24.0</code>。安全最佳实践建议不要暴露详细的版本号，避免被针对性攻击。</p>
 
@@ -227,7 +277,7 @@
 
         <p><strong>Access-Control-* 系列</strong>——CORS（跨域资源共享）的控制头。包括 <code>Access-Control-Allow-Origin</code>、<code>Access-Control-Allow-Methods</code>、<code>Access-Control-Allow-Headers</code> 等。这是现代前后端分离架构中必须打交道的响应头，我们第12章会专门展开。</p>
 
-        <h3>6.5 自定义头部</h3>
+        <h2>6.5 自定义头部</h2>
 
         <p>有时候标准Headers不够用，你可能会想定义自己的头。过去人们用 <code>X-</code> 前缀来表示非标准头，比如 <code>X-Requested-With: XMLHttpRequest</code>（jQuery时代判断AJAX请求的经典做法）。</p>
 
@@ -239,7 +289,7 @@
           <p><strong>踩坑故事</strong>：以前我维护过一个老系统，代码里到处都是自定义的 <code>X-MyApp-*</code> 头。后来引入了一个第三方安全网关，它不认识这些头，在代理过程中把它们全丢掉了。系统莫名其妙地失效，查了三天才找到原因——网关默认过滤非标准头。从那以后我养成了一个习惯：能用标准头解决的问题，绝不发明自定义头。自定义头的正确用途是传递内部元数据，比如追踪ID、内部路由信息等。</p>
         </div>
 
-        <h3>6.6 头部大小写与重复</h3>
+        <h2>6.6 头部大小写与重复</h2>
 
         <p>关于HTTP头的大小写问题，很多初学者会困惑：<code>Content-Type</code>、<code>content-type</code>、<code>CONTENT-TYPE</code> 哪个对？答案是：<strong>头部的名字是大小写不敏感的</strong>。根据HTTP规范，字段名不区分大小写。<code>Content-Type</code> 和 <code>content-type</code> 是完全等价的。</p>
 
@@ -255,13 +305,34 @@
 
         <p>好了，第六章的内容就到这里。Headers是HTTP协议中一个庞大但非常实用的主题。下一章我们聚焦其中一个关键方面——<strong>MIME类型与内容协商</strong>，讲清楚Content-Type的来龙去脉，以及浏览器和服务器是如何"商量"用什么格式传输数据的。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：为什么 <code>Set-Cookie</code> 不能用逗号合并，而 <code>Accept</code> 可以？</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch6-a1">显示答案</button>
+          <div class="answer" id="ch6-a1" hidden>
+            <p>大多数头部的多个值语义等价于用逗号拼接的列表，所以 Accept 可以合并。但 Set-Cookie 的逗号会出现在 Expires 日期中（如 “Mon, 10 Jun 2024 …”），一旦合并就无法拆分，因此规范规定每个 Set-Cookie 必须单独一行。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="05.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="07.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>

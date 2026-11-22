@@ -131,15 +131,16 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
-        <h3>🌐 课程目录</h3>
+    <nav class="sidebar" aria-label="课程目录">
+        <p class="sidebar-title">🌐 课程目录</p>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 HTTP协议概述</a></li>
 <li><a href="02.html">第2章 URL与资源定位</a></li>
 <li><a href="03.html">第3章 HTTP报文结构</a></li>
-<li><a href="04.html" class="active">第4章 HTTP请求方法</a></li>
+<li><a href="04.html" class="active" aria-current="page">第4章 HTTP请求方法</a></li>
 <li><a href="05.html">第5章 HTTP状态码</a></li>
 <li><a href="06.html">第6章 HTTP头部字段</a></li>
 <li><a href="07.html">第7章 MIME类型与内容协商</a></li>
@@ -165,13 +166,16 @@
 <li><a href="27.html">第27章 HTTP/3 (QUIC)</a></li>
 <li><a href="28.html">第28章 HTTP项目实战</a></li>
         </ul>
-    </div>
-    <div class="main-content">
-        <h2>第四章：HTTP请求方法</h2>
+    </nav>
+    <main class="main-content" id="content"><article>
+        <header class="article-header">
+            <h1 id="ch-title">第四章：HTTP请求方法</h1>
+            <p class="dek">GET/POST/PUT/DELETE/PATCH/HEAD/OPTIONS 的语义、安全性与幂等性，以及实际选型建议。</p>
+        </header>
 
         <p>大家好，我是你们的讲师。上一章我们学会了看HTTP报文，其中请求报文的第一行就是请求方法。方法可以说是HTTP协议的"动词"——它告诉服务器你想对资源做什么。Web开发中90%的场景只用GET和POST，但HTTP协议其实定义了9种方法，各有各的用途和讲究。</p>
 
-        <h3>4.1 方法概览</h3>
+        <h2>4.1 方法概览</h2>
 
         <p>HTTP/1.1标准定义的方法一共有9个：</p>
 
@@ -194,7 +198,7 @@
           <p><strong>冷知识</strong>：早年间有些防火墙和代理只允许GET和POST通过。如果你在做全栈API开发，发现PUT/DELETE请求莫名其妙被拦截，可以先检查一下中间件是否支持。我自己就遇到过阿里云WAF默认只放行GET/POST，PUT请求全给挡了的情况。</p>
         </div>
 
-        <h3>4.2 安全性与幂等性</h3>
+        <h2>4.2 安全性与幂等性</h2>
 
         <p>这是面试中的高频考点，也是API设计时必须理解的两个概念：</p>
 
@@ -220,11 +224,46 @@
 
         <p>注意看，<strong>安全的方法全都是幂等的</strong>，但幂等的不一定是安全的（比如PUT和DELETE）。POST最特殊——既不安全也不幂等。这就是为什么浏览器刷新POST页面时会弹出"确认重新提交表单"的对话框——因为重复提交可能导致重复下单、重复扣款等严重后果。</p>
 
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch4-matrix-title fig-ch4-matrix-desc" viewBox="0 0 780 420" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch4-matrix-title">HTTP 方法的安全性与幂等性矩阵</title>
+            <desc id="fig-ch4-matrix-desc">横轴为是否幂等，纵轴为是否安全。安全且幂等的有 GET、HEAD、OPTIONS、TRACE；非安全但幂等的有 PUT、DELETE；既不安全也不幂等的有 POST、PATCH、CONNECT；安全但非幂等的组合为空。</desc>
+            <rect x="0" y="0" width="780" height="420" fill="#ffffff"/>
+            <!-- axes -->
+            <line x1="120" y1="360" x2="720" y2="360" stroke="#475569" stroke-width="2"/>
+            <line x1="120" y1="360" x2="120" y2="40" stroke="#475569" stroke-width="2"/>
+            <text x="420" y="396" font-size="15" fill="#334155" text-anchor="middle">幂等性 →</text>
+            <text x="150" y="374" font-size="14" fill="#64748b">幂等</text>
+            <text x="690" y="374" font-size="14" fill="#64748b" text-anchor="end">非幂等</text>
+            <text x="36" y="70" font-size="15" fill="#334155">安全 ↑</text>
+            <text x="36" y="345" font-size="14" fill="#64748b">不安全</text>
+
+            <!-- cells -->
+            <rect x="130" y="60" width="285" height="140" rx="12" fill="#d1fae5" stroke="#10b981"/>
+            <text x="272" y="92" font-size="14" fill="#047857" text-anchor="middle">安全 · 幂等</text>
+            <text x="272" y="128" font-size="20" font-weight="700" fill="#065f46" text-anchor="middle">GET  HEAD</text>
+            <text x="272" y="162" font-size="20" font-weight="700" fill="#065f46" text-anchor="middle">OPTIONS  TRACE</text>
+
+            <rect x="425" y="60" width="285" height="140" rx="12" fill="#f1f5f9" stroke="#cbd5e1" stroke-dasharray="6 5"/>
+            <text x="567" y="92" font-size="14" fill="#64748b" text-anchor="middle">安全 · 非幂等</text>
+            <text x="567" y="140" font-size="16" fill="#94a3b8" text-anchor="middle">（空——安全必然幂等）</text>
+
+            <rect x="130" y="210" width="285" height="140" rx="12" fill="#e0f2fe" stroke="#0ea5e9"/>
+            <text x="272" y="242" font-size="14" fill="#0369a1" text-anchor="middle">不安全 · 幂等</text>
+            <text x="272" y="290" font-size="22" font-weight="700" fill="#075985" text-anchor="middle">PUT  DELETE</text>
+
+            <rect x="425" y="210" width="285" height="140" rx="12" fill="#fef3c7" stroke="#b45309"/>
+            <text x="567" y="242" font-size="14" fill="#b45309" text-anchor="middle">不安全 · 非幂等</text>
+            <text x="567" y="290" font-size="22" font-weight="700" fill="#92400e" text-anchor="middle">POST  PATCH  CONNECT</text>
+          </svg>
+          <figcaption><span class="fig-no">图 4.1</span>　安全性与幂等性矩阵。安全的方法一定幂等，反之不成立：PUT/DELETE 会改动数据但重复执行结果一致，POST/PATCH 既不安全也不幂等。</figcaption>
+        </figure>
+
         <div class="highlight">
           <p><strong>设计原则</strong>：在设计API时，遵循"方法语义"比"实现方便"更重要。很多人图省事，把所有API都写成POST，这在技术上是可行的，但会让API失去语义清晰度。想象一下，如果你的用户要看文档，你给他一把刀——用户会觉得你很奇怪。同理，删除操作应该用DELETE，查询应该用GET。</p>
         </div>
 
-        <h3>4.3 GET详解</h3>
+        <h2>4.3 GET详解</h2>
 
         <p>GET是最常用的HTTP方法，用于"获取"资源。它的核心特征是：</p>
 
@@ -252,7 +291,7 @@ If-None-Match: "abc123"</code></pre>
           <p><strong>踩坑回顾</strong>：当年做一个CMS系统，编辑删除文章的功能用了GET请求（当时图省事直接用了 <code>&lt;a href="delete?id=123"&gt;</code>）。结果被百度爬虫顺着链接把所有文章都删了……后来我养成了一个习惯：<strong>任何有副作用的操作，绝不使用GET</strong>。搜索引擎爬虫、预加载插件、甚至浏览器的预连接机制都可能触发GET请求。</p>
         </div>
 
-        <h3>4.4 POST详解</h3>
+        <h2>4.4 POST详解</h2>
 
         <p>POST用于"提交"数据给服务器，通常用于创建资源或触发操作。它的核心特征：</p>
 
@@ -276,7 +315,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 
         <p><strong>POST vs PUT</strong>：POST创建资源时，由服务器决定资源的URL（如 <code>/orders/12345</code>）；PUT则要求客户端指定资源的完整URL（如 <code>/users/123</code>）。POST可以重复提交创建多个资源，PUT重复提交替换同一个资源。</p>
 
-        <h3>4.5 PUT、DELETE、PATCH的区别</h3>
+        <h2>4.5 PUT、DELETE、PATCH的区别</h2>
 
         <p>这三个方法在RESTful API中非常常见，它们的区别很微妙：</p>
 
@@ -307,7 +346,40 @@ DELETE /api/users/123 HTTP/1.1</code></pre>
           <p><strong>经验之谈</strong>：很多新手搞混PUT和PATCH，简单记住——<strong>PUT像"覆盖保存"，PATCH像"编辑部分字段"</strong>。想象一个Word文档：PUT是把整篇文档替换掉，PATCH是只修改某个段落。如果你的API中，客户端需要先GET完整数据、修改一两个字段、再PUT回来——那不如改成PATCH。</p>
         </div>
 
-        <h3>4.6 HEAD与OPTIONS的实用场景</h3>
+        <figure>
+          <svg role="img" aria-labelledby="fig-ch4-intent-title fig-ch4-intent-desc" viewBox="0 0 820 330" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch4-intent-title">按操作意图选择请求方法</title>
+            <desc id="fig-ch4-intent-desc">将操作意图映射到方法：读取资源用 GET，创建资源用 POST，完整替换用 PUT，部分更新用 PATCH，删除资源用 DELETE。</desc>
+            <rect x="0" y="0" width="820" height="330" fill="#ffffff"/>
+            <defs><marker id="ch4-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+            <g font-size="16">
+              <rect x="40" y="28" width="300" height="38" rx="9" fill="#f1f5f9" stroke="#cbd5e1"/><text x="60" y="53" fill="#334155">读取资源（只读）</text>
+              <line x1="345" y1="47" x2="430" y2="47" stroke="#94a3b8" stroke-width="2" marker-end="url(#ch4-arrow)"/>
+              <rect x="436" y="28" width="160" height="38" rx="9" fill="#6366f1"/><text x="516" y="53" fill="#ffffff" font-weight="700" text-anchor="middle">GET</text>
+
+              <rect x="40" y="86" width="300" height="38" rx="9" fill="#f1f5f9" stroke="#cbd5e1"/><text x="60" y="111" fill="#334155">创建资源（新增）</text>
+              <line x1="345" y1="105" x2="430" y2="105" stroke="#94a3b8" stroke-width="2" marker-end="url(#ch4-arrow)"/>
+              <rect x="436" y="86" width="160" height="38" rx="9" fill="#b45309"/><text x="516" y="111" fill="#ffffff" font-weight="700" text-anchor="middle">POST</text>
+
+              <rect x="40" y="144" width="300" height="38" rx="9" fill="#f1f5f9" stroke="#cbd5e1"/><text x="60" y="169" fill="#334155">完整替换（整份覆盖）</text>
+              <line x1="345" y1="163" x2="430" y2="163" stroke="#94a3b8" stroke-width="2" marker-end="url(#ch4-arrow)"/>
+              <rect x="436" y="144" width="160" height="38" rx="9" fill="#0ea5e9"/><text x="516" y="169" fill="#ffffff" font-weight="700" text-anchor="middle">PUT</text>
+
+              <rect x="40" y="202" width="300" height="38" rx="9" fill="#f1f5f9" stroke="#cbd5e1"/><text x="60" y="227" fill="#334155">部分更新（改几个字段）</text>
+              <line x1="345" y1="221" x2="430" y2="221" stroke="#94a3b8" stroke-width="2" marker-end="url(#ch4-arrow)"/>
+              <rect x="436" y="202" width="160" height="38" rx="9" fill="#7c3aed"/><text x="516" y="227" fill="#ffffff" font-weight="700" text-anchor="middle">PATCH</text>
+
+              <rect x="40" y="260" width="300" height="38" rx="9" fill="#f1f5f9" stroke="#cbd5e1"/><text x="60" y="285" fill="#334155">删除资源</text>
+              <line x1="345" y1="279" x2="430" y2="279" stroke="#94a3b8" stroke-width="2" marker-end="url(#ch4-arrow)"/>
+              <rect x="436" y="260" width="160" height="38" rx="9" fill="#dc2626"/><text x="516" y="285" fill="#ffffff" font-weight="700" text-anchor="middle">DELETE</text>
+            </g>
+            <text x="640" y="163" font-size="13" fill="#94a3b8">有副作用的方法</text>
+            <text x="640" y="183" font-size="13" fill="#94a3b8">应避开 GET</text>
+          </svg>
+          <figcaption><span class="fig-no">图 4.2</span>　按意图选方法：只读用 GET，新增用 POST，整份覆盖用 PUT，局部修改用 PATCH，删除用 DELETE。任何有副作用的操作都不应放在 GET 上。</figcaption>
+        </figure>
+
+        <h2>4.6 HEAD与OPTIONS的实用场景</h2>
 
         <p>HEAD和OPTIONS虽然不常用，但在某些场景下非常有用。</p>
 
@@ -353,13 +425,34 @@ Access-Control-Max-Age: 86400</code></pre>
 
         <p>好了，第四章关于HTTP请求方法的内容就到这里。你现在知道了9种方法的用途、安全性和幂等性的含义、以及GET/POST/PUT/DELETE/PATCH的具体用法和注意事项。下一章我们来看响应的另一面——HTTP状态码。服务器用三位数字告诉你"事情办得怎么样"。</p>
 
+        <aside class="self-check">
+          <p class="q">自测：为什么“用 GET 做删除”是危险的？结合安全性与缓存解释。</p>
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="ch4-a1">显示答案</button>
+          <div class="answer" id="ch4-a1" hidden>
+            <p>GET 被定义为安全且可缓存。爬虫、预加载或缓存代理可以不经用户授权地重复发起 GET；若 GET 带删除副作用，就可能被反复触发。此外缓存代理可能直接返回缓存结果，导致“删除失败但返回 200”。因此有副作用的操作应使用 POST/DELETE 等方法。</p>
+          </div>
+        </aside>
+
         <div class="footer-nav">
             <a href="03.html">← 上一章</a>
             <a href="index.html">📖 返回目录</a>
             <a href="05.html">下一章 →</a>
         </div>
-    </div>
+    </article></main>
 </div>
 </div>
+<script>
+  (function () {
+    var btn = document.querySelector('.self-check .reveal');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var ans = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      ans.hidden = open;
+      btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+</script>
 </body>
 </html>
