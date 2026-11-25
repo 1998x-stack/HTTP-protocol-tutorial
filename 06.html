@@ -305,6 +305,16 @@
 
         <p>好了，第六章的内容就到这里。Headers是HTTP协议中一个庞大但非常实用的主题。下一章我们聚焦其中一个关键方面——<strong>MIME类型与内容协商</strong>，讲清楚Content-Type的来龙去脉，以及浏览器和服务器是如何"商量"用什么格式传输数据的。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 9110《HTTP Semantics》(2022) §6：字段名大小写不敏感、字段值的语义与重复规则。</li>
+            <li>RFC 9112《HTTP/1.1》(2022) §5：field-line 的线格式与合并规则。</li>
+            <li>RFC 6648《Deprecating the "X-" Prefix》(2012)：为何不再推荐 X- 前缀。</li>
+            <li>RFC 1123《Requirements for Internet Hosts》(1989)：HTTP 日期时间的格式基础。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：为什么 <code>Set-Cookie</code> 不能用逗号合并，而 <code>Accept</code> 可以？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch6-a1">显示答案</button>

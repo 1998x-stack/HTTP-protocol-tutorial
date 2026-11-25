@@ -364,6 +364,15 @@ curl -H "Accept: text/html" https://api.example.com/user/1</code></pre>
 
         <p>好了，第七章到这里。MIME类型是HTTP里非常"润物细无声"的知识——平时看不到它的存在，但一旦出了问题，会让你头疼很久。从下一章开始，我们将进入HTTP的连接管理层面——<strong>持久连接、队头阻塞、管线化与域名分片</strong>，这些可是性能优化的根基。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 9110《HTTP Semantics》(2022) §12：Accept、Accept-Language、Accept-Encoding 及内容协商的 q 值。</li>
+            <li>RFC 6838《Media Type Specifications and Registration Procedures》(2013)：type/subtype 的注册规范。</li>
+            <li>RFC 2046《MIME Part Two: Media Types》(1996)：MIME 媒体类型的原始定义。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：服务器上明明存的是 UTF-8，为什么响应还是乱码？列出最可能的两处排查点。</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch7-a1">显示答案</button>

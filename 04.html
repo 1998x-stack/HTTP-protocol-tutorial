@@ -425,6 +425,15 @@ Access-Control-Max-Age: 86400</code></pre>
 
         <p>好了，第四章关于HTTP请求方法的内容就到这里。你现在知道了9种方法的用途、安全性和幂等性的含义、以及GET/POST/PUT/DELETE/PATCH的具体用法和注意事项。下一章我们来看响应的另一面——HTTP状态码。服务器用三位数字告诉你"事情办得怎么样"。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 9110《HTTP Semantics》(2022) §9：GET/POST/PUT/DELETE/HEAD/OPTIONS 的定义及“安全”与“幂等”属性。</li>
+            <li>RFC 5789《PATCH Method for HTTP》(2010)：PATCH 方法。</li>
+            <li>RFC 6902《JavaScript Object Notation (JSON) Patch》(2013)：JSON Patch 的媒体类型与操作语义。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：为什么“用 GET 做删除”是危险的？结合安全性与缓存解释。</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch4-a1">显示答案</button>
