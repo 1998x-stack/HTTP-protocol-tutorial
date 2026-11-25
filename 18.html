@@ -446,6 +446,15 @@ Permissions-Policy: usb=(self "https://trusted-device.example.com")</code></pre>
 
         <p>好了，第十八章的内容就到这里。我们从HSTS、CSP、X-Frame-Options、X-Content-Type-Options、Referrer-Policy到Permissions-Policy，把这六个关键的安全头部都讲清楚了。这些头部配置简单但防御效果显著，是Web安全中投入产出比最高的措施之一。希望你在读完这一章后，马上检查自己网站的安全头部配置——你可能会发现，只需要几分钟的配置就能让网站的安全性提升一大截。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 6797《HTTP Strict Transport Security (HSTS)》(2012)。</li>
+            <li>RFC 7034《HTTP Header Field X-Frame-Options》(2013)。</li>
+            <li>W3C《Content Security Policy Level 3》(CSP3) 与 W3C《Referrer Policy》：CSP 与 Referrer-Policy 由 W3C 规范定义，而非 RFC。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：为什么设置 HSTS 的 <code>includeSubDomains</code> 要特别谨慎？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch18-a1">显示答案</button>
