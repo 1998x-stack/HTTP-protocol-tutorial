@@ -410,6 +410,15 @@ Server → 继续传输数据</code></pre>
 
         <p>好了，第二十七章的内容就到这里。我们聊了为什么需要HTTP/3、QUIC协议的基础（UDP、TLS 1.3内置、连接ID）、0-RTT连接的建立、连接迁移、QPACK头部压缩和当前部署现状。下一章是<strong>本教程的最后一章</strong>——HTTP项目实战，我们会把整个教程中学到的知识应用到实际项目中，搭建一个完整的HTTP服务。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 9114《HTTP/3》(2022)：基于 QUIC 的 HTTP 映射。</li>
+            <li>RFC 9000《QUIC: A UDP-Based Multiplexed and Secure Transport》(2021) 与 RFC 9001《Using TLS to Secure QUIC》(2021)。</li>
+            <li>RFC 9204《QPACK: Field Compression for HTTP/3》(2022)：0-RTT、连接迁移与头部压缩。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：0-RTT 能降低延迟，为什么支付类请求不应该用 0-RTT？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch27-a1">显示答案</button>

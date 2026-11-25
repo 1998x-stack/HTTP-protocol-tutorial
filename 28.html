@@ -594,6 +594,15 @@ ab -n 10000 -c 100 https://example.com/
             <span class="nav-disabled" aria-disabled="true">下一章 →</span>
         </div>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 8446《TLS 1.3》(2018)、RFC 6797《HSTS》(2012)：HTTPS 搭建与安全加固的规范依据。</li>
+            <li>RFC 9113《HTTP/2》(2022) 与 RFC 9114《HTTP/3》(2022)：启用 HTTP/2 / HTTP/3 的协议依据。</li>
+            <li>nginx 官方文档（SSL/TLS 与性能调优章节）：部署步骤的非 RFC 参考。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：为什么后端 Flask 只监听 <code>127.0.0.1:5000</code>，而不直接对外？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch28-a1">显示答案</button>

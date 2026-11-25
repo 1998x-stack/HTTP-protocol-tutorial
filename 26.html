@@ -406,6 +406,14 @@ WINDOW_UPDATE: stream_id=3, increment=16384</code></pre>
 
         <p>好了，第二十六章的内容就到这里。我们聊了HTTP/1.1的局限性、HTTP/2的二进制帧层、HPACK头部压缩、服务器推送和流优先级控制。下一章我们继续HTTP协议的演进方向——<strong>HTTP/3（QUIC）</strong>，看看它如何解决HTTP/2中仍然存在的TCP层队头阻塞问题。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 9113《HTTP/2》(2022)：现行 HTTP/2 规范；RFC 7540 (2015) 为已被取代的原始版，本章版本对照以 9113 为准。</li>
+            <li>RFC 7541《HPACK: Header Compression for HTTP/2》(2015)：静态/动态表与 Huffman 编码。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：HTTP/2 的多路复用消除了哪一层队头阻塞？还有什么队头阻塞？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch26-a1">显示答案</button>
