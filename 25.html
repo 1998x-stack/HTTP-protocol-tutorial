@@ -372,6 +372,15 @@ sudo tcpdump -i eth0 'host 93.184.216.34 and port 443' -w precise.pcap</code></p
 
         <p>好了，到这里为止，HTTP协议的核心知识就全部讲完了。从下一章开始，我们进入协议的新时代——HTTP/2 和 HTTP/3。准备好了吗？</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 9112《HTTP/1.1》(2022)：抓包中请求/响应行的解析依据；RFC 9113《HTTP/2》(2022) 的帧类型可在 HTTP/2 抓包中看到。</li>
+            <li>RFC 9000《QUIC: A UDP-Based Multiplexed and Secure Transport》(2021)：HTTP/3 抓包中的 QUIC 包结构。</li>
+            <li>Wireshark User's Guide 与 tcpdump 手册：抓包与分析工具的非 RFC 参考。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：抓包文件（pcap）为什么不能随手上传到公共网盘或 Git 仓库？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch25-a1">显示答案</button>

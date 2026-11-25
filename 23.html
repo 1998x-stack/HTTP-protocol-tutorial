@@ -386,6 +386,14 @@ google-chrome
 
         <p>好了，这一章我们介绍了从命令行到图形界面再到抓包工具的HTTP调试技术栈。curl适合快速验证和脚本化、DevTools适合前端排障和时序分析、Postman适合API调试和自动化测试、Wireshark适合网络层深度分析。下一章我们进入服务器配置的领域，看看真实世界的Nginx是如何处理HTTP请求的。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 9110《HTTP Semantics》(2022) 与 RFC 9112《HTTP/1.1》(2022)：本章解读报文所依据的规范语义与线格式。</li>
+            <li>curl 官方手册（curl.se/docs/manpage.html）与 Chrome DevTools Network 文档、Wireshark User's Guide：调试工具的非 RFC 参考。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：看到某个 API 请求很慢，如何用 DevTools 快速判断是服务端处理慢还是传输慢？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch23-a1">显示答案</button>
