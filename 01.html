@@ -308,6 +308,16 @@
 	<p>理解这个分层很重要。比如，你在排查问题的时候，如果HTTP层一切正常但请求超时，那问题可能在TCP层（握手失败）或网络层（路由问题）。我建议你遇到问题从下往上排查，先ping通不通，再telnet端口开不开，最后才看HTTP报文。</p>
 
 	<p>好了，第一章的内容就到这里。我们建立了一个宏观的认知框架，下一章咱们开始深入HTTP的第一个核心概念——URL与资源定位。</p>
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 1945《Hypertext Transfer Protocol — HTTP/1.0》(1996)：本章 HTTP/1.0 的头部、状态码与 POST 方法。</li>
+            <li>RFC 2068 (1997)、RFC 2616 (1999)《HTTP/1.1》：持久连接、Host 头与分块传输等特性。</li>
+            <li>RFC 7540《HTTP/2》(2015)：多路复用、头部压缩与服务器推送。</li>
+            <li>RFC 9114《HTTP/3》(2022)：基于 QUIC 的 HTTP/3。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：为什么说 HTTP 是"无状态"协议？这带来了什么代价与补足机制？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch1-a1">显示答案</button>
