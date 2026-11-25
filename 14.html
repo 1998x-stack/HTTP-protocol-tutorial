@@ -390,6 +390,15 @@ curl -L --max-redirs 20 -v http://example.com 2>&1 | grep -E "^(> |< |Location)"
 
         <p>好了，第十四章的内容就到这里。我们学习了HTTP重定向的完整谱系（301/302/303/307/308）、客户端重定向方式、URL重写的实际应用、以及重定向循环的排查和预防。下一章我们将进入一个全新的领域——<strong>HTTPS</strong>，看看HTTP如何在TLS的保护下变得安全可靠。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 9110《HTTP Semantics》(2022) §15.4：301 / 302 / 303 / 307 / 308 的规范语义与缓存行为。</li>
+            <li>RFC 7538《The Hypertext Transfer Protocol Status Code 308 (Permanent Redirect)》(2015)。</li>
+            <li>RFC 9110《HTTP Semantics》(2022) §10.2：Location 字段与重定向循环。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：为什么用 POST 跳转时应优先选 307/308 而不是 301/302？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch14-a1">显示答案</button>

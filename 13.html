@@ -388,6 +388,15 @@ Content-Range: bytes 10000-10999/10485760
 
         <p>好了，第十三章的内容就到这里。我们学习了HTTP的内容编码（gzip/brotli压缩）、传输编码（chunked分块传输）、以及范围请求与断点续传。这些机制共同构成了HTTP高效传输数据的基础。下一章我们将进入<strong>重定向与URL重写</strong>，看看HTTP是如何优雅地把请求从一个URL"转交"到另一个URL的。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 9110《HTTP Semantics》(2022) §8.4：Content-Encoding / Accept-Encoding 与内容编码机制。</li>
+            <li>RFC 1952《GZIP file format specification》(1996)、RFC 7932《Brotli Compressed Data Format》(2016)。</li>
+            <li>RFC 9110《HTTP Semantics》(2022) §14：Range / Content-Range 与断点续传。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：服务器响应带 <code>Transfer-Encoding: chunked</code> 时，为什么浏览器无法用百分比显示下载进度？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch13-a1">显示答案</button>

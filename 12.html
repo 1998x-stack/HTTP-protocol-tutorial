@@ -416,6 +416,14 @@ location /api/ {
 
         <p>好了，第十二章的内容就到这里。CORS是前后端分离架构中绕不开的话题，理解它的核心——同源策略、简单请求与预检、凭证携带、常见配置问题——能让你的联调过程顺畅很多。下一章我们进入<strong>内容编码与传输</strong>，看看HTTP是如何压缩数据、分段传输、以及支持断点续传的。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 6454《The Web Origin Concept》(2011)：同源策略中的“源”（scheme + host + port）定义。</li>
+            <li>WHATWG Fetch Standard（fetch.spec.whatwg.org）：CORS 预检、Access-Control-* 响应头与凭证模式均在此定义，而非 RFC。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：当请求需要携带 Cookie 时，为什么 <code>Access-Control-Allow-Origin</code> 不能用 <code>*</code>？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch12-a1">显示答案</button>
