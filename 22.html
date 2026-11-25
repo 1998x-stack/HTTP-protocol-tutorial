@@ -446,6 +446,16 @@ location /api/ {
 
         <p>好了，第二十二章的内容就到这里。我们从请求数量优化、资源体积优化、加载策略、资源提示、HTTP缓存策略到HTTP/2优化差异，完整覆盖了HTTP性能优化的各个方面。下一章我们进入<strong>HTTP调试工具</strong>——把前面学到的所有知识都用在实际排查问题中。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 9113《HTTP/2》(2022)：多路复用、帧层与头部压缩，是 HTTP/2 优化的基础。</li>
+            <li>RFC 9218《Extensible Prioritization Scheme for HTTP》(2022)：HTTP/2 与 HTTP/3 的优先级方案。</li>
+            <li>RFC 8297《An HTTP Status Code for Indicating Hints》(2017)：103 Early Hints。</li>
+            <li>W3C《Resource Hints》（preload / prefetch / preconnect）：由 W3C 规范定义，非 RFC。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：为什么在 HTTP/2 下“域名分片”反而会拖慢性能？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch22-a1">显示答案</button>

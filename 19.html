@@ -417,6 +417,15 @@ real_ip_recursive on;</code></pre>
 
         <p>好了，第十九章的内容就到这里。我们介绍了正向代理、反向代理、透明代理、X-Forwarded-For以及CDN原理。下一章我们进入<strong>负载均衡与限流</strong>——这两个话题和反向代理紧密相关，是做高并发系统绕不开的硬核知识。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 9110《HTTP Semantics》(2022) §7.6：Via 字段与消息转发。</li>
+            <li>RFC 7239《Forwarded HTTP Extension》(2014)：X-Forwarded-For 的标准替代（Forwarded）。</li>
+            <li>RFC 9111《HTTP Caching》(2022)：共享缓存与 CDN 的缓存模型。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：正向代理与反向代理最本质的区别是什么？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch19-a1">显示答案</button>

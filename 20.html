@@ -442,6 +442,15 @@ server {
 
         <p>好了，第二十章的内容就到这里。我们从负载均衡的算法到Nginx配置、从会话保持到限流策略再到健康检查，完整覆盖了流量控制的各个方面。下一章我们换个角度——从<strong>RESTful API设计</strong>来看HTTP协议在应用层的使用规范。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 6585《Additional HTTP Status Codes》(2012)：429 Too Many Requests。</li>
+            <li>RFC 9110《HTTP Semantics》(2022) §15.6：503 Service Unavailable 与 Retry-After。</li>
+            <li>nginx 官方文档《HTTP Load Balancing》与《ngx_http_limit_req_module》：upstream 与限流配置的非 RFC 参考。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：令牌桶与漏桶最关键的差别是什么？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch20-a1">显示答案</button>
