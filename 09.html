@@ -371,6 +371,15 @@ Cache-Control: no-cache</code></pre>
 
         <p>好了，第九章的内容就到这里。HTTP缓存是Web性能优化中最立竿见影的技术。理解新鲜度、验证、以及多层缓存协作是掌握缓存的关键。下一章我们进入HTTP的"状态"问题——<strong>Cookie与会话管理</strong>，HTTP天生无状态，那网站是怎么记住你的呢？</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 9111《HTTP Caching》(2022)：Cache-Control、新鲜度与验证模型。</li>
+            <li>RFC 9110《HTTP Semantics》(2022) §13：ETag / If-None-Match / If-Modified-Since 等条件请求。</li>
+            <li>RFC 5861《HTTP Cache-Control Extensions for Stale Content》(2010)：stale-while-revalidate。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：<code>no-cache</code> 与 <code>no-store</code> 有什么区别？敏感数据应该用哪个？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch9-a1">显示答案</button>

@@ -403,6 +403,16 @@ X-API-Key: sk_live_abc123def456gh789</code></pre>
 
         <p>好了，第十一章的内容就到这里。我们介绍了HTTP协议的几种认证机制：从最原始的Basic，到改进版的Digest，再到当今主流的Bearer Token和API Key。最后对比了Session Cookie和Token方案，帮助你在实际项目中做出正确选择。下一章我们将进入另一个非常重要的主题——<strong>跨域资源共享（CORS）</strong>，这是前后端分离架构中几乎每天都要面对的挑战。</p>
 
+        <aside class="references" aria-label="标准出处">
+          <p class="ref-title">标准出处</p>
+          <ul>
+            <li>RFC 7617《The 'Basic' HTTP Authentication Scheme》(2015) 与 RFC 7616《HTTP Digest Access Authentication》(2015)。</li>
+            <li>RFC 6750《The OAuth 2.0 Authorization Framework: Bearer Token Usage》(2012)。</li>
+            <li>RFC 6749《The OAuth 2.0 Authorization Framework》(2012)：授权码等四种授权流程。</li>
+            <li>RFC 7519《JSON Web Token (JWT)》(2015)：JWT 结构与声明。</li>
+          </ul>
+        </aside>
+
         <aside class="self-check">
           <p class="q">自测：为什么 JWT 的 Payload 不能存放密码等敏感信息？</p>
           <button type="button" class="reveal" aria-expanded="false" aria-controls="ch11-a1">显示答案</button>
