@@ -127,6 +127,14 @@
             body { padding: 10px; }
             .main-content { padding: 20px; }
         }
+        /* 缓存决策交互演示 */
+        .simulator { margin: 1.6rem 0; padding: 1rem 1.1rem; background: #f8faff; border: 1px solid #c7d2fe; border-radius: 16px; }
+        .sim-controls { display: grid; gap: .6rem; margin: .7rem 0; }
+        .sim-controls label { display: grid; gap: .25rem; font-weight: 600; color: #3730a3; font-size: .92rem; }
+        .sim-controls select { font: inherit; padding: .35rem .5rem; border: 1px solid #c7d2fe; border-radius: 10px; background: #fff; color: #1e293b; max-width: 100%; }
+        .sim-check { display: flex !important; align-items: center; gap: .5rem; font-weight: 500; }
+        .sim-out { display: block; margin-top: .6rem; padding: .8rem 1rem; background: #eef2ff; border-left: 5px solid #6366f1; border-radius: 0 12px 12px 0; line-height: 1.7; color: #1e293b; }
+        .sim-out .sim-code { display: inline-block; font-weight: 700; color: #fff; background: #4338ca; padding: .1rem .55rem; border-radius: 8px; margin-right: .4rem; font-family: 'JetBrains Mono', monospace; }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -301,6 +309,28 @@ etag: "abc123def456"</code></pre>
           <figcaption><span class="fig-no">图 9.2</span>　ETag 条件请求时序：首次得到 ETag，过期后以 If-None-Match 验证；资源未变时服务器只回 304（无 body），传输量极小。</figcaption>
         </figure>
 
+        <section class="simulator" aria-labelledby="sim-ch9-title">
+          <h3 id="sim-ch9-title">交互演示：这次请求会怎么走？</h3>
+          <p>设定本地副本的状态与校验条件，看浏览器最终走哪条路径。结论依据 RFC 9111《HTTP Caching》的 fresh / stale 与校验规则，不含服务端业务逻辑。</p>
+          <div class="sim-controls">
+            <label>本地副本状态
+              <select data-sim="state">
+                <option value="fresh">新鲜（仍在 max-age 内）</option>
+                <option value="stale">已过期（超过 max-age）</option>
+                <option value="none">没有副本</option>
+              </select>
+            </label>
+            <label>响应是否带 ETag（校验器）
+              <select data-sim="etag"><option value="yes">有</option><option value="no">无</option></select>
+            </label>
+            <label>资源在服务器上是否变化
+              <select data-sim="changed"><option value="no">未变化</option><option value="yes">已变化</option></select>
+            </label>
+            <label class="sim-check"><input type="checkbox" data-sim="nocache"> 请求头 <code>Cache-Control: no-cache</code>（强制校验）</label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
+
         <h2>9.4 Last-Modified与If-Modified-Since</h2>
 
         <p>这是比ETag更早的验证机制，基于时间戳。服务器在响应中返回 <code>Last-Modified</code> 头，浏览器后续请求用 <code>If-Modified-Since</code> 带上这个时间：</p>
@@ -407,6 +437,40 @@ Cache-Control: no-cache</code></pre>
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var get = function (name) { return box.querySelector('[data-sim="' + name + '"]'); };
+    function current() {
+      return { state: get('state').value, etag: get('etag').value === 'yes',
+        changed: get('changed').value === 'yes', nocache: get('nocache').checked };
+    }
+    function decide(v) {
+      if (v.state === 'none') {
+        return ['200 OK', 'cache: miss', '本地没有可用副本，直接向源服务器发完整请求，拿到 200 与完整响应体，并把它写入缓存（若响应允许存储）。'];
+      }
+      if (v.state === 'fresh' && !v.nocache) {
+        return ['无网络请求', 'cache: fresh hit', '副本仍在新鲜期内，且请求未要求 no-cache，浏览器直接使用本地副本——零请求、零延迟。'];
+      }
+      if (!v.etag) {
+        return ['200 OK', 'revalidate: no validator', '副本已不可直接使用，但响应没有 ETag / Last-Modified 这类校验器，无法发起条件请求，只能重新下载完整响应体。'];
+      }
+      if (v.changed) {
+        return ['200 OK', 'conditional request', '发送 If-None-Match: &lt;ETag&gt; 校验，服务器发现资源已变，返回 200 与新的完整响应体（并更新 ETag、刷新新鲜期）。'];
+      }
+      return ['304 Not Modified', 'conditional request', '发送 If-None-Match: &lt;ETag&gt; 校验，资源未变，服务器只回 304（无响应体）；浏览器复用本地副本，并按新头部刷新新鲜期。'];
+    }
+    function render() {
+      var r = decide(current());
+      out.innerHTML = '<span class="sim-code">' + r[0] + '</span><strong>' + r[1] + '</strong><br>' + r[2];
+    }
+    box.querySelectorAll('[data-sim]').forEach(function (el) {
+      el.addEventListener('change', render);
+    });
+    render();
   })();
 </script>
 </body>
