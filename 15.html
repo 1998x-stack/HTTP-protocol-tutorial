@@ -127,6 +127,20 @@
             body { padding: 10px; }
             .main-content { padding: 20px; }
         }
+        /* 分步图：渐进披露（无 JS 时全部步骤照常显示） */
+        .stepper { margin: 1.6rem 0; padding: 1rem 1rem .85rem; background: #f8faff; border: 1px solid #c7d2fe; border-radius: 16px; }
+        .stepper svg { width: 100%; height: auto; display: block; }
+        .stepper[data-ready] [data-step] { opacity: .16; transition: opacity .25s; }
+        .stepper[data-ready] [data-step].step-past { opacity: .5; }
+        .stepper[data-ready] [data-step].step-on { opacity: 1; }
+        .stepper-controls { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-top: .7rem; }
+        .stepper-controls button, .step-list button { font: inherit; cursor: pointer; background: #6366f1; color: #fff; border: none; padding: .35rem .9rem; border-radius: 40px; font-weight: 600; }
+        .stepper-controls button:disabled { opacity: .4; cursor: default; }
+        .stepper-status { font-weight: 600; color: #312e81; }
+        .step-list { list-style: none; margin: .7rem 0 0; padding: 0; display: grid; gap: .3rem; }
+        .step-list button { background: #fff; color: #3730a3; border: 1px solid #c7d2fe; width: 100%; text-align: left; border-radius: 10px; }
+        .step-list button[aria-current="step"] { background: #e0e7ff; border-color: #6366f1; }
+        @media print { .stepper-controls, .step-list { display: none !important; } .stepper[data-ready] [data-step] { opacity: 1 !important; } }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -292,6 +306,50 @@
 
         <p>现在我们来详细拆解每个步骤：</p>
 
+        <figure class="stepper" data-stepper>
+          <svg role="img" aria-labelledby="fig-ch15-seq-title fig-ch15-seq-desc" viewBox="0 0 880 480" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch15-seq-title">TLS 1.2 完整握手七步时序</title>
+            <desc id="fig-ch15-seq-desc">左右两条生命线分别是客户端与服务端，七条箭头依次是 ClientHello、ServerHello、Certificate、ServerHelloDone、ClientKeyExchange、客户端 Finished、服务端 Finished，之后进入加密应用数据阶段。</desc>
+            <rect x="0" y="0" width="880" height="480" fill="#ffffff"/>
+            <defs>
+              <marker id="ch15-sa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4338ca"/></marker>
+              <marker id="ch15-ca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#047857"/></marker>
+            </defs>
+            <rect x="70" y="38" width="160" height="40" rx="10" fill="#6366f1"/><text x="150" y="63" fill="#ffffff" text-anchor="middle" font-weight="700">客户端</text>
+            <rect x="650" y="38" width="160" height="40" rx="10" fill="#10b981"/><text x="730" y="63" fill="#ffffff" text-anchor="middle" font-weight="700">服务端</text>
+            <line x1="150" y1="78" x2="150" y2="452" stroke="#c7d2fe" stroke-width="2" stroke-dasharray="6 6"/>
+            <line x1="730" y1="78" x2="730" y2="452" stroke="#c7d2fe" stroke-width="2" stroke-dasharray="6 6"/>
+            <text x="440" y="24" text-anchor="middle" font-size="15" font-weight="700" fill="#312e81">TLS 1.2 完整握手：7 个报文后进入加密传输</text>
+            <g font-size="12.5">
+              <g data-step="1"><line x1="154" y1="100" x2="726" y2="100" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch15-sa)"/><text x="440" y="93" text-anchor="middle" fill="#4338ca">① ClientHello：TLS 版本 · 密码套件列表 · Client Random</text></g>
+              <g data-step="2"><line x1="726" y1="142" x2="154" y2="142" stroke="#047857" stroke-width="2.5" marker-end="url(#ch15-ca)"/><text x="440" y="135" text-anchor="middle" fill="#047857">② ServerHello：选定版本/套件 · Server Random</text></g>
+              <g data-step="3"><line x1="726" y1="182" x2="154" y2="182" stroke="#047857" stroke-width="2.5" marker-end="url(#ch15-ca)"/><text x="440" y="175" text-anchor="middle" fill="#047857">③ Certificate：服务器证书（域名 · 公钥 · CA 签名）</text></g>
+              <g data-step="4"><line x1="726" y1="214" x2="154" y2="214" stroke="#047857" stroke-width="2.5" marker-end="url(#ch15-ca)"/><text x="440" y="207" text-anchor="middle" fill="#047857">④ ServerHelloDone：服务端本回合发言结束</text></g>
+              <g data-step="5"><line x1="154" y1="258" x2="726" y2="258" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch15-sa)"/><text x="440" y="251" text-anchor="middle" fill="#4338ca">⑤ ClientKeyExchange：公钥加密 Pre-Master Secret</text></g>
+              <g data-step="6"><line x1="154" y1="304" x2="726" y2="304" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch15-sa)"/><text x="440" y="297" text-anchor="middle" fill="#4338ca">⑥ ChangeCipherSpec + Finished：客户端切换加密</text></g>
+              <g data-step="7"><line x1="726" y1="350" x2="154" y2="350" stroke="#047857" stroke-width="2.5" marker-end="url(#ch15-ca)"/><text x="440" y="343" text-anchor="middle" fill="#047857">⑦ ChangeCipherSpec + Finished：服务端确认</text></g>
+            </g>
+            <rect x="70" y="388" width="740" height="50" rx="10" fill="#eef2ff" stroke="#818cf8"/>
+            <text x="440" y="410" text-anchor="middle" font-size="12.5" fill="#3730a3">握手完成 → 双方用会话密钥进行对称加密的 HTTP 通信</text>
+            <text x="440" y="429" text-anchor="middle" font-size="12" fill="#64748b">TLS 1.3 将后两趟 Finished 压缩到 1-RTT，并支持 0-RTT 会话恢复</text>
+          </svg>
+          <ol class="step-list" aria-label="握手报文步骤">
+            <li><button type="button" data-step-goto="1" data-label="ClientHello：客户端发送支持的版本、密码套件列表与 Client Random">① ClientHello</button></li>
+            <li><button type="button" data-step-goto="2" data-label="ServerHello：服务端选定版本与套件，并给出 Server Random">② ServerHello</button></li>
+            <li><button type="button" data-step-goto="3" data-label="Certificate：服务端发送证书，含域名、公钥与 CA 签名">③ Certificate</button></li>
+            <li><button type="button" data-step-goto="4" data-label="ServerHelloDone：服务端初始消息发完">④ ServerHelloDone</button></li>
+            <li><button type="button" data-step-goto="5" data-label="ClientKeyExchange：客户端用服务端公钥加密 Pre-Master Secret">⑤ ClientKeyExchange</button></li>
+            <li><button type="button" data-step-goto="6" data-label="客户端 ChangeCipherSpec + Finished：之后的消息都加密">⑥ 客户端 Finished</button></li>
+            <li><button type="button" data-step-goto="7" data-label="服务端 ChangeCipherSpec + Finished：握手结束，转入应用数据">⑦ 服务端 Finished</button></li>
+          </ol>
+          <div class="stepper-controls">
+            <button type="button" data-step-prev>← 上一步</button>
+            <span class="stepper-status" data-step-status aria-live="polite"></span>
+            <button type="button" data-step-next>下一步 →</button>
+          </div>
+          <figcaption><span class="fig-no">图 15.3</span>　TLS 1.2 完整握手时序（依据 RFC 5246）。点选步骤或“上一步/下一步”可高亮对应报文；关闭 JavaScript 时七步会全部显示，信息不丢失。</figcaption>
+        </figure>
+
         <p><strong>步骤1：ClientHello</strong> —— 客户端发起握手，告诉服务器它支持的TLS版本（比如TLS 1.2、1.3）、密码套件列表（比如哪些加密算法、哈希算法）、以及一个客户端生成的随机数（Client Random）。这个随机数后面会被用来生成会话密钥。</p>
 
         <p><strong>步骤2：ServerHello</strong> —— 服务器从客户端支持的列表中选定一个TLS版本和密码套件，也生成一个服务器随机数（Server Random）发给客户端。</p>
@@ -412,7 +470,8 @@
         <aside class="references" aria-label="标准出处">
           <p class="ref-title">标准出处</p>
           <ul>
-            <li>RFC 8446《The Transport Layer Security (TLS) Protocol Version 1.3》(2018)：本章的 TLS 握手与密钥导出。</li>
+            <li>RFC 5246《The Transport Layer Security (TLS) Protocol Version 1.2》(2008)：15.3 节七步握手的报文与密钥导出。</li>
+            <li>RFC 8446《The Transport Layer Security (TLS) Protocol Version 1.3》(2018)：TLS 1.3 将后两趟 Finished 压缩为 1-RTT，并支持 0-RTT 会话恢复。</li>
             <li>RFC 9110《HTTP Semantics》(2022) §4.2：http 与 https 两个 URI scheme 的规范含义。</li>
             <li>RFC 5280《Internet X.509 PKI Certificate and CRL Profile》(2008)：证书与信任链。</li>
           </ul>
@@ -444,6 +503,47 @@
       btn.setAttribute('aria-expanded', String(!open));
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+
+  (function () {
+    var roots = document.querySelectorAll('.stepper[data-stepper]');
+    roots.forEach(function (root) {
+      var steps = root.querySelectorAll('[data-step]');
+      if (!steps.length) return;
+      var total = 0;
+      steps.forEach(function (s) { total = Math.max(total, +s.getAttribute('data-step') || 1); });
+      var status = root.querySelector('[data-step-status]');
+      var prev = root.querySelector('[data-step-prev]');
+      var next = root.querySelector('[data-step-next]');
+      var gotos = root.querySelectorAll('[data-step-goto]');
+      var cur = 1;
+      function label(n) {
+        var got = root.querySelector('[data-step-goto="' + n + '"]');
+        return got ? (got.getAttribute('data-label') || got.textContent.trim()) : '';
+      }
+      function render() {
+        steps.forEach(function (s) {
+          var n = +s.getAttribute('data-step') || 1;
+          s.classList.toggle('step-on', n === cur);
+          s.classList.toggle('step-past', n < cur);
+        });
+        gotos.forEach(function (b) {
+          if (+b.getAttribute('data-step-goto') === cur) b.setAttribute('aria-current', 'step');
+          else b.removeAttribute('aria-current');
+        });
+        if (status) status.textContent = '第 ' + cur + ' / ' + total + ' 步：' + label(cur);
+        if (prev) prev.disabled = cur <= 1;
+        if (next) next.disabled = cur >= total;
+      }
+      function go(d) { cur = Math.min(total, Math.max(1, cur + d)); render(); }
+      if (prev) prev.addEventListener('click', function () { go(-1); });
+      if (next) next.addEventListener('click', function () { go(1); });
+      gotos.forEach(function (b) {
+        b.addEventListener('click', function () { cur = +b.getAttribute('data-step-goto') || 1; render(); });
+      });
+      root.setAttribute('data-ready', '');
+      render();
     });
   })();
 </script>
