@@ -127,6 +127,13 @@
             body { padding: 10px; }
             .main-content { padding: 20px; }
         }
+        /* JWT 解码交互演示 */
+        .simulator { margin: 1.6rem 0; padding: 1rem 1.1rem; background: #f8faff; border: 1px solid #c7d2fe; border-radius: 16px; }
+        .sim-controls { display: grid; gap: .6rem; margin: .7rem 0; }
+        .sim-controls label { display: grid; gap: .25rem; font-weight: 600; color: #3730a3; font-size: .92rem; }
+        .sim-controls textarea { font: inherit; font-family: 'JetBrains Mono', monospace; font-size: .82rem; padding: .4rem .5rem; border: 1px solid #c7d2fe; border-radius: 10px; background: #fff; color: #1e293b; width: 100%; resize: vertical; word-break: break-all; }
+        .sim-out { display: block; margin-top: .6rem; padding: .8rem 1rem; background: #eef2ff; border-left: 5px solid #6366f1; border-radius: 0 12px 12px 0; line-height: 1.7; color: #1e293b; }
+        .sim-out pre.sim-json { background: #1e1b4b; color: #e8e8f0; padding: .6rem .8rem; border-radius: 10px; overflow: auto; margin: .3rem 0 .7rem; white-space: pre-wrap; word-break: break-word; font-size: .82rem; }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -344,6 +351,17 @@ sQ0XK9zOq5p5e6P8dVgJ7f3L2kZ1bN4mR8cH5tV6yBw</code></pre>
           <p><strong>Token存储安全</strong>：Bearer Token应该存在哪里？这是个经典的安全问题。<code>localStorage</code> 最方便，但任何XSS漏洞都会导致Token泄露。HttpOnly Cookie可以防御XSS窃取，但容易受CSRF攻击（需要用SameSite或CSRF Token防御）。目前的主流建议是：对敏感度较高的应用，将Access Token存在内存变量中，Refresh Token存在HttpOnly Cookie中。没有完美的方案，需要根据你的安全等级和实现复杂度做权衡。</p>
         </div>
 
+        <section class="simulator" aria-labelledby="sim-ch11-title">
+          <h3 id="sim-ch11-title">交互演示：拆开一个 JWT 看看</h3>
+          <p>下面是一枚<strong>教学示意</strong>用的 JWT（签名段的字节是随意取的，不等于用任何真实密钥计算）。它的 Header 与 Payload 是 Base64URL，可被任何人解码——所以别把密码、身份证号等敏感信息放进 Payload。</p>
+          <div class="sim-controls">
+            <label>JWT（可粘贴替换）
+              <textarea data-sim="jwt" rows="3" spellcheck="false">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFsaWNlIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM1Njg5NjAwLCJleHAiOjE3MzU2OTMyMDB9.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</textarea>
+            </label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
+
         <h2>11.5 API Key认证</h2>
 
         <p>API Key认证是服务间通信中最简单的认证方式。它通常通过 <code>X-API-Key</code> 自定义头传递：</p>
@@ -440,6 +458,40 @@ X-API-Key: sk_live_abc123def456gh789</code></pre>
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var ta = box.querySelector('[data-sim="jwt"]');
+    function b64uDecode(s) {
+      s = s.replace(/-/g, '+').replace(/_/g, '/');
+      while (s.length % 4) s += '=';
+      return decodeURIComponent(atob(s).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+    }
+    function render() {
+      var parts = ta.value.trim().split('.');
+      if (parts.length !== 3 || !parts[0] || !parts[1]) {
+        out.textContent = '不是一个形如 header.payload.signature 的 JWT（应为三段、以点号分隔）。';
+        return;
+      }
+      var head, pay;
+      try {
+        head = JSON.stringify(JSON.parse(b64uDecode(parts[0])), null, 2).replace(/</g, '&lt;');
+        pay = JSON.stringify(JSON.parse(b64uDecode(parts[1])), null, 2).replace(/</g, '&lt;');
+      } catch (e) {
+        out.textContent = '前两段无法按 Base64URL 解码为 JSON，请检查 Token 是否完整。';
+        return;
+      }
+      out.innerHTML = '<strong>Header</strong><pre class="sim-json">' + head +
+        '</pre><strong>Payload</strong><pre class="sim-json">' + pay +
+        '</pre>签名段长度：' + parts[2].length + ' 个字符（此处不验证签名；验证需要服务端密钥）。';
+    }
+    ta.addEventListener('input', render);
+    render();
   })();
 </script>
 </body>
