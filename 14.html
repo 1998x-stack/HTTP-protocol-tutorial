@@ -127,6 +127,13 @@
             body { padding: 10px; }
             .main-content { padding: 20px; }
         }
+        /* 重定向方法保持交互演示 */
+        .simulator { margin: 1.6rem 0; padding: 1rem 1.1rem; background: #f8faff; border: 1px solid #c7d2fe; border-radius: 16px; }
+        .sim-controls { display: grid; gap: .6rem; margin: .7rem 0; }
+        .sim-controls label { display: grid; gap: .25rem; font-weight: 600; color: #3730a3; font-size: .92rem; }
+        .sim-controls select { font: inherit; padding: .35rem .5rem; border: 1px solid #c7d2fe; border-radius: 10px; background: #fff; color: #1e293b; max-width: 100%; }
+        .sim-out { display: block; margin-top: .6rem; padding: .8rem 1rem; background: #eef2ff; border-left: 5px solid #6366f1; border-radius: 0 12px 12px 0; line-height: 1.7; color: #1e293b; }
+        .sim-out .sim-code { display: inline-block; font-weight: 700; color: #fff; background: #4338ca; padding: .1rem .55rem; border-radius: 8px; margin-right: .4rem; font-family: 'JetBrains Mono', monospace; }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -208,6 +215,29 @@ Location: https://backup.example.com/api/data</code></pre>
         <div class="highlight">
           <p><strong>重要选择指南</strong>：如果是GET请求的重定向，用301/302就可以，因为浏览器行为一致。如果是POST/PUT等非GET请求，要用307/308来保证请求方法不变。301/302对非GET请求的行为因浏览器而异，不可靠。我习惯记一个口诀："GET用301/302，POST用307/308"。</p>
         </div>
+
+        <section class="simulator" aria-labelledby="sim-ch14-title">
+          <h3 id="sim-ch14-title">交互演示：这个重定向会改变请求方法吗？</h3>
+          <p>选择状态码与原始请求方法，查看浏览器对后续请求如何处理。结论依据 RFC 9110 §15.4：301/302 允许把 POST 改为 GET（历史行为），303 强制 GET，307/308 保证方法不变。</p>
+          <div class="sim-controls">
+            <label>重定向状态码
+              <select data-sim="code">
+                <option value="301">301 Moved Permanently</option>
+                <option value="302">302 Found</option>
+                <option value="303">303 See Other</option>
+                <option value="307">307 Temporary Redirect</option>
+                <option value="308">308 Permanent Redirect</option>
+              </select>
+            </label>
+            <label>原始请求方法
+              <select data-sim="method">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+              </select>
+            </label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
 
         <h2>14.2 客户端重定向</h2>
 
@@ -426,6 +456,38 @@ curl -L --max-redirs 20 -v http://example.com 2>&1 | grep -E "^(> |< |Location)"
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var names = { 301: 'Moved Permanently', 302: 'Found', 303: 'See Other', 307: 'Temporary Redirect', 308: 'Permanent Redirect' };
+    function decide(code, method) {
+      var permanent = code === 301 || code === 308;
+      var follow, body, why;
+      if (code === 301 || code === 302) {
+        follow = 'GET';
+        if (method === 'POST') { body = '丢弃'; why = 'RFC 9110 允许用户代理把 POST 改为 GET（历史行为）；请求体不会重发。'; }
+        else { body = '—'; why = 'GET 重定向后仍是 GET，行为无歧义。'; }
+      } else if (code === 303) {
+        follow = 'GET'; body = method === 'POST' ? '丢弃' : '—';
+        why = '303 要求后续请求一律使用 GET，请求体被丢弃（HEAD 例外）。';
+      } else {
+        follow = method; body = method === 'POST' ? '重发' : '—';
+        why = '307/308 明确保证方法与请求体不变，POST 的 body 会被重新发送到新地址。';
+      }
+      return { code: code, name: names[code], permanent: permanent, follow: follow, body: body, why: why };
+    }
+    function render() {
+      var code = +box.querySelector('[data-sim="code"]').value;
+      var method = box.querySelector('[data-sim="method"]').value;
+      var r = decide(code, method);
+      out.innerHTML = '<span class="sim-code">' + r.code + ' ' + r.name + '</span><strong>' +
+        (r.permanent ? '永久' : '临时') + ' · 后续请求方法：' + r.follow + ' · 请求体：' + r.body + '</strong><br>' + r.why;
+    }
+    box.querySelectorAll('[data-sim]').forEach(function (el) { el.addEventListener('change', render); });
+    render();
   })();
 </script>
 </body>
