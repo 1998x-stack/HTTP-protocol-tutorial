@@ -127,6 +127,13 @@
             body { padding: 10px; }
             .main-content { padding: 20px; }
         }
+        /* Range 请求交互演示 */
+        .simulator { margin: 1.6rem 0; padding: 1rem 1.1rem; background: #f8faff; border: 1px solid #c7d2fe; border-radius: 16px; }
+        .sim-controls { display: grid; gap: .6rem; margin: .7rem 0; }
+        .sim-controls label { display: grid; gap: .25rem; font-weight: 600; color: #3730a3; font-size: .92rem; }
+        .sim-controls input { font: inherit; padding: .35rem .5rem; border: 1px solid #c7d2fe; border-radius: 10px; background: #fff; color: #1e293b; max-width: 100%; }
+        .sim-out { display: block; margin-top: .6rem; padding: .8rem 1rem; background: #eef2ff; border-left: 5px solid #6366f1; border-radius: 0 12px 12px 0; line-height: 1.7; color: #1e293b; }
+        .sim-out .sim-code { display: inline-block; font-weight: 700; color: #fff; background: #4338ca; padding: .1rem .55rem; border-radius: 8px; margin-right: .4rem; font-family: 'JetBrains Mono', monospace; }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -314,6 +321,17 @@ Content-Length: 1024</code></pre>
           <p><strong>调试技巧</strong>：用 <code>curl</code> 测试范围请求很方便。<code>curl -H "Range: bytes=0-99" https://example.com/file -I</code> 可以快速验证服务器是否支持Range请求。如果服务器返回200而不是206，说明它不支持范围请求，返回的是完整文件。</p>
         </div>
 
+        <section class="simulator" aria-labelledby="sim-ch13-title">
+          <h3 id="sim-ch13-title">交互演示：Range 请求头与 206 响应</h3>
+          <p>输入文件总大小与要下载的字节区间，看客户端该发什么 <code>Range</code>、服务器该回什么。规则依据 RFC 9110 §14（越界可截断，起点越界则 416）。</p>
+          <div class="sim-controls">
+            <label>文件总大小（字节） <input type="number" data-sim="total" value="10485760" min="1"></label>
+            <label>起始字节 <input type="number" data-sim="start" value="1024" min="0"></label>
+            <label>结束字节 <input type="number" data-sim="end" value="2047" min="0"></label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
+
         <h2>13.4 断点续传实战</h2>
 
         <p>理解了Range请求的基础后，我们来看一个完整的<strong>多范围请求（Multi-part Range）</strong>场景——下载管理器如何同时从多个线程下载同一个文件的不同部分。</p>
@@ -424,6 +442,31 @@ Content-Range: bytes 10000-10999/10485760
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    function val(n) { return parseInt(box.querySelector('[data-sim="' + n + '"]').value, 10); }
+    function render() {
+      var total = val('total'), start = val('start'), end = val('end');
+      if (!(total > 0) || !(start >= 0) || !(end >= 0)) { out.textContent = '请输入有效的非负整数（总大小需大于 0）。'; return; }
+      var req = '<code>Range: bytes=' + start + '-' + end + '</code><br>';
+      var resp;
+      if (start > end) {
+        resp = '<span class="sim-code">416</span>Range Not Satisfiable<br><code>Content-Range: bytes */' + total + '</code><br>区间无效（起始大于结束），服务器拒绝该范围。';
+      } else if (start >= total) {
+        resp = '<span class="sim-code">416</span>Range Not Satisfiable<br><code>Content-Range: bytes */' + total + '</code><br>起始位置已超出文件长度，无法满足。';
+      } else {
+        var e = Math.min(end, total - 1);
+        resp = '<span class="sim-code">206</span>Partial Content<br><code>Content-Range: bytes ' + start + '-' + e + '/' + total + '</code><br><code>Content-Length: ' + (e - start + 1) + '</code>' +
+          (e !== end ? '<br>结束位置超出文件长度，按规范截断为 ' + e + '。' : '');
+      }
+      out.innerHTML = req + resp;
+    }
+    box.querySelectorAll('[data-sim]').forEach(function (el) { el.addEventListener('input', render); });
+    render();
   })();
 </script>
 </body>
