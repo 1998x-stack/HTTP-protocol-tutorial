@@ -127,6 +127,20 @@
             body { padding: 10px; }
             .main-content { padding: 20px; }
         }
+        /* 分步图：渐进披露（无 JS 时全部步骤照常显示） */
+        .stepper { margin: 1.6rem 0; padding: 1rem 1rem .85rem; background: #f8faff; border: 1px solid #c7d2fe; border-radius: 16px; }
+        .stepper svg { width: 100%; height: auto; display: block; }
+        .stepper[data-ready] [data-step] { opacity: .16; transition: opacity .25s; }
+        .stepper[data-ready] [data-step].step-past { opacity: .5; }
+        .stepper[data-ready] [data-step].step-on { opacity: 1; }
+        .stepper-controls { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-top: .7rem; }
+        .stepper-controls button, .step-list button { font: inherit; cursor: pointer; background: #6366f1; color: #fff; border: none; padding: .35rem .9rem; border-radius: 40px; font-weight: 600; }
+        .stepper-controls button:disabled { opacity: .4; cursor: default; }
+        .stepper-status { font-weight: 600; color: #312e81; }
+        .step-list { list-style: none; margin: .7rem 0 0; padding: 0; display: grid; gap: .3rem; }
+        .step-list button { background: #fff; color: #3730a3; border: 1px solid #c7d2fe; width: 100%; text-align: left; border-radius: 10px; }
+        .step-list button[aria-current="step"] { background: #e0e7ff; border-color: #6366f1; }
+        @media print { .stepper-controls, .step-list { display: none !important; } .stepper[data-ready] [data-step] { opacity: 1 !important; } }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -288,6 +302,44 @@ Client                                    Server
   |                                         |
   |           (0-RTT, 直接发送数据)           |</code></pre>
 
+        <figure class="stepper" data-stepper>
+          <svg role="img" aria-labelledby="fig-ch27-rtt-title fig-ch27-rtt-desc" viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI','PingFang SC',system-ui,sans-serif">
+            <title id="fig-ch27-rtt-title">QUIC 首次 1-RTT 握手与会话恢复 0-RTT</title>
+            <desc id="fig-ch27-rtt-desc">首次连接时客户端发 Initial、服务端回 Handshake 与证书并下发会话票据，合计约 1-RTT；后续连接时客户端在首个 0-RTT 包中直接携带应用数据与票据，服务端无需额外往返即可解密处理。</desc>
+            <rect x="0" y="0" width="880" height="400" fill="#ffffff"/>
+            <defs>
+              <marker id="ch27-sa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4338ca"/></marker>
+              <marker id="ch27-ca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#047857"/></marker>
+            </defs>
+            <rect x="70" y="34" width="160" height="38" rx="10" fill="#6366f1"/><text x="150" y="58" fill="#ffffff" text-anchor="middle" font-weight="700">客户端</text>
+            <rect x="650" y="34" width="160" height="38" rx="10" fill="#10b981"/><text x="730" y="58" fill="#ffffff" text-anchor="middle" font-weight="700">服务端</text>
+            <line x1="150" y1="72" x2="150" y2="352" stroke="#c7d2fe" stroke-width="2" stroke-dasharray="6 6"/>
+            <line x1="730" y1="72" x2="730" y2="352" stroke="#c7d2fe" stroke-width="2" stroke-dasharray="6 6"/>
+            <g font-size="12.5">
+              <g data-step="1"><line x1="154" y1="104" x2="726" y2="104" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch27-sa)"/><text x="440" y="97" text-anchor="middle" fill="#4338ca">① Initial：ClientHello + QUIC 参数 + 密钥共享</text></g>
+              <g data-step="2"><line x1="726" y1="150" x2="154" y2="150" stroke="#047857" stroke-width="2.5" marker-end="url(#ch27-ca)"/><text x="440" y="143" text-anchor="middle" fill="#047857">② Handshake：ServerHello + 证书 + 握手密钥</text></g>
+              <g data-step="3"><line x1="726" y1="188" x2="154" y2="188" stroke="#047857" stroke-width="2.5" marker-end="url(#ch27-ca)"/><text x="440" y="181" text-anchor="middle" fill="#047857">③ New Session Ticket + 应用数据（首次连接 1-RTT）</text></g>
+              <line x1="90" y1="222" x2="790" y2="222" stroke="#94a3b8" stroke-dasharray="4 4"/><text x="440" y="218" font-size="12" fill="#64748b" text-anchor="middle">—— 后续重新连接：会话恢复 ——</text>
+              <g data-step="4"><line x1="154" y1="258" x2="726" y2="258" stroke="#4338ca" stroke-width="2.5" marker-end="url(#ch27-sa)"/><text x="440" y="251" text-anchor="middle" fill="#4338ca">④ 0-RTT：首个数据包直接携带应用数据 + 会话票据</text></g>
+              <g data-step="5"><line x1="726" y1="304" x2="154" y2="304" stroke="#047857" stroke-width="2.5" marker-end="url(#ch27-ca)"/><text x="440" y="297" text-anchor="middle" fill="#047857">⑤ 服务端立即解密处理并返回响应（0-RTT）</text></g>
+            </g>
+            <text x="440" y="338" font-size="12" fill="#94a3b8" text-anchor="middle">0-RTT 省去一次往返，但这些数据可能被重放；非幂等请求应退回 1-RTT。</text>
+          </svg>
+          <ol class="step-list" aria-label="QUIC 连接建立步骤">
+            <li><button type="button" data-step-goto="1" data-label="Initial：客户端发送 ClientHello 与 QUIC 参数、密钥共享">① Initial</button></li>
+            <li><button type="button" data-step-goto="2" data-label="Handshake：服务端回 ServerHello、证书与握手密钥">② Handshake</button></li>
+            <li><button type="button" data-step-goto="3" data-label="会话票据 + 应用数据：首次连接共趟 1-RTT">③ Session Ticket</button></li>
+            <li><button type="button" data-step-goto="4" data-label="0-RTT：重新连接时首个数据包直接携带应用数据与会话票据">④ 0-RTT 请求</button></li>
+            <li><button type="button" data-step-goto="5" data-label="服务端立即解密处理并返回响应，无需额外往返">⑤ 0-RTT 响应</button></li>
+          </ol>
+          <div class="stepper-controls">
+            <button type="button" data-step-prev>← 上一步</button>
+            <span class="stepper-status" data-step-status aria-live="polite"></span>
+            <button type="button" data-step-next>下一步 →</button>
+          </div>
+          <figcaption><span class="fig-no">图 27.3</span>　QUIC 首次连接（1-RTT）与会话恢复（0-RTT）对比。点选步骤或“上一步/下一步”可高亮对应报文；关闭 JavaScript 时五步会全部显示。</figcaption>
+        </figure>
+
         <div class="warning">
           <p><strong>安全警告</strong>：0-RTT不是银弹，它有一个重要的安全隐患——<strong>重放攻击（Replay Attack）</strong>。由于0-RTT数据不经过完整的握手，服务器无法保证客户端发送的0-RTT数据是"新鲜"的。攻击者可能截获一个0-RTT请求包，反复发送给服务器，导致重复下单、重复转账等后果。</p>
 
@@ -445,6 +497,47 @@ Server → 继续传输数据</code></pre>
       btn.setAttribute('aria-expanded', String(!open));
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
+    });
+  })();
+
+  (function () {
+    var roots = document.querySelectorAll('.stepper[data-stepper]');
+    roots.forEach(function (root) {
+      var steps = root.querySelectorAll('[data-step]');
+      if (!steps.length) return;
+      var total = 0;
+      steps.forEach(function (s) { total = Math.max(total, +s.getAttribute('data-step') || 1); });
+      var status = root.querySelector('[data-step-status]');
+      var prev = root.querySelector('[data-step-prev]');
+      var next = root.querySelector('[data-step-next]');
+      var gotos = root.querySelectorAll('[data-step-goto]');
+      var cur = 1;
+      function label(n) {
+        var got = root.querySelector('[data-step-goto="' + n + '"]');
+        return got ? (got.getAttribute('data-label') || got.textContent.trim()) : '';
+      }
+      function render() {
+        steps.forEach(function (s) {
+          var n = +s.getAttribute('data-step') || 1;
+          s.classList.toggle('step-on', n === cur);
+          s.classList.toggle('step-past', n < cur);
+        });
+        gotos.forEach(function (b) {
+          if (+b.getAttribute('data-step-goto') === cur) b.setAttribute('aria-current', 'step');
+          else b.removeAttribute('aria-current');
+        });
+        if (status) status.textContent = '第 ' + cur + ' / ' + total + ' 步：' + label(cur);
+        if (prev) prev.disabled = cur <= 1;
+        if (next) next.disabled = cur >= total;
+      }
+      function go(d) { cur = Math.min(total, Math.max(1, cur + d)); render(); }
+      if (prev) prev.addEventListener('click', function () { go(-1); });
+      if (next) next.addEventListener('click', function () { go(1); });
+      gotos.forEach(function (b) {
+        b.addEventListener('click', function () { cur = +b.getAttribute('data-step-goto') || 1; render(); });
+      });
+      root.setAttribute('data-ready', '');
+      render();
     });
   })();
 </script>
