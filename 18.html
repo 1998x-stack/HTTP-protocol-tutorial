@@ -127,6 +127,14 @@
             body { padding: 10px; }
             .main-content { padding: 20px; }
         }
+        /* 安全头部选型交互演示 */
+        .simulator { margin: 1.6rem 0; padding: 1rem 1.1rem; background: #f8faff; border: 1px solid #c7d2fe; border-radius: 16px; }
+        .sim-controls { display: grid; gap: .6rem; margin: .7rem 0; }
+        .sim-controls label { display: grid; gap: .25rem; font-weight: 600; color: #3730a3; font-size: .92rem; }
+        .sim-controls select { font: inherit; padding: .35rem .5rem; border: 1px solid #c7d2fe; border-radius: 10px; background: #fff; color: #1e293b; max-width: 100%; }
+        .sim-out { display: block; margin-top: .6rem; padding: .8rem 1rem; background: #eef2ff; border-left: 5px solid #6366f1; border-radius: 0 12px 12px 0; line-height: 1.7; color: #1e293b; }
+        .sim-out .sim-code { display: inline-block; font-weight: 700; color: #fff; background: #4338ca; padding: .1rem .55rem; border-radius: 8px; margin-right: .4rem; font-family: 'JetBrains Mono', monospace; }
+        .sim-out code { word-break: break-all; }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -204,6 +212,24 @@
           </svg>
           <figcaption><span class="fig-no">图 18.1</span>　六个安全响应头与各自的防御目标。配置简单、对用户透明，是最具性价比的安全加固手段。</figcaption>
         </figure>
+
+        <section class="simulator" aria-labelledby="sim-ch18-title">
+          <h3 id="sim-ch18-title">交互演示：这类攻击该用哪个响应头防？</h3>
+          <p>选一个常见威胁，看应当返回哪个安全响应头及其示例值。映射依据图 18.1 与 OWASP 安全头部项目；具体取值需按站点实际情况调整。</p>
+          <div class="sim-controls">
+            <label>威胁场景
+              <select data-sim="threat">
+                <option value="ssl">中间人把首次请求降级为明文 HTTP（SSL 剥离）</option>
+                <option value="xss">页面被注入内联脚本 / 外部脚本（XSS）</option>
+                <option value="clickjack">页面被恶意站点用 iframe 嵌套（点击劫持）</option>
+                <option value="mime">浏览器把非脚本文件嗅探为脚本执行</option>
+                <option value="referrer">跳转时完整 URL（含查询串）泄露给第三方</option>
+                <option value="api">页面滥用摄像头 / 定位等浏览器 API</option>
+              </select>
+            </label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
 
         <h2>18.1 HSTS（Strict-Transport-Security）</h2>
 
@@ -482,6 +508,27 @@ Permissions-Policy: usb=(self "https://trusted-device.example.com")</code></pre>
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var sel = box.querySelector('[data-sim="threat"]');
+    var M = {
+      ssl: ['Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload', '告诉浏览器以后对该域只用 HTTPS；preload 让首次访问也受保护，堵住 SSL 剥离窗口。'],
+      xss: ['Content-Security-Policy', "default-src 'self'; script-src 'self'", '用白名单限制脚本来源，拦截内联与非授权脚本注入；需配合 nonce/hash 与后端输出转义。'],
+      clickjack: ['X-Frame-Options', 'DENY', '禁止本页被任何站点嵌套；如需允许同源嵌套可用 SAMEORIGIN，或改用 CSP 的 frame-ancestors 指令。'],
+      mime: ['X-Content-Type-Options', 'nosniff', '强制浏览器按声明的 Content-Type 解释文件，阻止把非脚本内容当脚本执行。'],
+      referrer: ['Referrer-Policy', 'strict-origin-when-cross-origin', '跨源时只发送来源（origin），不泄露完整路径与查询串；同源仍保留完整 referrer。'],
+      api: ['Permissions-Policy', 'camera=(), geolocation=()', '按来源声明哪些页面功能（摄像头、定位、麦克风等）可用，空括号表示禁用。']
+    };
+    function render() {
+      var d = M[sel.value];
+      out.innerHTML = '<span class="sim-code">' + d[0] + '</span><br><code>' + d[1] + '</code><br>' + d[2];
+    }
+    sel.addEventListener('change', render);
+    render();
   })();
 </script>
 </body>
