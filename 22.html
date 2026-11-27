@@ -340,6 +340,22 @@ function calculateTotal(a,b,c){return (a*b*(1-c)).toFixed(2)}</code></pre>
           4. 别把所有资源都加上 preload——这会降低真正的关键资源的优先级。preload要用在刀刃上。</p>
         </div>
 
+        <section class="simulator" aria-labelledby="sim-ch22-title">
+          <h3 id="sim-ch22-title">交互演示：该用哪个资源提示</h3>
+          <p>选一种资源提示，看它在加载的哪个阶段生效、优先级高低、最合适的使用场景以及最常见的误用。资源提示都是浏览器可忽略的优化建议，写错不会让页面报错，但会偷走真正关键资源的带宽与连接。</p>
+          <div class="sim-controls">
+            <label>资源提示
+              <select data-sim="hint">
+                <option value="dns" selected>dns-prefetch</option>
+                <option value="preconnect">preconnect</option>
+                <option value="preload">preload</option>
+                <option value="prefetch">prefetch</option>
+              </select>
+            </label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
+
         <h2>22.5 HTTP缓存策略</h2>
 
         <p>第九章已经详细讲了HTTP缓存机制。这里我们聚焦在<strong>性能优化</strong>场景下的缓存策略。</p>
@@ -483,6 +499,29 @@ location /api/ {
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var sel = box.querySelector('[data-sim="hint"]');
+    var DATA = {
+      dns: ['提前 DNS 解析', '低', '可能用到的第三方域名，作为 preconnect 的降级兼容。', '只需 DNS；对关键源不够，应升级为 preconnect。'],
+      preconnect: ['DNS + TCP + TLS 预连接', '高', '页面马上要请求的关键第三方源（CDN、字体、API）。', '开太多会占用连接与 CPU；建议≤4 个关键源，其余用 dns-prefetch。'],
+      preload: ['提前下载当前页资源', '高', '首屏字体、关键 CSS、hero 图等关键路径资源。', '必须写对 as（与 crossorigin，字体/跨域资源）；滥用会挤占真正关键资源的带宽。'],
+      prefetch: ['空闲时预取下一页资源', '极低', '用户下一步很可能访问的页面/脚本。', '对当前页关键资源用 prefetch 太晚；且会消耗用户流量。']
+    };
+    function item(k, v) { return '<div><span class="sim-class">' + k + '</span>：' + v + '</div>'; }
+    function render() {
+      var d = DATA[sel.value];
+      if (!d) { out.textContent = '未收录'; return; }
+      out.innerHTML = '<span class="sim-code">' + sel.value + '</span>'
+        + '<span class="sim-class">优先级：' + d[1] + '</span><br>'
+        + item('生效阶段', d[0]) + item('适用场景', d[2]) + item('常见误用', d[3]);
+    }
+    sel.addEventListener('change', render);
+    render();
   })();
 </script>
 </body>
