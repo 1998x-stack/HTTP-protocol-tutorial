@@ -211,6 +211,32 @@
           <figcaption><span class="fig-no">图 6.1</span>　头部四类划分。通用头与实体头在请求和响应中都可能出现，请求头 / 响应头各仅限一侧；实体头专门描述消息体本身。</figcaption>
         </figure>
 
+        <section class="simulator" aria-labelledby="sim-ch6-title">
+          <h3 id="sim-ch6-title">交互演示：给一个头部字段归类</h3>
+          <p>选一个头部，读出它的类别、方向（请求还是响应）以及能否用逗号重复合并。分类依据 RFC 9110 §6；<code>Set-Cookie</code> 与 <code>Cookie</code> 是不适用逗号合并的典型特例。</p>
+          <div class="sim-controls">
+            <label>头部字段
+              <select data-sim="hdr">
+                <option value="Host" selected>Host</option>
+                <option value="User-Agent">User-Agent</option>
+                <option value="Accept">Accept</option>
+                <option value="Cookie">Cookie</option>
+                <option value="Authorization">Authorization</option>
+                <option value="Referer">Referer</option>
+                <option value="Content-Type">Content-Type</option>
+                <option value="Content-Length">Content-Length</option>
+                <option value="Cache-Control">Cache-Control</option>
+                <option value="Server">Server</option>
+                <option value="Set-Cookie">Set-Cookie</option>
+                <option value="Location">Location</option>
+                <option value="Access-Control-Allow-Origin">Access-Control-Allow-Origin</option>
+                <option value="X-Forwarded-For">X-Forwarded-For</option>
+              </select>
+            </label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
+
         <h2>6.2 常用通用头</h2>
 
         <p><strong>Cache-Control</strong>——控制缓存的"总开关"。可以出现在请求和响应中。常见值：<code>no-cache</code>（每次都向服务器验证）、<code>no-store</code>（完全不缓存）、<code>max-age=3600</code>（缓存1小时）、<code>public</code>（中间缓存可缓存）、<code>private</code>（仅浏览器可缓存）。内容很多，我们第9章会专门讲。</p>
@@ -342,6 +368,38 @@
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var sel = box.querySelector('[data-sim="hdr"]');
+    var DATA = {
+      'Host': ['请求头', '请求 →', '否', 'HTTP/1.1 唯一必填头，用于虚拟主机与目标定位。'],
+      'User-Agent': ['请求头', '请求 →', '否', '标识客户端；易被伪造，不宜作为安全依据。'],
+      'Accept': ['请求头', '请求 →', '是', '声明客户端可接受的媒体类型；多个值可用逗号拼接。'],
+      'Cookie': ['请求头', '请求 →', '特殊', '多个 cookie 用分号分隔，而非逗号。'],
+      'Authorization': ['请求头', '请求 →', '否', '携带凭证，如 Bearer / Basic，应仅在 HTTPS 下传输。'],
+      'Referer': ['请求头', '请求 →', '否', '来源页面 URL，用于防盗链与统计；规范拼写少一个 r。'],
+      'Content-Type': ['表示头', '双向', '否', '描述消息体的媒体类型与字符集。'],
+      'Content-Length': ['表示头', '双向', '否', '消息体的字节长度，用于划定边界。'],
+      'Cache-Control': ['通用头', '双向', '是', '缓存指令，多个指令可用逗号拼接。'],
+      'Server': ['响应头', '响应 ←', '否', '服务器软件信息；安全实践建议不暴露版本。'],
+      'Set-Cookie': ['响应头', '响应 ←', '特例', '每个 Cookie 必须单独一行，不能用逗号合并。'],
+      'Location': ['响应头', '响应 ←', '否', '重定向目标 URL，配合 3xx 使用。'],
+      'Access-Control-Allow-Origin': ['响应头', '响应 ←', '否', 'CORS 响应头，声明允许的跨域来源。'],
+      'X-Forwarded-For': ['自定义/代理头', '请求 →', '是', '代理链上依次追加客户端 IP，值可逗号合并。']
+    };
+    function chip(t) { return '<span class="sim-code">' + t + '</span>'; }
+    function render() {
+      var d = DATA[sel.value];
+      if (!d) { out.textContent = '未收录该头部'; return; }
+      out.innerHTML = chip(d[0]) + chip(d[1]) + '<span class="sim-class">逗号合并：' + d[2]
+        + '</span><br>' + d[3];
+    }
+    sel.addEventListener('change', render);
+    render();
   })();
 </script>
 </body>
