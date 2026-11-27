@@ -127,6 +127,14 @@
             body { padding: 10px; }
             .main-content { padding: 20px; }
         }
+        /* 状态码查询交互演示 */
+        .simulator { margin: 1.6rem 0; padding: 1rem 1.1rem; background: #f8faff; border: 1px solid #c7d2fe; border-radius: 16px; }
+        .sim-controls { display: grid; gap: .6rem; margin: .7rem 0; }
+        .sim-controls label { display: grid; gap: .25rem; font-weight: 600; color: #3730a3; font-size: .92rem; }
+        .sim-controls select { font: inherit; padding: .35rem .5rem; border: 1px solid #c7d2fe; border-radius: 10px; background: #fff; color: #1e293b; max-width: 100%; }
+        .sim-out { display: block; margin-top: .6rem; padding: .8rem 1rem; background: #eef2ff; border-left: 5px solid #6366f1; border-radius: 0 12px 12px 0; line-height: 1.7; color: #1e293b; }
+        .sim-out .sim-code { display: inline-block; font-weight: 700; color: #fff; background: #4338ca; padding: .1rem .55rem; border-radius: 8px; margin-right: .4rem; font-family: 'JetBrains Mono', monospace; }
+        .sim-out .sim-class { font-weight: 600; color: #3730a3; }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -216,6 +224,42 @@
           </svg>
           <figcaption><span class="fig-no">图 5.1</span>　状态码按首位数字分五类：1xx 信息、2xx 成功、3xx 重定向、4xx 客户端错误、5xx 服务端错误。先判大类，再看后两位。</figcaption>
         </figure>
+
+        <section class="simulator" aria-labelledby="sim-ch5-title">
+          <h3 id="sim-ch5-title">交互演示：查一个状态码</h3>
+          <p>从下拉框选一个常见状态码，直接读出它属于哪一大类、字面含义以及排故时该怎么处理。定义依据 RFC 9110《HTTP Semantics》及 RFC 6585（额外状态码）。</p>
+          <div class="sim-controls">
+            <label>状态码
+              <select data-sim="code">
+                <option value="100">100 Continue</option>
+                <option value="101">101 Switching Protocols</option>
+                <option value="200" selected>200 OK</option>
+                <option value="201">201 Created</option>
+                <option value="204">204 No Content</option>
+                <option value="206">206 Partial Content</option>
+                <option value="301">301 Moved Permanently</option>
+                <option value="302">302 Found</option>
+                <option value="304">304 Not Modified</option>
+                <option value="307">307 Temporary Redirect</option>
+                <option value="308">308 Permanent Redirect</option>
+                <option value="400">400 Bad Request</option>
+                <option value="401">401 Unauthorized</option>
+                <option value="403">403 Forbidden</option>
+                <option value="404">404 Not Found</option>
+                <option value="405">405 Method Not Allowed</option>
+                <option value="409">409 Conflict</option>
+                <option value="413">413 Content Too Large</option>
+                <option value="414">414 URI Too Long</option>
+                <option value="429">429 Too Many Requests</option>
+                <option value="500">500 Internal Server Error</option>
+                <option value="502">502 Bad Gateway</option>
+                <option value="503">503 Service Unavailable</option>
+                <option value="504">504 Gateway Timeout</option>
+              </select>
+            </label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
 
         <div class="highlight">
           <p><strong>核心要点</strong>：状态码的设计是分层的。首位数字告诉你是哪一类问题，后两位告诉你具体细节。比如看到4xx，你就知道是客户端的问题——先检查自己的请求，别急着骂服务器。这个思维习惯我在排故时用了几百遍了。</p>
@@ -374,6 +418,48 @@ Content-Type: application/json
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var sel = box.querySelector('[data-sim="code"]');
+    var CLASS = { '1': '信息性 Informational', '2': '成功 Success', '3': '重定向 Redirection', '4': '客户端错误 Client Error', '5': '服务端错误 Server Error' };
+    var MEAN = {
+      '100': '服务端已收到请求头，请客户端继续发送请求体。',
+      '101': '服务端同意切换协议（如升级到 WebSocket）。',
+      '200': '请求成功，响应体就是请求的资源。',
+      '201': '资源已创建，Location 头给出新资源地址。',
+      '204': '处理成功但不返回响应体，常用于删除或更新。',
+      '206': '只返回了部分内容，配合 Range 头实现断点续传。',
+      '301': '资源永久迁移，缓存应更新为新地址；历史实现常把 POST 改为 GET。',
+      '302': '资源临时位于别处；同样常把 POST 改为 GET，需要保方法请用 307。',
+      '304': '本地副本仍新鲜，无需重传，复用缓存。',
+      '307': '临时跳转且严格保持原请求方法与请求体。',
+      '308': '永久跳转且严格保持原请求方法与请求体。',
+      '400': '请求语法或参数不合法，先检查请求体与参数。',
+      '401': '未认证或凭证无效，缺少 WWW-Authenticate 挑战。',
+      '403': '已认证但无权限访问该资源。',
+      '404': '目标资源不存在（也可能是故意隐藏）。',
+      '405': '资源不支持该方法，响应会在 Allow 头里列出允许的方法。',
+      '409': '状态冲突，如并发修改或重复创建。',
+      '413': '请求体过大，超出服务器限制（原名 Request Entity Too Large）。',
+      '414': '请求 URI 过长，常见于 GET 携带过多参数。',
+      '429': '请求过频被限流，应退避重试并尊重 Retry-After。',
+      '500': '服务端内部未预期错误，查应用日志。',
+      '502': '网关/代理从上游收到无效响应，上游可能崩溃。',
+      '503': '服务暂时不可用（维护或过载），可用 Retry-After 提示重试。',
+      '504': '网关等待上游超时，上游响应太慢或不可达。'
+    };
+    function render() {
+      var c = sel.value;
+      var note = MEAN[c] || '未收录，按首位数字判断所属大类即可。';
+      out.innerHTML = '<span class="sim-code">' + c + '</span>'
+        + '<span class="sim-class">' + CLASS[c.charAt(0)] + '</span><br>' + note;
+    }
+    sel.addEventListener('change', render);
+    render();
   })();
 </script>
 </body>
