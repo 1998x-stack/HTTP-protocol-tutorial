@@ -251,6 +251,22 @@
           <p><strong>踩坑回顾</strong>：有一次我在前端用 <code>window.location.hash</code> 存了API token，想着每次请求从hash里取。结果发现服务器根本收不到hash部分——fragment是由浏览器处理的，不会出现在HTTP请求中。这是一个典型的"新手坑"。</p>
         </div>
 
+        <section class="simulator" aria-labelledby="sim-ch2-title">
+          <h3 id="sim-ch2-title">交互演示：拆一个 URL</h3>
+          <p>挑一个样例 URL，逐部件读出它对应的值。解析由浏览器内置的 <code>URL</code> 解析器完成，与 RFC 3986 一致；注意最后两行—fragment 由浏览器保留，不会出现在请求行里。</p>
+          <div class="sim-controls">
+            <label>样例 URL
+              <select data-sim="url">
+                <option value="https://api.example.com:443/users?id=123&amp;page=1#top" selected>https://api.example.com:443/users?id=123&amp;page=1#top</option>
+                <option value="http://example.com/blog/">http://example.com/blog/</option>
+                <option value="https://cdn.example.com/img/a.png?v=2">https://cdn.example.com/img/a.png?v=2</option>
+                <option value="https://例子.测试/搜索?q=你好">https://例子.测试/搜索?q=你好</option>
+              </select>
+            </label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
+
         <h2>2.3 URL编码规则</h2>
 
         <p>URL里能用的字符其实很有限。RFC 3986规定，URL中只有字母（a-z, A-Z）、数字（0-9）以及 <code>- _ . ~</code> 这些保留字符可以直接使用。其他字符——包括中文、空格、特殊符号——都需要<strong>百分号编码</strong>（Percent-encoding）。</p>
@@ -385,6 +401,32 @@ const fullUrl = base + '?' + params;
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var sel = box.querySelector('[data-sim="url"]');
+    function row(name, value, note) {
+      return '<div><span class="sim-class">' + name + '</span>：<code>'
+        + (value || '（无）') + '</code>' + (note ? '　' + note : '') + '</div>';
+    }
+    function render() {
+      var u;
+      try { u = new URL(sel.value); }
+      catch (e) { out.textContent = '无法解析该 URL'; return; }
+      var defPort = u.protocol === 'https:' ? '443' : '80';
+      out.innerHTML =
+        row('scheme', u.protocol.replace(':', '')) +
+        row('host', u.hostname) +
+        row('port', u.port || defPort, u.port ? '' : '（默认值，地址栏常隐藏）') +
+        row('path', u.pathname) +
+        row('query', u.search ? u.search.slice(1) : '', '以 ? 开头') +
+        row('fragment', u.hash ? u.hash.slice(1) : '', u.hash ? '仅浏览器使用，不发往服务器' : '无');
+    }
+    sel.addEventListener('change', render);
+    render();
   })();
 </script>
 </body>
