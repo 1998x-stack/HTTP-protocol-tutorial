@@ -127,6 +127,13 @@
             body { padding: 10px; }
             .main-content { padding: 20px; }
         }
+        /* 连接复用成本交互演示 */
+        .simulator { margin: 1.6rem 0; padding: 1rem 1.1rem; background: #f8faff; border: 1px solid #c7d2fe; border-radius: 16px; }
+        .sim-controls { display: grid; gap: .6rem; margin: .7rem 0; }
+        .sim-controls label { display: grid; gap: .25rem; font-weight: 600; color: #3730a3; font-size: .92rem; }
+        .sim-controls select, .sim-controls input[type="number"] { font: inherit; padding: .35rem .5rem; border: 1px solid #c7d2fe; border-radius: 10px; background: #fff; color: #1e293b; max-width: 100%; }
+        .sim-out { display: block; margin-top: .6rem; padding: .8rem 1rem; background: #eef2ff; border-left: 5px solid #6366f1; border-radius: 0 12px 12px 0; line-height: 1.7; color: #1e293b; }
+        .sim-out .sim-code { display: inline-block; font-weight: 700; color: #fff; background: #4338ca; padding: .1rem .55rem; border-radius: 8px; margin-right: .4rem; font-family: 'JetBrains Mono', monospace; }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -254,6 +261,24 @@ keepalive_requests 100; # 一个连接最多处理100个请求</code></pre>
           </svg>
           <figcaption><span class="fig-no">图 8.1</span>　短连接每个请求都要重新握手；HTTP/1.1 长连接在单连接上串行复用；HTTP/2 多路复用在单连接上并行多条流。横轴为时间。</figcaption>
         </figure>
+
+        <section class="simulator" aria-labelledby="sim-ch8-title">
+          <h3 id="sim-ch8-title">交互演示：拉取 N 个资源要建立多少连接？</h3>
+          <p>调节资源数量，对比两种复用方式下需要建立多少次 TCP 连接、同一连接上要串行几轮。这是教学示意：只计连接与串行轮次，不含毫秒级延迟（真实耗时还取决于 RTT、带宽与服务器处理）。</p>
+          <div class="sim-controls">
+            <label>资源请求数
+              <input type="number" data-sim="n" value="30" min="1" max="200">
+            </label>
+            <label>连接策略
+              <select data-sim="strategy">
+                <option value="short">短连接（每个请求新建 TCP）</option>
+                <option value="long" selected>HTTP/1.1 长连接（每域名 6 条，串行复用）</option>
+                <option value="h2">HTTP/2 多路复用（单连接并行）</option>
+              </select>
+            </label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
 
         <h2>8.3 HTTP管线化</h2>
 
@@ -405,6 +430,31 @@ keepalive_requests 100; # 一个连接最多处理100个请求</code></pre>
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var get = function (n) { return box.querySelector('[data-sim="' + n + '"]'); };
+    function render() {
+      var n = Math.max(1, Math.min(200, parseInt(get('n').value, 10) || 1));
+      var s = get('strategy').value, conns, hs, rounds, note, label;
+      if (s === 'short') {
+        label = '短连接'; conns = n; hs = n; rounds = n;
+        note = '每个请求都建一条新 TCP 连接，握手开销无法复用；连接数随请求数线性增长。';
+      } else if (s === 'h2') {
+        label = 'HTTP/2 多路复用'; conns = 1; hs = 1; rounds = 1;
+        note = '所有请求作为独立流在单连接上并行，只握手一次；不再受每域名 6 连接限制。';
+      } else {
+        label = 'HTTP/1.1 长连接'; conns = Math.min(6, n); hs = conns; rounds = Math.ceil(n / 6);
+        note = '浏览器对同一域名最多开 6 条连接，其余请求排队串行复用；超过 6 的请求只能等前面的完成。';
+      }
+      out.innerHTML = '<span class="sim-code">' + label + '</span>' + n + ' 个资源<br>'
+        + 'TCP 连接数：<strong>' + conns + '</strong>　握手次数：<strong>' + hs + '</strong>　串行轮次：<strong>' + rounds + '</strong><br>' + note;
+    }
+    box.querySelectorAll('[data-sim]').forEach(function (el) { el.addEventListener('input', render); });
+    render();
   })();
 </script>
 </body>
