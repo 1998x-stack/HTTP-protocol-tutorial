@@ -127,6 +127,14 @@
             body { padding: 10px; }
             .main-content { padding: 20px; }
         }
+        /* 负载均衡分配交互演示 */
+        .simulator { margin: 1.6rem 0; padding: 1rem 1.1rem; background: #f8faff; border: 1px solid #c7d2fe; border-radius: 16px; }
+        .sim-controls { display: grid; gap: .6rem; margin: .7rem 0; }
+        .sim-controls label { display: grid; gap: .25rem; font-weight: 600; color: #3730a3; font-size: .92rem; }
+        .sim-controls select, .sim-controls input[type="number"] { font: inherit; padding: .35rem .5rem; border: 1px solid #c7d2fe; border-radius: 10px; background: #fff; color: #1e293b; max-width: 100%; }
+        .sim-out { display: block; margin-top: .6rem; padding: .8rem 1rem; background: #eef2ff; border-left: 5px solid #6366f1; border-radius: 0 12px 12px 0; line-height: 1.7; color: #1e293b; }
+        .sim-out .sim-code { display: inline-block; font-weight: 700; color: #fff; background: #4338ca; padding: .1rem .55rem; border-radius: 8px; margin-right: .4rem; font-family: 'JetBrains Mono', monospace; }
+        .sim-seq { display: block; margin-top: .4rem; font-family: 'JetBrains Mono', monospace; color: #475569; word-break: break-all; }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -219,6 +227,23 @@
           </svg>
           <figcaption><span class="fig-no">图 20.1</span>　轮询按顺序均分请求；加权轮询按权重比例分配，适合配置不同或需慢启动的集群。无状态服务建议优先用最少连接或加权轮询。</figcaption>
         </figure>
+
+        <section class="simulator" aria-labelledby="sim-ch20-title">
+          <h3 id="sim-ch20-title">交互演示：请求会被分到哪几台服务器？</h3>
+          <p>三台后端 A、B、C，权重设为 A=3、B=1、C=1。切换算法与请求数，看每台服务到多少请求。加权轮询采用与 Nginx <code>smooth</code> 权重算法一致的平滑分配，避免流量突发。</p>
+          <div class="sim-controls">
+            <label>算法
+              <select data-sim="algo">
+                <option value="rr">轮询 Round-Robin</option>
+                <option value="wrr">加权轮询 Weighted（A=3,B=1,C=1）</option>
+              </select>
+            </label>
+            <label>请求数
+              <input type="number" data-sim="n" value="10" min="1" max="30">
+            </label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
 
         <p>在Nginx里配置这些算法：</p>
 
@@ -478,6 +503,38 @@ server {
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var get = function (n) { return box.querySelector('[data-sim="' + n + '"]'); };
+    var SRV = ['A', 'B', 'C'];
+    function rr(n) {
+      var seq = [], c = [0, 0, 0];
+      for (var i = 0; i < n; i++) { var k = i % 3; seq.push(SRV[k]); c[k]++; }
+      return [seq, c];
+    }
+    function wrr(n) {
+      var w = [3, 1, 1], cw = [0, 0, 0], tw = 5, seq = [], c = [0, 0, 0];
+      for (var i = 0; i < n; i++) {
+        var best = 0;
+        for (var j = 0; j < 3; j++) { cw[j] += w[j]; if (cw[j] > cw[best]) best = j; }
+        cw[best] -= tw; seq.push(SRV[best]); c[best]++;
+      }
+      return [seq, c];
+    }
+    function render() {
+      var algo = get('algo').value;
+      var n = Math.max(1, Math.min(30, parseInt(get('n').value, 10) || 1));
+      var r = algo === 'wrr' ? wrr(n) : rr(n);
+      var dist = SRV.map(function (s, i) { return s + ' = ' + r[1][i] + ' (' + Math.round(r[1][i] / n * 100) + '%)'; }).join('　·　');
+      out.innerHTML = '<span class="sim-code">' + (algo === 'wrr' ? '加权轮询' : '轮询') + '</span>共 ' + n + ' 个请求<br>'
+        + dist + '<span class="sim-seq">分配序列：' + r[0].join(' → ') + '</span>';
+    }
+    box.querySelectorAll('[data-sim]').forEach(function (el) { el.addEventListener('input', render); });
+    render();
   })();
 </script>
 </body>
