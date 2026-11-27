@@ -127,6 +127,13 @@
             body { padding: 10px; }
             .main-content { padding: 20px; }
         }
+        /* 方法语义交互演示 */
+        .simulator { margin: 1.6rem 0; padding: 1rem 1.1rem; background: #f8faff; border: 1px solid #c7d2fe; border-radius: 16px; }
+        .sim-controls { display: grid; gap: .6rem; margin: .7rem 0; }
+        .sim-controls label { display: grid; gap: .25rem; font-weight: 600; color: #3730a3; font-size: .92rem; }
+        .sim-controls select { font: inherit; padding: .35rem .5rem; border: 1px solid #c7d2fe; border-radius: 10px; background: #fff; color: #1e293b; max-width: 100%; }
+        .sim-out { display: block; margin-top: .6rem; padding: .8rem 1rem; background: #eef2ff; border-left: 5px solid #6366f1; border-radius: 0 12px 12px 0; line-height: 1.7; color: #1e293b; }
+        .sim-out .sim-code { display: inline-block; font-weight: 700; color: #fff; background: #4338ca; padding: .1rem .55rem; border-radius: 8px; margin-right: .4rem; font-family: 'JetBrains Mono', monospace; }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -258,6 +265,27 @@
           </svg>
           <figcaption><span class="fig-no">图 4.1</span>　安全性与幂等性矩阵。安全的方法一定幂等，反之不成立：PUT/DELETE 会改动数据但重复执行结果一致，POST/PATCH 既不安全也不幂等。</figcaption>
         </figure>
+
+        <section class="simulator" aria-labelledby="sim-ch4-title">
+          <h3 id="sim-ch4-title">交互演示：这个方法的语义标签是什么？</h3>
+          <p>选一个方法，直接读出它的安全、幂等、可缓存三个语义标签，以及据此得出的工程结论。判定依据 RFC 9110《HTTP Semantics》对方法属性的定义。</p>
+          <div class="sim-controls">
+            <label>HTTP 方法
+              <select data-sim="method">
+                <option value="GET">GET</option>
+                <option value="HEAD">HEAD</option>
+                <option value="OPTIONS">OPTIONS</option>
+                <option value="TRACE">TRACE</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+                <option value="POST">POST</option>
+                <option value="PATCH">PATCH</option>
+                <option value="CONNECT">CONNECT</option>
+              </select>
+            </label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
 
         <div class="highlight">
           <p><strong>设计原则</strong>：在设计API时，遵循"方法语义"比"实现方便"更重要。很多人图省事，把所有API都写成POST，这在技术上是可行的，但会让API失去语义清晰度。想象一下，如果你的用户要看文档，你给他一把刀——用户会觉得你很奇怪。同理，删除操作应该用DELETE，查询应该用GET。</p>
@@ -461,6 +489,35 @@ Access-Control-Max-Age: 86400</code></pre>
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var sel = box.querySelector('[data-sim="method"]');
+    var T = {
+      GET:     [1, 1, '可缓存', '典型读操作：可被共享缓存与浏览器复用；务必保持无副作用，否则重试与预取会误触发副作用。'],
+      HEAD:    [1, 1, '可缓存', '只取响应头：用于探测存在性、大小、最后修改时间，响应体必须为空，语义与 GET 一一对应。'],
+      OPTIONS: [1, 1, '不可缓存', '能力探测：常用在 CORS 预检里询问服务器允许的方法与头部，本身不应改动资源。'],
+      TRACE:   [1, 1, '不可缓存', '回路测试：回显请求内容用于诊断，因易被用于跨站追踪，生产环境通常禁用。'],
+      PUT:     [0, 1, '不可缓存', '整份覆盖：重复推送同一表示结果一致（幂等），但会改动资源，因此不安全；用 If-Match 可避免覆盖并发写入。'],
+      DELETE:  [0, 1, '不可缓存', '删除资源：第一次删掉与再次调用得到的“已删除”状态一致（幂等），但必然改动服务器状态。'],
+      POST:    [0, 0, '仅显式新鲜信息时可缓存', '新增/提交：既不安全也不幂等，重复提交会重复创建；刷新时浏览器会提示“确认重新提交表单”。'],
+      PATCH:   [0, 0, '不可缓存', '局部修改：按补丁描述差异更新，是否幂等取决于补丁本身，规范不保证；需要幂等时应改用 PUT 或加条件请求。'],
+      CONNECT: [0, 0, '不可缓存', '建立隧道：让代理为客户端开通到目标服务器的字节通道（如 HTTPS 代理），本身不是资源操作。']
+    };
+    function tag(flag, on, off) {
+      return '<strong>' + (flag ? on : off) + '</strong>';
+    }
+    function render() {
+      var m = sel.value, d = T[m];
+      out.innerHTML = '<span class="sim-code">' + m + '</span>'
+        + '安全：' + tag(d[0], '是', '否') + '　·　幂等：' + tag(d[1], '是', '否') + '　·　' + d[2]
+        + '<br>' + d[3];
+    }
+    sel.addEventListener('change', render);
+    render();
   })();
 </script>
 </body>
