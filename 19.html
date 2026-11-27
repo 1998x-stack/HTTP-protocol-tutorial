@@ -380,6 +380,22 @@ real_ip_recursive on;</code></pre>
           <p><strong>安全提醒</strong>：如果你用 <code>X-Forwarded-For</code> 来做IP白名单、频率限制、地理定位等安全决策，一定要确保只信任可信代理传来的值。如果直接取最左边的IP，攻击者伪造一个内网IP的 <code>X-Forwarded-For</code> 就能绕过你的安全策略。这种攻击方式叫"IP欺骗"——虽老但依然有效。</p>
         </div>
 
+        <section class="simulator" aria-labelledby="sim-ch19-title">
+          <h3 id="sim-ch19-title">交互演示：X-Forwarded-For 该信哪一段</h3>
+          <p>客户端固定为 1.1.1.1，代理 A 为 2.2.2.2。调整代理层数、并模拟客户端自己伪造 XFF，看后端最终收到什么、又该把它当成谁。规则：只信任已知的可信代理追加的那段 IP。</p>
+          <div class="sim-controls">
+            <label>代理层数（客户端与后端之间）
+              <select data-sim="hops">
+                <option value="0">0 层：客户端直连后端</option>
+                <option value="1">1 层：客户端 → 代理 A → 后端</option>
+                <option value="2" selected>2 层：客户端 → 代理 A → 代理 B → 后端</option>
+              </select>
+            </label>
+            <label class="sim-check"><input type="checkbox" data-sim="spoof"> 客户端伪造 X-Forwarded-For: 8.8.8.8</label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
+
         <h2>19.5 CDN原理</h2>
 
         <p>CDN（Content Delivery Network，内容分发网络）是反向代理+缓存+全球分布式网络的集合体。它把一个网站的静态资源（以及日益增多的动态资源）部署到全球几百个甚至上千个节点上。</p>
@@ -453,6 +469,39 @@ real_ip_recursive on;</code></pre>
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var hops = box.querySelector('[data-sim="hops"]');
+    var spoof = box.querySelector('[data-sim="spoof"]');
+    var PEERS = ['1.1.1.1', '2.2.2.2']; // 各跳的直连客户端 IP
+    function render() {
+      var n = parseInt(hops.value, 10) || 0;
+      var sk = spoof.checked;
+      var appended = PEERS.slice(0, n);
+      var chain = (sk ? ['8.8.8.8'] : []).concat(appended);
+      var xff = chain.length ? chain.join(', ') : '（无）';
+      var trusted, note;
+      if (n === 0) {
+        trusted = '1.1.1.1';
+        note = sk
+          ? '直连无代理：客户端自带的 XFF 不可信，应直接忽略，取 TCP 对端 1.1.1.1。'
+          : '直连无代理：XFF 为空，TCP 对端 1.1.1.1 就是客户端。';
+      } else {
+        trusted = appended[0];
+        note = '只有最右侧由可信代理追加的 IP 可信；向左逐层回推，得到客户端真实 IP ' + trusted + '。'
+          + (sk ? ' 最左侧的 8.8.8.8 是客户端伪造的，必须丢弃。' : '');
+      }
+      out.innerHTML = '<span class="sim-code">XFF</span>'
+        + '<span class="sim-class">' + xff + '</span><br>'
+        + '<div><span class="sim-class">可信客户端 IP</span>：<code>' + trusted + '</code></div>' + note;
+    }
+    hops.addEventListener('change', render);
+    spoof.addEventListener('change', render);
+    render();
   })();
 </script>
 </body>
