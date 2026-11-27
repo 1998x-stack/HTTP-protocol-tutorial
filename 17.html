@@ -267,6 +267,23 @@ server {
           <p><strong>重要提醒</strong>：私钥必须严格保护！不要把私钥提交到Git仓库、不要用邮件发送私钥、不要在日志中打印私钥。一旦私钥泄露，证书需要立即吊销并重新签发。建议私钥设置文件权限为600（只有root可读），并且定期轮换。</p>
         </div>
 
+        <section class="simulator" aria-labelledby="sim-ch17-title">
+          <h3 id="sim-ch17-title">交互演示：证书链验证排错</h3>
+          <p>选一种常见的验证场景，看浏览器/客户端会得出什么结论、报什么错，以及该从哪里下手排查。证书链的信任根由操作系统/浏览器的信任库决定，服务器必须下发完整的链（叶子证书 + 中间证书）。</p>
+          <div class="sim-controls">
+            <label>场景
+              <select data-sim="scenario">
+                <option value="ok" selected>完整链 + 域名匹配 + 未过期</option>
+                <option value="no-intermediate">只下发叶子证书（缺中间证书）</option>
+                <option value="self-signed">自签名证书 / 根不在信任库</option>
+                <option value="expired">证书已过期</option>
+                <option value="san">域名不在 SAN / CN 中</option>
+              </select>
+            </label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
+
         <h2>17.3 Let's Encrypt</h2>
 
         <p>Let's Encrypt是互联网安全历史上一个里程碑式的项目。它由Internet Security Research Group（ISRG）运营，是第一个大规模的、免费的、自动化的证书颁发机构。它的使命很简单——让每一个网站都用上HTTPS。</p>
@@ -472,6 +489,29 @@ done</code></pre>
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var sel = box.querySelector('[data-sim="scenario"]');
+    var DATA = {
+      'ok': ['信任', '是', '链完整、域名匹配且在有效期内，握手正常完成。'],
+      'no-intermediate': ['失败', '否', '客户端报 “unable to get local issuer certificate”。服务器只发了叶子证书；需把中间证书追到配置里（如 Nginx 的 fullchain.pem）。'],
+      'self-signed': ['失败', '否', '报 “self-signed certificate” / “unknown CA”。自签名证书未被信任库背书，仅适合内部测试（需手动导入信任）。'],
+      'expired': ['失败', '否', '报 “certificate has expired”。校验证书的 notBefore/notAfter，续期后需重载服务器配置。'],
+      'san': ['失败', '否', '报 “certificate is not valid for this name”。从 Chrome 58 起只读 SAN，不再看 CN；需重签含正确 SAN 的证书。']
+    };
+    function render() {
+      var d = DATA[sel.value];
+      if (!d) { out.textContent = '未收录该场景'; return; }
+      var ok = d[0] === '信任';
+      out.innerHTML = '<span class="sim-code" style="background:' + (ok ? '#047857' : '#b91c1c') + '">'
+        + d[0] + '</span><span class="sim-class">浏览器建立加密连接：' + d[1] + '</span><br>' + d[2];
+    }
+    sel.addEventListener('change', render);
+    render();
   })();
 </script>
 </body>
