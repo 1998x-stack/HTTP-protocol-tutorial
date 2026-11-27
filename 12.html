@@ -127,6 +127,14 @@
             body { padding: 10px; }
             .main-content { padding: 20px; }
         }
+        /* CORS 预检交互演示 */
+        .simulator { margin: 1.6rem 0; padding: 1rem 1.1rem; background: #f8faff; border: 1px solid #c7d2fe; border-radius: 16px; }
+        .sim-controls { display: grid; gap: .6rem; margin: .7rem 0; }
+        .sim-controls label { display: grid; gap: .25rem; font-weight: 600; color: #3730a3; font-size: .92rem; }
+        .sim-controls select { font: inherit; padding: .35rem .5rem; border: 1px solid #c7d2fe; border-radius: 10px; background: #fff; color: #1e293b; max-width: 100%; }
+        .sim-check { display: flex !important; align-items: center; gap: .5rem; font-weight: 500; }
+        .sim-out { display: block; margin-top: .6rem; padding: .8rem 1rem; background: #eef2ff; border-left: 5px solid #6366f1; border-radius: 0 12px 12px 0; line-height: 1.7; color: #1e293b; }
+        .sim-out .sim-code { display: inline-block; font-weight: 700; color: #fff; background: #4338ca; padding: .1rem .55rem; border-radius: 8px; margin-right: .4rem; font-family: 'JetBrains Mono', monospace; }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -307,6 +315,36 @@ Access-Control-Max-Age: 86400</code></pre>
           <figcaption><span class="fig-no">图 12.2</span>　简单请求一次往返完成；不满足简单条件的请求（如 PUT 或带 Authorization）会先发 OPTIONS 预检，实际请求退居第三步，共两次往返。</figcaption>
         </figure>
 
+        <section class="simulator" aria-labelledby="sim-ch12-title">
+          <h3 id="sim-ch12-title">交互演示：这个跨域请求会触发预检吗？</h3>
+          <p>设定方法、Content-Type 与自定义头，看浏览器是直接发请求，还是先发一个 OPTIONS 预检。判定规则依据 Fetch 标准的“CORS-safelisted”定义。</p>
+          <div class="sim-controls">
+            <label>请求方法
+              <select data-sim="method">
+                <option value="GET">GET</option>
+                <option value="HEAD">HEAD</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+                <option value="PATCH">PATCH</option>
+              </select>
+            </label>
+            <label>Content-Type
+              <select data-sim="ctype">
+                <option value="none">（不设置）</option>
+                <option value="urlencoded">application/x-www-form-urlencoded</option>
+                <option value="multipart">multipart/form-data</option>
+                <option value="text">text/plain</option>
+                <option value="json">application/json</option>
+              </select>
+            </label>
+            <label class="sim-check"><input type="checkbox" data-sim="auth"> 自定义头 <code>Authorization: Bearer …</code></label>
+            <label class="sim-check"><input type="checkbox" data-sim="custom"> 自定义头 <code>X-Custom-Header: …</code></label>
+            <label class="sim-check"><input type="checkbox" data-sim="cred"> 携带凭证（fetch <code>credentials: 'include'</code>）</label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
+
         <p>预检请求的关键头：</p>
         <ul>
           <li><code>Access-Control-Request-Method</code> —— 告诉服务器实际请求会用什么HTTP方法</li>
@@ -451,6 +489,42 @@ location /api/ {
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var get = function (n) { return box.querySelector('[data-sim="' + n + '"]'); };
+    function current() {
+      return { method: get('method').value, ctype: get('ctype').value,
+        auth: get('auth').checked, custom: get('custom').checked, cred: get('cred').checked };
+    }
+    function render() {
+      var v = current(), reasons = [];
+      if (['GET', 'HEAD', 'POST'].indexOf(v.method) < 0) reasons.push('方法 ' + v.method + ' 不属于 GET/HEAD/POST');
+      if (v.ctype === 'json') reasons.push('Content-Type 为 application/json，不在三个安全列表值内');
+      if (v.auth) reasons.push('携带了非安全列表头 Authorization');
+      if (v.custom) reasons.push('携带了自定义头 X-Custom-Header');
+      var simple = reasons.length === 0;
+      var credNote = v.cred
+        ? '<br><strong>带凭证提醒</strong>：携带凭证时响应必须指定具体 Origin（不能是 <code>*</code>），且需返回 <code>Access-Control-Allow-Credentials: true</code>。'
+        : '';
+      if (simple) {
+        out.innerHTML = '<span class="sim-code">简单请求</span>直接发送实际请求，只需一次往返；服务器在响应里返回 <code>Access-Control-Allow-Origin</code>，浏览器检查匹配后放行。'
+          + credNote;
+        return;
+      }
+      out.innerHTML = '<span class="sim-code">先发预检 OPTIONS</span>触发原因：' + reasons.join('；') + '。'
+        + '浏览器先带 <code>Access-Control-Request-Method: ' + v.method + '</code>'
+        + (v.auth || v.custom ? ' 与 <code>Access-Control-Request-Headers</code> ' : ' ')
+        + '发 OPTIONS，服务器用 Allow-Methods/Allow-Headers/Max-Age 应答后，才发实际请求（共两次往返）。'
+        + credNote;
+    }
+    box.querySelectorAll('[data-sim]').forEach(function (el) {
+      el.addEventListener('change', render);
+    });
+    render();
   })();
 </script>
 </body>
