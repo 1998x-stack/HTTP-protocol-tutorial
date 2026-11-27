@@ -241,6 +241,31 @@ Cache-Control: no-cache
           <figcaption><span class="fig-no">图 3.1</span>　请求报文自上而下分三段：请求行、头部、消息体，中间用空行分隔。响应报文结构完全对称，只是第一行换成状态行。</figcaption>
         </figure>
 
+        <section class="simulator" aria-labelledby="sim-ch3-title">
+          <h3 id="sim-ch3-title">交互演示：拼一个请求报文</h3>
+          <p>选择方法、目标 URI 与是否携带 JSON 消息体，实时看到请求行、必需头部与空行的排布。规则依据 RFC 9110 与 RFC 9112：<code>Host</code> 在 HTTP/1.1 中是必需头部；带消息体时要给出 <code>Content-Type</code> 与 <code>Content-Length</code>；GET 与 HEAD 的语义不允许消息体。</p>
+          <div class="sim-controls">
+            <label>请求方法
+              <select data-sim="method">
+                <option value="GET" selected>GET</option>
+                <option value="HEAD">HEAD</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+              </select>
+            </label>
+            <label>目标 URI
+              <select data-sim="uri">
+                <option value="/api/users?page=1" selected>/api/users?page=1</option>
+                <option value="/api/users">/api/users</option>
+                <option value="/api/users/42">/api/users/42</option>
+              </select>
+            </label>
+            <label class="sim-check"><input type="checkbox" data-sim="body"> 携带 JSON 消息体</label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
+
         <h2>3.2 响应报文解剖</h2>
 
         <p>服务器收到请求后，会返回一个响应报文。响应报文的结构和请求报文类似，区别在于第一行不是请求行，而是<strong>状态行</strong>（Status Line）：</p>
@@ -420,6 +445,44 @@ and this is the second one.
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var method = box.querySelector('[data-sim="method"]');
+    var uri = box.querySelector('[data-sim="uri"]');
+    var bodyChk = box.querySelector('[data-sim="body"]');
+    var BODY_OK = { POST: true, PUT: true, DELETE: true };
+    function render() {
+      var m = method.value, u = uri.value;
+      var wants = bodyChk.checked;
+      var hasBody = wants && !!BODY_OK[m];
+      var lines = [m + ' ' + u + ' HTTP/1.1', 'Host: api.example.com', 'Accept: application/json'];
+      if (hasBody) {
+        lines.push('Content-Type: application/json; charset=utf-8');
+        lines.push('Content-Length: 14');
+      }
+      var raw = lines.join('<br>');
+      if (hasBody) raw += '<br><br>{"name":"Ada"}';
+      else raw += '<br>&nbsp;';
+      var note;
+      if (wants && !hasBody) {
+        note = '⚠ ' + m + ' 的语义不允许消息体：报文不会携带 body，这里只发送这些头部。';
+      } else if (hasBody) {
+        note = '带消息体时，空行之后才是 body；Content-Length 必须与实际字节数一致。';
+      } else {
+        note = '这是无消息体的请求：最后留一个空行，空行之后立即结束。';
+      }
+      out.innerHTML = '<span class="sim-code">' + m + '</span>'
+        + '<span class="sim-class">请求报文</span><br>'
+        + '<span style="font-family:\'JetBrains Mono\',monospace;font-size:.85rem">' + raw + '</span><br>' + note;
+    }
+    method.addEventListener('change', render);
+    uri.addEventListener('change', render);
+    bodyChk.addEventListener('change', render);
+    render();
   })();
 </script>
 </body>
