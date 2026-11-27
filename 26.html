@@ -274,6 +274,21 @@
           <p><strong>理解关键</strong>：多路复用消灭了HTTP/1.1的队头阻塞，但请注意——这只是<strong>HTTP层</strong>的队头阻塞。TCP层仍然有队头阻塞（丢失的数据包会阻塞后续所有数据流的重组），这个问题要到HTTP/3才会解决。这就像高速公路上的小车道——HTTP/2让车可以并行从多个入口上高速，但如果高速路上发生了车祸（TCP丢包），所有车道的车都得堵着。</p>
         </div>
 
+        <section class="simulator" aria-labelledby="sim-ch26-title">
+          <h3 id="sim-ch26-title">交互演示：帧在连接上如何排队</h3>
+          <p>三个请求 A/B/C 分别需要 3/2/2 个帧。切换调度方式，观察帧的到达顺序，以及队头阻塞发生在哪里。</p>
+          <div class="sim-controls">
+            <label>调度方式
+              <select data-sim="mode">
+                <option value="h1" selected>HTTP/1.1 单连接串行</option>
+                <option value="h2">HTTP/2 单连接多路复用</option>
+                <option value="h1x">HTTP/1.1 多连接（A/B/C 各一条）</option>
+              </select>
+            </label>
+          </div>
+          <output class="sim-out" data-sim-out aria-live="polite"></output>
+        </section>
+
         <h2>26.3 HPACK头部压缩</h2>
 
         <p>HPACK（RFC 7541）是HTTP/2的头部压缩算法。它的设计目标是解决HTTP/1.1中头部重复传输的效率问题。前面说过，一个典型HTTP请求头部有500-800字节，其中大部分字段（Host、User-Agent、Accept、Cookie等）每次请求都一摸一样。</p>
@@ -441,6 +456,37 @@ WINDOW_UPDATE: stream_id=3, increment=16384</code></pre>
       ans.hidden = open;
       btn.textContent = open ? '显示答案' : '收起答案';
     });
+  })();
+
+  (function () {
+    var box = document.querySelector('.simulator');
+    if (!box) return;
+    var out = box.querySelector('[data-sim-out]');
+    var sel = box.querySelector('[data-sim="mode"]');
+    var COLOR = { A: '#6366f1', B: '#0ea5e9', C: '#10b981' };
+    var SEQ = {
+      h1: [['A1', 'A2', 'A3', 'B1', 'B2', 'C1', 'C2'], {},
+        '串行：A 的三帧全部发完，B 才能开始。若 A2 遭遇抖动，B、C 全部干等——这就是 HTTP 层队头阻塞。'],
+      h2: [['A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3'], {},
+        '多路复用：三个流的帧在同一条连接上轮流发送，某个流变慢不会阻塞其他流。'],
+      h1x: [['A1', 'A2', 'A3', '*', 'B1', 'B2', '*', 'C1', 'C2'], {},
+        '浏览器对同一域名开多条并行连接：A/B/C 各占一条，互不等待；但每域名连接数有限（常见 6 条），且每条都要单独建连。']
+    };
+    function chip(name) {
+      if (name === '*') return '<span style="color:#94a3b8">｜</span>';
+      var c = COLOR[name.charAt(0)] || '#64748b';
+      return '<span style="display:inline-block;min-width:2.1rem;text-align:center;background:' + c
+        + ';color:#fff;border-radius:6px;padding:.1rem .35rem;margin:.12rem;font-family:\'JetBrains Mono\',monospace;font-size:.8rem">'
+        + name + '</span>';
+    }
+    function render() {
+      var s = SEQ[sel.value];
+      if (!s) { out.textContent = '未收录'; return; }
+      out.innerHTML = '<div>' + s[0].map(chip).join('') + '</div>'
+        + '<div style="margin-top:.5rem">' + s[2] + '</div>';
+    }
+    sel.addEventListener('change', render);
+    render();
   })();
 </script>
 </body>
